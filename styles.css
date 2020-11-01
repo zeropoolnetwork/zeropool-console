@@ -1,0 +1,10 @@
+@import "./node_modules/jquery.terminal/css/jquery.terminal.css";
+
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body .terminal {
+  height: 100%;
+}
