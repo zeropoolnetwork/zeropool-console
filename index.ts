@@ -20,7 +20,6 @@ jQuery(function ($) {
   }
 
   const commands = {
-    // FIXME: There are no type definitions for async commands.
     login: async function (accountId, privateKey) {
       if (!accountId) {
         this.error('Account ID must be specified');
