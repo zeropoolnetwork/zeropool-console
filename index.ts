@@ -4,7 +4,7 @@ import { NearClient } from './near';
 import { Environment } from './near-config';
 
 // TODO: Better state management
-let client = null;
+let client: NearClient = null;
 
 jQuery(function ($) {
   initTerminal($);
@@ -32,7 +32,7 @@ jQuery(function ($) {
     },
     transfer: async function (receiverId, amount) {
       const result = await client.transfer(receiverId, amount);
-      this.echo(`[[;gray]${JSON.stringify(result)}]`);
+      this.echo(`${JSON.stringify(result)}`);
     },
     reset: function () {
       client = null;
@@ -44,6 +44,9 @@ jQuery(function ($) {
   const options = {
     greetings: '[[;green;]ZeroPool interactive CLI]',
     checkArity: false,
+    processArguments: function (args) {
+      return args.split(' ');
+    },
     onInit: async function () {
       const list = Object.values(Environment).join(', ');
 

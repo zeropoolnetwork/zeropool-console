@@ -2,12 +2,12 @@ import nearApi from 'near-api-js';
 import { Account, WalletConnection, KeyPair, connect } from 'near-api-js';
 import { KeyStore, BrowserLocalStorageKeyStore } from 'near-api-js/lib/key_stores';
 import { FinalExecutionOutcome } from 'near-api-js/lib/providers';
+import { parseNearAmount } from 'near-api-js/lib/utils/format';
 import BN from 'bn.js';
 
 import { Config, Environment, getConfig } from './near-config';
 
 const LOCAL_STORAGE_KEY_PREFIX = 'zeropool:keystore';
-const CONTRACT_NAME = 'zeropool-test';
 
 export class NearClient {
   readonly config: Config;
@@ -36,12 +36,10 @@ export class NearClient {
     this.account = await near.account(accountId);
   }
 
-  // TODO
   public async transfer(receiverId: string, amount: string): Promise<FinalExecutionOutcome> {
-    return await this.account.sendMoney(receiverId, new BN(amount));
+    return await this.account.sendMoney(receiverId, new BN(parseNearAmount(amount)));
   }
 
-  // TODO
   public async getBalance() {
 
   }
