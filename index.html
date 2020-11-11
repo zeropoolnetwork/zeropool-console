@@ -6,6 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZeroPool CLI</title>
     <link rel="stylesheet" href="./styles.css" />
+    <script>
+        // fix for pbkdf2
+        window.process = {
+            browser: true,
+        };
+    </script>
     <script src="index.ts"></script>
 </head>
 
