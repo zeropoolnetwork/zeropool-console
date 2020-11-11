@@ -6,35 +6,53 @@ import { Environment } from './near-config';
 // TODO: Better state management
 let client: NearClient = null;
 
+// TODO: Address methods
+// TODO: zeropool transfer
+
 jQuery(function ($) {
   initTerminal($);
 
   function help() {
     // TODO: Better help
     const help = `Available commands:
-      login <accountId> [privateKey]
-      transfer <receiverId> <amount>
+      login <accountId> [privateKey] - privateKey is optional if you've logged in earlier
+      login-mnemonic <accountId> [mnemonic] [password] - mnemonic is optional if you've logged in earlier
+      transfer <receiverId> <amount> - transfer by account ID.
+      transfer-addr <fromAddr> <toAddr> <assetId> <amount> - unimplemented
       reset
       help`;
     this.echo(help);
   }
 
   const commands = {
-    login: async function (accountId, privateKey) {
+    'login': async function (accountId, privateKey) {
       if (!accountId) {
-        this.error('Account ID must be specified');
-        return;
+        throw new Error('Account ID must be specified');
       }
 
       await client.login(accountId, privateKey);
 
       this.echo(`[[;green;]Connected]`);
     },
-    transfer: async function (receiverId, amount) {
+    'login-mnemonic': async function (accountId, mnemonic, password) {
+      if (!accountId) {
+        throw new Error('Account ID must be specified');
+      }
+
+      // TODO: Mnemonic validation
+      const words = mnemonic.split(' ');
+      await client.loginWithMnemonic(accountId, words, password);
+
+      this.echo(`[[;green;]Connected]`);
+    },
+    'transfer': async function (receiverId, amount) {
       const result = await client.transfer(receiverId, amount);
       this.echo(`${JSON.stringify(result)}`);
     },
-    reset: function () {
+    'transfer-addr': async function (fromAddr, toAddr, assetId, amount) {
+
+    },
+    'reset': function () {
       client = null;
       this.reset();
     },
