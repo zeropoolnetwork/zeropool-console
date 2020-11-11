@@ -3,6 +3,7 @@ import { Account, WalletConnection, KeyPair, connect } from 'near-api-js';
 import { KeyStore, BrowserLocalStorageKeyStore } from 'near-api-js/lib/key_stores';
 import { FinalExecutionOutcome } from 'near-api-js/lib/providers';
 import { parseNearAmount } from 'near-api-js/lib/utils/format';
+import { AccountBalance } from 'near-api-js/lib/account';
 import { Mnemonic, HDKey } from 'wallet.ts';
 
 import { Config, Environment, getConfig } from './near-config';
@@ -55,7 +56,7 @@ export class NearClient {
     return await this.account.sendMoney(receiverId, new BN(parseNearAmount(amount)));
   }
 
-  public async getBalance() {
-
+  public async getBalance(): Promise<AccountBalance> {
+    return this.account.getAccountBalance();
   }
 }

@@ -19,6 +19,7 @@ jQuery(function ($) {
       login-mnemonic <accountId> [mnemonic] [password] - mnemonic is optional if you've logged in earlier
       transfer <receiverId> <amount> - transfer by account ID.
       transfer-addr <fromAddr> <toAddr> <assetId> <amount> - unimplemented
+      get-balance
       reset
       help`;
     this.echo(help);
@@ -51,6 +52,10 @@ jQuery(function ($) {
     },
     'transfer-addr': async function (fromAddr, toAddr, assetId, amount) {
 
+    },
+    'get-balance': async function () {
+      const balance = await client.getBalance();
+      this.echo(`${JSON.stringify(balance)}`);
     },
     'reset': function () {
       client = null;
