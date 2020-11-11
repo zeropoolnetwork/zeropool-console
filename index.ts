@@ -41,8 +41,7 @@ jQuery(function ($) {
       }
 
       // TODO: Mnemonic validation
-      const words = mnemonic.split(' ');
-      await client.loginWithMnemonic(accountId, words, password);
+      await client.loginWithMnemonic(accountId, mnemonic, password);
 
       this.echo(`[[;green;]Connected]`);
     },
@@ -67,9 +66,7 @@ jQuery(function ($) {
   const options = {
     greetings: '[[;green;]ZeroPool interactive CLI]',
     checkArity: false,
-    processArguments: function (args) {
-      return args.split(' ');
-    },
+    processArguments: false,
     onInit: async function () {
       const list = Object.values(Environment).join(', ');
 
