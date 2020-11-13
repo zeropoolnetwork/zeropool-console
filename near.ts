@@ -4,14 +4,11 @@ import { KeyStore, BrowserLocalStorageKeyStore } from 'near-api-js/lib/key_store
 import { FinalExecutionOutcome } from 'near-api-js/lib/providers';
 import { parseNearAmount } from 'near-api-js/lib/utils/format';
 import { AccountBalance } from 'near-api-js/lib/account';
-import { Mnemonic, HDKey, VersionBytes } from 'wallet.ts';
-import bs58 from 'bs58';
+import { parseSeedPhrase } from 'near-seed-phrase';
 
 import { Config, Environment, getConfig } from './near-config';
 
 const LOCAL_STORAGE_KEY_PREFIX = 'zeropool:keystore';
-const BIP32_PATH = "m/44'/397'/0'/0'";
-const EXTENDED_PRIVATE_KEY_SIZE = 64;
 
 export class NearClient {
   readonly config: Config;
@@ -46,17 +43,9 @@ export class NearClient {
       return;
     }
 
-    const mnemonic = Mnemonic.parse(phrase);
-    const seed = await mnemonic.toSeedAsync(password);
-    const key = HDKey.parseEd25519Seed(seed);
-    const privateKey = key.derive(BIP32_PATH).privateKey;
+    const { secretKey } = parseSeedPhrase(phrase);
 
-    // FIXME: How to get an extended ed25519 key?
-    const extendedPrivateKey = new Uint8Array(new ArrayBuffer(EXTENDED_PRIVATE_KEY_SIZE));
-    extendedPrivateKey.set(privateKey);
-    const encPrivateKey = bs58.encode(extendedPrivateKey);
-
-    await this.login(accountId, encPrivateKey);
+    await this.login(accountId, secretKey);
   }
 
   public async transfer(receiverId: string, amount: string): Promise<FinalExecutionOutcome> {
