@@ -4494,16 +4494,6 @@ near-hd-key@^1.0.0:
     create-hmac "1.1.6"
     tweetnacl "^1.0.1"
 
-near-seed-phrase@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/near-seed-phrase/-/near-seed-phrase-0.1.0.tgz#8a9a842fc112759e86dfe65325a113a9dbd6a526"
-  integrity sha512-tkeb9LUi/2w1mHjP1xwTrTSQyaUBQRbYtgUnhUTJjFznXVRi4Ai+jifWhwPDvSjQ0IPqYmD8MuWRie3kY0yT1g==
-  dependencies:
-    bip39-light "^1.0.7"
-    bs58 "^4.0.1"
-    near-hd-key "^1.0.0"
-    tweetnacl "^1.0.2"
-
 nice-try@^1.0.4:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/nice-try/-/nice-try-1.0.5.tgz#a3378a7696ce7d223e88fc9b764bd7ef1089e366"
@@ -6147,7 +6137,7 @@ tweetnacl@^0.14.3, tweetnacl@~0.14.0:
   resolved "https://registry.yarnpkg.com/tweetnacl/-/tweetnacl-0.14.5.tgz#5ae68177f192d4456269d108afa93ff8743f4f64"
   integrity sha1-WuaBd/GS1EViadEIr6k/+HQ/T2Q=
 
-tweetnacl@^1.0.1, tweetnacl@^1.0.2:
+tweetnacl@^1.0.1, tweetnacl@^1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/tweetnacl/-/tweetnacl-1.0.3.tgz#ac0af71680458d8a6378d0d0d050ab1407d35596"
   integrity sha512-6rt+RN7aOi1nGMyC4Xa5DdYiukl2UWCbcJft7YhxReBGQD7OAM8Pbxw6YMo4r2diNEA8FEmu32YOn9rhaiE5yw==

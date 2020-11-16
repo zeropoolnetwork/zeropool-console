@@ -4,7 +4,7 @@ import { KeyStore, BrowserLocalStorageKeyStore } from 'near-api-js/lib/key_store
 import { FinalExecutionOutcome } from 'near-api-js/lib/providers';
 import { parseNearAmount } from 'near-api-js/lib/utils/format';
 import { AccountBalance } from 'near-api-js/lib/account';
-import { parseSeedPhrase } from 'near-seed-phrase';
+import { parseSeedPhrase, formatKeys as encodeKeys } from './utils';
 import AES from 'crypto-js/aes';
 import bcrypt from 'bcryptjs';
 
@@ -17,27 +17,33 @@ const LOCK_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
 interface PrivateCache {
     seed: string;
-    privateKey: string;
+    secretKey: string;
     publicKey: string;
 }
 
 export class LocalAccount {
     private cache?: PrivateCache;
     private lockTimeout?: ReturnType<typeof setTimeout>;
+    readonly accountId: string;
+
+    constructor(accountId: string) {
+        this.accountId = accountId;
+    }
 
     public async setSeed(seed: string, password: string) {
-        const { privateKey, publicKey } = parseSeedPhrase(seed);
+        const keyPair = parseSeedPhrase(seed);
+        const { secretKey, publicKey } = encodeKeys(keyPair)
 
         this.cache = {
             seed,
-            privateKey,
+            secretKey,
             publicKey,
         };
 
         const cacheJson = JSON.stringify(this.cache);
 
-        localStorage.setItem('zconsole.cache', await AES.encrypt(cacheJson, password));
-        localStorage.setItem('zconcole.pwHash', await bcrypt.hash(password, await bcrypt.genSalt(10)));
+        localStorage.setItem(`zconsole.${this.accountId}.cache`, await AES.encrypt(cacheJson, password));
+        localStorage.setItem(`zconcole.${this.accountId}.pwHash`, await bcrypt.hash(password, await bcrypt.genSalt(10)));
 
         this.setAccountTimeout(LOCK_TIMEOUT);
     }
@@ -63,13 +69,33 @@ export class LocalAccount {
         }
     }
 
+    public getRegularAddress(chainId: string): string {
+        this.requireAuth();
+
+        const path = `m/44'/${chainId}'/0'/0'/0'`;
+        const pair = parseSeedPhrase(this.cache.seed, path);
+        const { publicKey } = encodeKeys(pair);
+
+        return publicKey;
+    }
+
+    public exportRegularPrivateKey(chainId: string, password: string): string {
+        this.unlockAccount(password);
+
+        const path = `m/44'/${chainId}'/0'/0'/0'`;
+        const pair = parseSeedPhrase(this.cache.seed, path);
+        const { secretKey } = encodeKeys(pair);
+
+        return secretKey;
+    }
+
     public isLocked(): boolean {
         return !this.cache;
     }
 
     public requireAuth() {
         if (this.isLocked()) {
-            throw Error('Unauthenticated');
+            throw Error('Unlock the account first');
         }
     }
 
@@ -91,7 +117,7 @@ export class LocalAccount {
     }
 }
 
-export class NearConnection {
+export class NearClient {
     private keyStore: KeyStore;
     readonly config: Config;
     public nearAccount: Account;
