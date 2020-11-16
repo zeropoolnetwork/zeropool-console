@@ -9,6 +9,10 @@ let client: NearClient = null;
 // TODO: Address methods
 // TODO: zeropool transfer
 
+const PRIVATE_COMMANDS = [
+  'login'
+];
+
 jQuery(function ($) {
   initTerminal($);
 
@@ -67,6 +71,9 @@ jQuery(function ($) {
     greetings: '[[;green;]ZeroPool interactive CLI]',
     checkArity: false,
     processArguments: false,
+    historyFilter: function (command) {
+      return PRIVATE_COMMANDS.indexOf(command) != -1;
+    },
     onInit: async function () {
       const list = Object.values(Environment).join(', ');
 
