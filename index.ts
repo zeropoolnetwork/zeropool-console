@@ -1,101 +1,97 @@
 import jQuery from 'jquery';
 import initTerminal from 'jquery.terminal';
-import { NearClient } from './near';
+import { NearClient, LocalAccount } from './NearClient';
 import { Environment } from './near-config';
 
 // TODO: Better state management
 let client: NearClient = null;
 
-// TODO: Address methods
-// TODO: zeropool transfer
-
 const PRIVATE_COMMANDS = [
-  'login'
+    'login'
 ];
 
 jQuery(function ($) {
-  initTerminal($);
+    initTerminal($);
 
-  function help() {
-    // TODO: Better help
-    const help = `Available commands:
-      login <accountId> [privateKey] - privateKey is optional if you've logged in earlier
-      login-mnemonic <accountId> [mnemonic] [password] - mnemonic is optional if you've logged in earlier
-      transfer <receiverId> <amount> - transfer by account ID.
-      transfer-addr <fromAddr> <toAddr> <assetId> <amount> - unimplemented
-      get-balance
-      reset
-      help`;
-    this.echo(help);
-  }
+    function help() {
+        // TODO: Better help
+        const help = `
+Available commands:
+    set-seed <seedPhrase> <password>
+    get-seed <password>
+    get-address
+    get-private-key <password>
+    unlock <password>
+    transfer <fromAddr> <toAddr> <assetId> <amount>
+    get-balance
+    reset - reset console state
+    help - print this message`;
+        this.echo(help);
+    }
 
-  const commands = {
-    'login': async function (accountId, privateKey) {
-      if (!accountId) {
-        throw new Error('Account ID must be specified');
-      }
+    const commands = {
+        'reset': function () {
+            client = null;
+            this.reset();
+        },
+        help,
+    };
 
-      await client.login(accountId, privateKey);
+    const options = {
+        greetings: '[[;green;]ZeroPool interactive CLI]',
+        checkArity: false,
+        processArguments: false,
+        historyFilter: function (command) {
+            return PRIVATE_COMMANDS.indexOf(command) != -1;
+        },
+        onInit: async function () {
+            const list = Object.values(Environment).join(', ');
 
-      this.echo(`[[;green;]Connected]`);
-    },
-    'login-mnemonic': async function (accountId, mnemonic, password) {
-      if (!accountId) {
-        throw new Error('Account ID must be specified');
-      }
+            // Environment prompt
+            do {
+                try {
+                    const env = await this.read(`Choose environment (${list}): `);
+                    client = new NearClient(env);
+                    this.echo(`[[;gray;]Config: ${JSON.stringify(client.config)}\n]`);
+                } catch (e) {
+                    this.error(e);
+                }
+            } while (!client);
 
-      // TODO: Mnemonic validation
-      await client.loginWithMnemonic(accountId, mnemonic, password);
+            // Account prompt
+            do {
+                try {
+                    const accountId = await this.read('Enter account name (new or existing): ');
+                    const localAccount = new LocalAccount(accountId);
 
-      this.echo(`[[;green;]Connected]`);
-    },
-    'transfer': async function (receiverId, amount) {
-      const result = await client.transfer(receiverId, amount);
-      this.echo(`${JSON.stringify(result)}`);
-    },
-    'transfer-addr': async function (fromAddr, toAddr, assetId, amount) {
+                    if (localAccount.isAccountPresent()) {
+                        const password = await this.read('Enter password: ');
 
-    },
-    'get-balance': async function () {
-      const balance = await client.getBalance();
-      this.echo(`${JSON.stringify(balance)}`);
-    },
-    'reset': function () {
-      client = null;
-      this.reset();
-    },
-    help,
-  };
+                        localAccount.unlockAccount(password);
+                    } else {
+                        const seed = await this.read(`Enter seed phrase for account '${accountId}': `);
+                        const password = await this.read('Enter password: ');
 
-  const options = {
-    greetings: '[[;green;]ZeroPool interactive CLI]',
-    checkArity: false,
-    processArguments: false,
-    historyFilter: function (command) {
-      return PRIVATE_COMMANDS.indexOf(command) != -1;
-    },
-    onInit: async function () {
-      const list = Object.values(Environment).join(', ');
+                        await localAccount.setSeed(seed, password);
+                    }
 
-      do {
-        try {
-          const env = await this.read(`Choose environment (${list}): `);
-          client = new NearClient(env);
-          this.echo(`[[;gray;]Config: ${JSON.stringify(client.config)}\n]`);
-          help.apply(this);
-        } catch (e) {
-          this.error(e);
-        }
-      } while (!client);
-    },
-    prompt: function () {
-      if (client && client.account) {
-        return `${client.account.accountId}>`;
-      } else {
-        return '>';
-      }
-    },
-  };
+                    // TODO: Use setter?
+                    client.localAccount = localAccount;
+                } catch (e) {
+                    this.error(e);
+                }
+            } while (!client.isLoggedIn());
 
-  $('#terminal').terminal(commands, options);
+            help.apply(this);
+        },
+        prompt: function () {
+            if (client && client.localAccount) {
+                return `${client.localAccount.accountId}>`;
+            } else {
+                return '>';
+            }
+        },
+    };
+
+    $('#terminal').terminal(commands, options);
 });

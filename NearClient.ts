@@ -48,6 +48,10 @@ export class LocalAccount {
         this.setAccountTimeout(LOCK_TIMEOUT);
     }
 
+    public isAccountPresent(): boolean {
+        return !!localStorage.getItem(`zconsole.${this.accountId}.pwHash`);
+    }
+
     public getSeed(password: string): string {
         this.checkPassword(password);
 
@@ -126,5 +130,19 @@ export class NearClient {
     constructor(env: Environment) {
         this.keyStore = new BrowserLocalStorageKeyStore(window.localStorage, LOCAL_STORAGE_KEY_PREFIX);
         this.config = getConfig(env);
+    }
+
+
+
+    public isLoggedIn(): boolean {
+        return !this.localAccount.isLocked();
+    }
+
+    public login(accountName: string, password: string, phrase?: string) {
+
+    }
+
+    public transfer(from: string, to: string, amount: string) {
+
     }
 }
