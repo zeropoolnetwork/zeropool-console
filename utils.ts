@@ -29,13 +29,3 @@ export function encodeKeys(pair: SignKeyPair): FormattedKeyPair {
 function normalizeSeedPhrase(seedPhrase) {
     return seedPhrase.trim().split(/\s+/).map(part => part.toLowerCase()).join(' ');
 }
-
-export function encryptData(data: object, secret: string): string {
-    return '';
-}
-
-export function decryptData(ciphertext: string, secret: string, nonce: string): string {
-    return '';
-}
-
-

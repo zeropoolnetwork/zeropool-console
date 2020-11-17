@@ -4,7 +4,7 @@ import { KeyStore, BrowserLocalStorageKeyStore } from 'near-api-js/lib/key_store
 import { FinalExecutionOutcome } from 'near-api-js/lib/providers';
 import { parseNearAmount } from 'near-api-js/lib/utils/format';
 import { AccountBalance } from 'near-api-js/lib/account';
-import { parseSeedPhrase, formatKeys as encodeKeys } from './utils';
+import { parseSeedPhrase, encodeKeys as encodeKeys } from './utils';
 import AES from 'crypto-js/aes';
 import bcrypt from 'bcryptjs';
 
@@ -74,9 +74,9 @@ export class LocalAccount {
 
         const path = `m/44'/${chainId}'/0'/0'/0'`;
         const pair = parseSeedPhrase(this.cache.seed, path);
-        const { publicKey } = encodeKeys(pair);
+        const address = Buffer.from(pair.publicKey).toString('hex');
 
-        return publicKey;
+        return address;
     }
 
     public exportRegularPrivateKey(chainId: string, password: string): string {
