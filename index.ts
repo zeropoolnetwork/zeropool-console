@@ -1,6 +1,7 @@
 import jQuery from 'jquery';
 import initTerminal from 'jquery.terminal';
-import { NearClient, LocalAccount } from './NearClient';
+import NearClient from './NearClient';
+import LocalAccount from './LocalAccount';
 import { Environment } from './near-config';
 
 // TODO: Better state management
