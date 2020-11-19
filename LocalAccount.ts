@@ -1,6 +1,7 @@
 
 import { parseSeedPhrase, encodeKeys as encodeKeys } from './utils';
 import AES from 'crypto-js/aes';
+import Utf8 from 'crypto-js/enc-utf8';
 import bcrypt from 'bcryptjs';
 
 const LOCK_TIMEOUT = 5 * 60 * 1000; // 5 minutes
@@ -11,16 +12,33 @@ interface PrivateCache {
     publicKey: string;
 }
 
+interface AccountStorage {
+    get(accountName: string, field: string): string;
+    set(accountName: string, field: string, value: string);
+}
+
+class LocalAccountStorage implements AccountStorage {
+    get(accountName: string, field: string): string {
+        return localStorage.getItem(`zconsole.${accountName}.${field}`);
+    }
+    set(accountName: string, field: string, value: string) {
+        localStorage.setItem(`zconsole.${accountName}.${field}`, value);
+    }
+
+}
+
 export default class LocalAccount {
     private cache?: PrivateCache;
     private lockTimeout?: ReturnType<typeof setTimeout>;
-    readonly accountId: string;
+    readonly accountName: string;
+    private storage: AccountStorage;
 
-    constructor(accountId: string) {
-        this.accountId = accountId;
+    constructor(accountName: string) {
+        this.accountName = accountName;
+        this.storage = new LocalAccountStorage();
     }
 
-    public async setSeed(seed: string, password: string) {
+    public async login(seed: string, password: string) {
         const keyPair = parseSeedPhrase(seed);
         const { secretKey, publicKey } = encodeKeys(keyPair)
 
@@ -32,14 +50,14 @@ export default class LocalAccount {
 
         const cacheJson = JSON.stringify(this.cache);
 
-        localStorage.setItem(`zconsole.${this.accountId}.cache`, await AES.encrypt(cacheJson, password));
-        localStorage.setItem(`zconcole.${this.accountId}.pwHash`, await bcrypt.hash(password, await bcrypt.genSalt(10)));
+        this.storage.set(this.accountName, 'cache', await AES.encrypt(cacheJson, password).toString());
+        this.storage.set(this.accountName, 'pwHash', await bcrypt.hash(password, await bcrypt.genSalt(10)));
 
         this.setAccountTimeout(LOCK_TIMEOUT);
     }
 
     public isAccountPresent(): boolean {
-        return !!localStorage.getItem(`zconsole.${this.accountId}.pwHash`);
+        return !!this.storage.get(this.accountName, 'pwHash');
     }
 
     public getSeed(password: string): string {
@@ -56,18 +74,22 @@ export default class LocalAccount {
     }
 
     public checkPassword(password: String) {
-        const hash = localStorage.getItem('zconcole.pwHash');
+        const hash = this.storage.get(this.accountName, 'pwHash');
 
         if (!bcrypt.compare(hash, password)) {
             throw new Error('Incorrect password');
         }
+
+        this.setAccountTimeout(LOCK_TIMEOUT);
     }
 
     public getRegularAddress(chainId: string): string {
         this.requireAuth();
 
-        const path = `m/44'/${chainId}'/0'/0'/0'`;
+        const path = `m/44'/${chainId}'/0'`;
         const pair = parseSeedPhrase(this.cache.seed, path);
+
+        // TODO: Ability to specify encoding?
         const address = Buffer.from(pair.publicKey).toString('hex');
 
         return address;
@@ -76,11 +98,21 @@ export default class LocalAccount {
     public exportRegularPrivateKey(chainId: string, password: string): string {
         this.unlockAccount(password);
 
-        const path = `m/44'/${chainId}'/0'/0'/0'`;
+        const path = `m/44'/${chainId}'/0'`;
         const pair = parseSeedPhrase(this.cache.seed, path);
         const { secretKey } = encodeKeys(pair);
 
         return secretKey;
+    }
+
+    public getNearPrivateKey(): string {
+        this.requireAuth();
+        return this.cache.secretKey;
+    }
+
+    public getNearAddress(): string {
+        this.requireAuth();
+        return this.getRegularAddress('397');
     }
 
     public isLocked(): boolean {
@@ -89,8 +121,10 @@ export default class LocalAccount {
 
     public requireAuth() {
         if (this.isLocked()) {
-            throw Error('Unlock the account first');
+            throw Error('Account is locked. Unlock the account first');
         }
+
+        this.setAccountTimeout(LOCK_TIMEOUT);
     }
 
     private setAccountTimeout(ms: number) {
@@ -104,8 +138,8 @@ export default class LocalAccount {
     }
 
     private decryptCache(password: string): PrivateCache {
-        const cipherText = localStorage.get('zconsole.cache');
-        const data = AES.decrypt(cipherText, password);
+        const cipherText = this.storage.get(this.accountName, 'cache');
+        const data = AES.decrypt(cipherText, password).toString(Utf8);
 
         return JSON.parse(data);
     }

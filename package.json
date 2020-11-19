@@ -9,6 +9,7 @@
     "dev": "parcel serve index.html"
   },
   "dependencies": {
+    "@open-rpc/client-js": "^1.6.0",
     "bcryptjs": "^2.4.3",
     "bip39-light": "^1.0.7",
     "bn.js": "^5.1.3",

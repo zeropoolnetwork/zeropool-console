@@ -13,7 +13,17 @@ export interface FormattedKeyPair {
 }
 
 export function parseSeedPhrase(phrase: string, path?: string): SignKeyPair {
-    const seed = bip39.mnemonicToSeed(normalizeSeedPhrase(phrase));
+    const words = phrase
+        .trim()
+        .split(/\s+/)
+        .map(part => part.toLowerCase());
+
+    const fullMnemonic = words.join(' ');
+
+    // validate mnemonic
+    bip39.mnemonicToEntropy(fullMnemonic);
+
+    const seed = bip39.mnemonicToSeed(fullMnemonic);
     const { key } = derivePath(path || KEY_DERIVATION_PATH, seed.toString('hex'));
     const keyPair = sign.keyPair.fromSeed(key);
 
@@ -24,8 +34,4 @@ export function encodeKeys(pair: SignKeyPair): FormattedKeyPair {
     const publicKey = 'ed25519:' + bs58.encode(Buffer.from(pair.publicKey));
     const secretKey = 'ed25519:' + bs58.encode(Buffer.from(pair.secretKey));
     return { secretKey, publicKey };
-}
-
-function normalizeSeedPhrase(seedPhrase) {
-    return seedPhrase.trim().split(/\s+/).map(part => part.toLowerCase()).join(' ');
 }
