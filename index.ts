@@ -1,8 +1,8 @@
 import jQuery from 'jquery';
 import initTerminal from 'jquery.terminal';
 import initAutocomplete from 'jquery.terminal/js/autocomplete_menu';
-import NearClient from './NearClient';
-import LocalAccount from './LocalAccount';
+import NearClient from './near-client';
+import LocalAccount from './local-account';
 import { Environment } from './near-config';
 import bip39 from 'bip39-light';
 import { formatNearAmount } from 'near-api-js/lib/utils/format';

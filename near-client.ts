@@ -1,14 +1,10 @@
 import BN from 'bn.js';
-import { Account, WalletConnection, KeyPair, connect, Near } from 'near-api-js';
+import { Account, KeyPair, connect } from 'near-api-js';
 import { KeyStore, InMemoryKeyStore } from 'near-api-js/lib/key_stores';
-import { FinalExecutionOutcome, JsonRpcProvider } from 'near-api-js/lib/providers';
-import { GenesisConfig } from 'near-api-js/lib/providers/provider';
-import { parseNearAmount } from 'near-api-js/lib/utils/format';
-import { AccountBalance, AccountState } from 'near-api-js/lib/account';
-import { transfer } from 'near-api-js/lib/transaction';
-import { RequestManager, HTTPTransport, Client } from "@open-rpc/client-js";
+import { AccountBalance } from 'near-api-js/lib/account';
 
-import LocalAccount from './LocalAccount';
+
+import LocalAccount from './local-account';
 import { Config, Environment, getConfig } from './near-config';
 
 export default class NearClient {

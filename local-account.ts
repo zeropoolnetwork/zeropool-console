@@ -1,7 +1,6 @@
 import AES from 'crypto-js/aes';
 import Utf8 from 'crypto-js/enc-utf8';
 import bcrypt from 'bcryptjs';
-import { Action, createTransaction, signTransaction } from 'near-api-js/lib/transaction';
 
 import { parseSeedPhrase, encodeKeys as encodeKeys } from './utils';
 
