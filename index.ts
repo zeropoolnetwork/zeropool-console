@@ -38,20 +38,20 @@ jQuery(function ($) {
 
     function help() {
         // TODO: Better help
-        const help = `Available commands:
-    set-seed <seedPhrase> <password>
-    get-seed <password>
-    gen-seed
-    get-address <chainId>
-    get-near-address
-    get-private-key <password>
-    get-near-balance
-    unlock <password>
-    transfer-near <toAddr> <amount>
+        const help = `[[;gray;]Available commands:
+    set-seed <seedPhrase> <password> - replace the seed phrase for the current account
+    get-seed <password> - print the seed phrase for the current account
+    gen-seed - generate and print a new seed phrase
+    get-address <chainId> - derive and print a new address with specified coin_type
+    get-near-address - print an address for the current NEAR account
+    get-private-key <password> - print the private key for the current NEAR account
+    get-near-balance - fetch and print account balance
+    unlock <password> - unlock the current account if was locked by a timeout
+    transfer-near <toAddr> <amount> - transfer near tokens,
     transfer <fromAddr> <toAddr> <assetId> <amount> - unimplemented
-    clear
+    clear - clear terminal
     reset - reset console state
-    help - print this message`;
+    help - print help message]`;
         this.echo(help);
     }
 
