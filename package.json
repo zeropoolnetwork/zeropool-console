@@ -17,7 +17,7 @@
     "crypto-js": "^4.0.0",
     "jquery": "^3.5.1",
     "jquery.terminal": "^2.18.3",
-    "near-api-js": "^0.31.0",
+    "near-api-js": "https://github.com/voidxnull/near-api-js.git#view-state",
     "near-hd-key": "^1.0.0",
     "tweetnacl": "^1.0.3"
   },

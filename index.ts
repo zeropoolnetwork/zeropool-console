@@ -38,7 +38,7 @@ jQuery(function ($) {
 
     function help() {
         // TODO: Better help
-        const help = `[[;gray;]Available commands:
+        const help = `Available commands:
     set-seed <seedPhrase> <password>
     get-seed <password>
     gen-seed
@@ -51,15 +51,14 @@ jQuery(function ($) {
     transfer <fromAddr> <toAddr> <assetId> <amount> - unimplemented
     clear
     reset - reset console state
-    help - print this message]`;
+    help - print this message`;
         this.echo(help);
     }
 
     const commands = {
         'set-seed': async function (seed, password) {
-            // FIXME: Use NearClient instead
             await client.localAccount.login(seed, password);
-            await client.login();
+            await client.login(client.localAccount);
         },
         'get-seed': function (password) {
             const seed = client.localAccount.getSeed(password);
@@ -77,14 +76,14 @@ jQuery(function ($) {
             const address = client.localAccount.getNearAddress();
             this.echo(`[[;gray;]NEAR address: ${address}]`);
         },
-        'get-near-balance': async function () {
-            const balance = await client.getNearBalance();
+        'get-near-balance': async function (accountId) {
+            const balance = await client.getNearBalance(accountId);
 
-            const formatted = `[[;gray;]Balance for ${client.localAccount.getNearAddress()}
-    Total:       ${formatNearAmount(balance.total)} (${balance.total})
-    State taked: ${formatNearAmount(balance.stateStaked)} (${balance.stateStaked})
-    Staked:      ${formatNearAmount(balance.staked)} (${balance.staked})
-    Available:   ${formatNearAmount(balance.available)} (${balance.available})]`;
+            const formatted = `[[;gray;]Balance for ${accountId || client.localAccount.getNearAddress()}
+    Total:        ${formatNearAmount(balance.total)} (${balance.total})
+    State staked: ${formatNearAmount(balance.stateStaked)} (${balance.stateStaked})
+    Staked:       ${formatNearAmount(balance.staked)} (${balance.staked})
+    Available:    ${formatNearAmount(balance.available)} (${balance.available})]`;
 
             this.echo(formatted);
         },
@@ -111,7 +110,8 @@ jQuery(function ($) {
         greetings: '[[;green;]ZeroPool interactive CLI]',
         checkArity: false,
         processArguments: false,
-        autocompleteMenu: true,
+        wordAutocomplete: false,
+        completion: ALL_COMMANDS,
         historyFilter: function (command) {
             return PRIVATE_COMMANDS.indexOf(command) == -1;
         },
@@ -161,9 +161,7 @@ jQuery(function ($) {
                         await localAccount.login(seed, password);
                     }
 
-                    // TODO: Use setter?
-                    client.localAccount = localAccount;
-                    client.login();
+                    await client.login(localAccount);
                 } catch (e) {
                     this.error(e);
                 }
