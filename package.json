@@ -6,8 +6,10 @@
   "homepage": "https://github.com/zeropoolnetwork/zeropool-console",
   "scripts": {
     "build": "parcel build index.html",
+    "build-gh": "parcel build index.html --public-url /zeropool-console",
+    "clean": "rm -rf dist",
     "dev": "parcel serve index.html",
-    "predeploy": "yarn build",
+    "predeploy": "yarn build-gh",
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
