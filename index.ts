@@ -1,14 +1,14 @@
 import jQuery from 'jquery';
 import initTerminal from 'jquery.terminal';
 import initAutocomplete from 'jquery.terminal/js/autocomplete_menu';
-import NearClient from './near-client';
-import LocalAccount from './local-account';
-import { Environment } from './near-config';
 import bip39 from 'bip39-light';
-import { formatNearAmount } from 'near-api-js/lib/utils/format';
+import { generateMnemonic } from 'zeropool-api-js/lib/utils';
+import { CoinType } from 'zeropool-api-js';
+
+import Account, { Env } from './account';
 
 // TODO: Better state management
-let client: NearClient = null;
+let account: Account = null;
 
 const PRIVATE_COMMANDS = [
     'set-seed',
@@ -20,13 +20,12 @@ const PRIVATE_COMMANDS = [
 const ALL_COMMANDS = [
     'set-seed',
     'get-seed',
+    'gen-seed',
     'get-address',
     'get-near-address',
     'get-private-key',
     'unlock',
-    'transfer-near',
     'transfer',
-    'get-near-balance',
     'clear',
     'reset',
     'help',
@@ -43,12 +42,11 @@ jQuery(function ($) {
     get-seed <password> - print the seed phrase for the current account
     gen-seed - generate and print a new seed phrase
     get-address <chainId> - derive and print a new address with specified coin_type
-    get-near-address - print an address for the current NEAR account
-    get-private-key <password> - print the private key for the current NEAR account
-    get-near-balance - fetch and print account balance
+    get-private-key <chainId> <password> - print the private key for the current NEAR account
+    get-balance <chainId> - fetch and print account balance
     unlock <password> - unlock the current account if was locked by a timeout
-    transfer-near <toAddr> <amount> - transfer near tokens,
-    transfer <fromAddr> <toAddr> <assetId> <amount> - unimplemented
+    transfer <chainId> <to> <amount> - transfer <chainId> token
+    transfer-private <chainId> <from> <to> <amount> - unimplemented
     clear - clear terminal
     reset - reset console state
     help - print help message]`;
@@ -57,50 +55,52 @@ jQuery(function ($) {
 
     const commands = {
         'set-seed': async function (seed, password) {
-            await client.localAccount.login(seed, password);
-            await client.login(client.localAccount);
+            await account.login(seed, password);
         },
         'get-seed': function (password) {
-            const seed = client.localAccount.getSeed(password);
+            const seed = account.getSeed(password);
             this.echo(`[[;gray;]Seed phrase: ${seed}]`);
         },
         'gen-seed': function () {
-            const seed = bip39.generateMnemonic();
+            const seed = generateMnemonic();
             this.echo(`[[;gray;]Generated mnemonic: ${seed}]`);
         },
         'get-address': function (chainId) {
-            const address = client.localAccount.getRegularAddress(chainId);
+            const address = account.getRegularAddress(chainId);
             this.echo(`[[;gray;]Address: ${address}]`);
         },
-        'get-near-address': function () {
-            const address = client.localAccount.getNearAddress();
-            this.echo(`[[;gray;]NEAR address: ${address}]`);
+        'get-private-key': function (chainId, password) {
+            const seed = account.getRegularPrivateKey(chainId, password);
+            this.echo(`[[;gray;]Seed phrase: ${seed}]`);
         },
-        'get-near-balance': async function (accountId) {
-            const balance = await client.getNearBalance(accountId);
+        'get-balance': async function (chainId) {
+            const balance = await account.getBalance(chainId);
+            this.echo(`[[;gray;]Balance: ${balance}]`);
+        },
+        'get-balances': async function () {
+            const balances = await account.getBalances();
+            let buf = '';
 
-            const formatted = `[[;gray;]Balance for ${accountId || client.localAccount.getNearAddress()}
-    Total:        ${formatNearAmount(balance.total)} (${balance.total})
-    State staked: ${formatNearAmount(balance.stateStaked)} (${balance.stateStaked})
-    Staked:       ${formatNearAmount(balance.staked)} (${balance.staked})
-    Available:    ${formatNearAmount(balance.available)} (${balance.available})]`;
+            for (const [coinType, balance] of Object.entries(balances)) {
+                buf += `    ${CoinType[coinType]}: ${balance}\n`;
+            }
 
-            this.echo(formatted);
+            this.echo(`[[;gray;]Balances:\n${buf}]`);
         },
-        'transfer-near': async function (to, amount) {
-            await client.transferNear(to, amount);
+        'transfer': async function (chainId, to, amount) {
+            await account.transfer(chainId, to, amount);
         },
-        'transfer': function () {
+        'transfer-private': function () {
             throw new Error('unimplemented');
         },
         'unlock': function (password) {
-            client.localAccount.unlockAccount(password);
+            account.unlockAccount(password);
         },
         'clear': function () {
             this.clear();
         },
         'reset': function () {
-            client = null;
+            account = null;
             this.reset();
         },
         help,
@@ -116,18 +116,10 @@ jQuery(function ($) {
             return PRIVATE_COMMANDS.indexOf(command) == -1;
         },
         onInit: async function () {
-            const list = Object.values(Environment).join(', ');
+            const list = Object.values(Env).join(', ');
 
             // Environment prompt
-            do {
-                try {
-                    const env = await this.read(`Choose environment (${list}): `);
-                    client = new NearClient(env);
-                    this.echo(`[[;gray;]Config: ${JSON.stringify(client.config)}\n]`);
-                } catch (e) {
-                    this.error(e);
-                }
-            } while (!client);
+            let env = await this.read(`Choose environment (${list}): `);
 
             // Account prompt
             do {
@@ -138,11 +130,11 @@ jQuery(function ($) {
                         throw new Error('Account name cannot be empty');
                     }
 
-                    const localAccount = new LocalAccount(accountName);
+                    account = new Account(accountName, env);
 
-                    if (localAccount.isAccountPresent()) {
+                    if (account.isAccountPresent()) {
                         const password = await this.read('Enter password: ');
-                        localAccount.unlockAccount(password);
+                        account.unlockAccount(password);
                     } else {
                         let seed = await this.read(`Enter seed phrase or leave empty to generate a new one: `);
 
@@ -158,20 +150,18 @@ jQuery(function ($) {
                             throw new Error('Password is too weak');
                         }
 
-                        await localAccount.login(seed, password);
+                        await account.login(seed, password);
                     }
-
-                    await client.login(localAccount);
                 } catch (e) {
                     this.error(e);
                 }
-            } while (!client.isLoggedIn());
+            } while (account.isLocked());
 
             help.apply(this);
         },
         prompt: function () {
-            if (client && client.localAccount) {
-                return `${client.localAccount.accountName}>`;
+            if (account) {
+                return `${account.accountName}>`;
             } else {
                 return '>';
             }
