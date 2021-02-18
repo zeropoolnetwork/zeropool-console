@@ -23,7 +23,7 @@ class LocalAccountStorage implements AccountStorage {
     }
 }
 
-const COINS = { [CoinType.ethereum]: 1, [CoinType.near]: 1 };
+const COINS = { [CoinType.ethereum]: [0], [CoinType.near]: [0] };
 
 export enum Env {
     Prod = 'prod',
@@ -73,7 +73,7 @@ export default class Account {
         this.checkPassword(password);
 
         const seed = this.decryptSeed(password);
-        this.hdWallet = new HDWallet(seed, COINS, this.config)
+        this.hdWallet = new HDWallet(seed, this.config, COINS)
     }
 
     public checkPassword(password: String) {
@@ -99,18 +99,18 @@ export default class Account {
     }
 
     // TODO: Move theese methods into a separate class?
-    public getRegularAddress(chainId: string): string {
+    public getRegularAddress(chainId: string, account: number = 0): string {
         this.requireAuth();
 
-        const coin = this.hdWallet.getCoin(CoinType[chainId], 0);
+        const coin = this.hdWallet.getCoin(CoinType[chainId], account);
 
         return coin.getAddress();
     }
 
-    public getRegularPrivateKey(chainId: string, password: string): string {
+    public getRegularPrivateKey(chainId: string, accountIndex: number, password: string): string {
         this.unlockAccount(password);
 
-        const coin = this.hdWallet.getCoin(CoinType[chainId], 0);
+        const coin = this.hdWallet.getCoin(CoinType[chainId], accountIndex);
 
         return coin.getPrivateKey();
     }
@@ -121,16 +121,19 @@ export default class Account {
         return this.hdWallet.getBalances();
     }
 
-    public getBalance(chainId: string): Promise<string> {
+    public async getBalance(chainId: string, account: number = 0): Promise<[string, string]> {
         this.requireAuth();
+        const coin = this.hdWallet.getCoin(CoinType[chainId], account);
+        const balance = await coin.getBalance();
+        const readable = await coin.fromBaseUnit(balance);
 
-        return this.hdWallet.getCoin(CoinType[chainId], 0).getBalance();
+        return [balance, readable];
     }
 
-    public async transfer(chainId: string, to: string, amount: string): Promise<void> {
+    public async transfer(chainId: string, account: number, to: string, amount: string): Promise<void> {
         this.requireAuth();
 
-        const coin = this.hdWallet.getCoin(CoinType[chainId], 0);
+        const coin = this.hdWallet.getCoin(CoinType[chainId], account);
         await coin.transfer(to, amount);
     }
     // TODO: END

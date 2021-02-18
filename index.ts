@@ -37,19 +37,19 @@ jQuery(function ($) {
 
     function help() {
         // TODO: Better help
-        const help = `[[;gray;]Available commands:
+        const help = `Available commands:
     set-seed <seedPhrase> <password> - replace the seed phrase for the current account
     get-seed <password> - print the seed phrase for the current account
     gen-seed - generate and print a new seed phrase
-    get-address <chainId> - derive and print a new address with specified coin_type
-    get-private-key <chainId> <password> - print the private key for the current NEAR account
-    get-balance <chainId> - fetch and print account balance
+    get-address <chainId> [account index] - derive and print a new address with specified coin_type
+    get-private-key <chainId> <account index> <password> - print the private key for the current NEAR account
+    get-balance <chainId> [account index] - fetch and print account balance
     unlock <password> - unlock the current account if was locked by a timeout
-    transfer <chainId> <to> <amount> - transfer <chainId> token
+    transfer <chainId> <account index> <to> <amount> - transfer <chainId> token, <amount> in base units (e.g.: yoctoNEAR, Wei)
     transfer-private <chainId> <from> <to> <amount> - unimplemented
     clear - clear terminal
     reset - reset console state
-    help - print help message]`;
+    help - print help message`;
         this.echo(help);
     }
 
@@ -65,17 +65,17 @@ jQuery(function ($) {
             const seed = generateMnemonic();
             this.echo(`[[;gray;]Generated mnemonic: ${seed}]`);
         },
-        'get-address': function (chainId) {
-            const address = account.getRegularAddress(chainId);
+        'get-address': function (chainId, accountIndex = 0) {
+            const address = account.getRegularAddress(chainId, accountIndex);
             this.echo(`[[;gray;]Address: ${address}]`);
         },
-        'get-private-key': function (chainId, password) {
-            const seed = account.getRegularPrivateKey(chainId, password);
+        'get-private-key': function (chainId, accountIndex, password) {
+            const seed = account.getRegularPrivateKey(chainId, password, accountIndex);
             this.echo(`[[;gray;]Seed phrase: ${seed}]`);
         },
-        'get-balance': async function (chainId) {
-            const balance = await account.getBalance(chainId);
-            this.echo(`[[;gray;]Balance: ${balance}]`);
+        'get-balance': async function (chainId, accountIndex = 0) {
+            const [balance, readable] = await account.getBalance(chainId, accountIndex);
+            this.echo(`[[;gray;]Balance: ${readable} (${balance})]`);
         },
         'get-balances': async function () {
             const balances = await account.getBalances();
@@ -87,8 +87,8 @@ jQuery(function ($) {
 
             this.echo(`[[;gray;]Balances:\n${buf}]`);
         },
-        'transfer': async function (chainId, to, amount) {
-            await account.transfer(chainId, to, amount);
+        'transfer': async function (chainId, accountIndex, to, amount) {
+            await account.transfer(chainId, accountIndex, to, amount);
         },
         'transfer-private': function () {
             throw new Error('unimplemented');
