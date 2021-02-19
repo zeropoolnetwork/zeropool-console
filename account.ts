@@ -55,6 +55,7 @@ export default class Account {
     public async login(seed: string, password: string) {
         this.storage.set(this.accountName, 'seed', await AES.encrypt(seed, password).toString());
         this.storage.set(this.accountName, 'pwHash', await bcrypt.hash(password, await bcrypt.genSalt(10)));
+        this.hdWallet = new HDWallet(seed, this.config, COINS);
 
         this.setAccountTimeout(LOCK_TIMEOUT);
     }
@@ -73,7 +74,7 @@ export default class Account {
         this.checkPassword(password);
 
         const seed = this.decryptSeed(password);
-        this.hdWallet = new HDWallet(seed, this.config, COINS)
+        this.hdWallet = new HDWallet(seed, this.config, COINS);
     }
 
     public checkPassword(password: String) {
