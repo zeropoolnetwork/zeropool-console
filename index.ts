@@ -41,12 +41,13 @@ jQuery(function ($) {
     set-seed <seedPhrase> <password> - replace the seed phrase for the current account
     get-seed <password> - print the seed phrase for the current account
     gen-seed - generate and print a new seed phrase
-    get-address <chainId> [account index] - derive and print a new address with specified coin_type
-    get-private-key <chainId> <account index> <password> - print the private key for the current NEAR account
-    get-balance <chainId> [account index] - fetch and print account balance
+    get-address <chain id> [account index] - derive and print a new address with specified coin_type
+    get-private-key <chain id> <account index> <password> - print the private key for the current NEAR account
+    get-balance <chain id> [account index] - fetch and print account balance
+    get-balances <account index> - print balances for all
     unlock <password> - unlock the current account if was locked by a timeout
-    transfer <chainId> <account index> <to> <amount> - transfer <chainId> token, <amount> in base units (e.g.: yoctoNEAR, Wei)
-    transfer-private <chainId> <from> <to> <amount> - unimplemented
+    transfer <chain id> <account index> <to> <amount> - transfer <chain id> token, <amount> in base units (e.g.: yoctoNEAR, Wei)
+    transfer-private <chain id> <from> <to> <amount> - unimplemented
     clear - clear terminal
     reset - reset console state
     help - print help message`;
@@ -85,7 +86,7 @@ jQuery(function ($) {
                 buf += `    ${CoinType[coinType]}: ${balance}\n`;
             }
 
-            this.echo(`[[;gray;]Balances:\n${buf}]`);
+            this.echo(`Balances:\n${buf}`);
         },
         'transfer': async function (chainId: string, accountIndex: string, to: string, amount: string) {
             await account.transfer(chainId, parseInt(accountIndex), to, amount);
