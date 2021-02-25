@@ -8,7 +8,7 @@ import { CoinType } from 'zeropool-api-js';
 import Account, { Env } from './account';
 
 // TODO: Better state management
-let account: Account = null;
+let account: Account | null = null;
 
 const PRIVATE_COMMANDS = [
     'set-seed',
@@ -54,10 +54,10 @@ jQuery(function ($) {
     }
 
     const commands = {
-        'set-seed': async function (seed, password) {
+        'set-seed': async function (seed: string, password: string) {
             await account.login(seed, password);
         },
-        'get-seed': function (password) {
+        'get-seed': function (password: string) {
             const seed = account.getSeed(password);
             this.echo(`[[;gray;]Seed phrase: ${seed}]`);
         },
@@ -65,16 +65,16 @@ jQuery(function ($) {
             const seed = generateMnemonic();
             this.echo(`[[;gray;]Generated mnemonic: ${seed}]`);
         },
-        'get-address': function (chainId, accountIndex = 0) {
-            const address = account.getRegularAddress(chainId, accountIndex);
+        'get-address': function (chainId: string, accountIndex: string = '0') {
+            const address = account.getRegularAddress(chainId, parseInt(accountIndex));
             this.echo(`[[;gray;]Address: ${address}]`);
         },
-        'get-private-key': function (chainId, accountIndex, password) {
-            const seed = account.getRegularPrivateKey(chainId, password, accountIndex);
-            this.echo(`[[;gray;]Seed phrase: ${seed}]`);
+        'get-private-key': function (chainId: string, accountIndex: string, password: string) {
+            const seed = account.getRegularPrivateKey(chainId, parseInt(accountIndex), password);
+            this.echo(`[[;gray;]Private key: ${seed}]`);
         },
-        'get-balance': async function (chainId, accountIndex = 0) {
-            const [balance, readable] = await account.getBalance(chainId, accountIndex);
+        'get-balance': async function (chainId: string, accountIndex: string = '0') {
+            const [balance, readable] = await account.getBalance(chainId, parseInt(accountIndex));
             this.echo(`[[;gray;]Balance: ${readable} (${balance})]`);
         },
         'get-balances': async function () {
@@ -87,8 +87,8 @@ jQuery(function ($) {
 
             this.echo(`[[;gray;]Balances:\n${buf}]`);
         },
-        'transfer': async function (chainId, accountIndex, to, amount) {
-            await account.transfer(chainId, accountIndex, to, amount);
+        'transfer': async function (chainId: string, accountIndex: string, to: string, amount: string) {
+            await account.transfer(chainId, parseInt(accountIndex), to, amount);
         },
         'transfer-private': function () {
             throw new Error('unimplemented');
@@ -155,7 +155,7 @@ jQuery(function ($) {
                 } catch (e) {
                     this.error(e);
                 }
-            } while (account.isLocked());
+            } while (!account || account.isLocked());
 
             help.apply(this);
         },

@@ -23,7 +23,7 @@ class LocalAccountStorage implements AccountStorage {
     }
 }
 
-const COINS = { [CoinType.ethereum]: [0], [CoinType.near]: [0] };
+const ENABLED_COINS = [CoinType.ethereum, CoinType.near];
 
 export enum Env {
     Prod = 'prod',
@@ -55,7 +55,7 @@ export default class Account {
     public async login(seed: string, password: string) {
         this.storage.set(this.accountName, 'seed', await AES.encrypt(seed, password).toString());
         this.storage.set(this.accountName, 'pwHash', await bcrypt.hash(password, await bcrypt.genSalt(10)));
-        this.hdWallet = new HDWallet(seed, this.config, COINS);
+        this.hdWallet = new HDWallet(seed, this.config, ENABLED_COINS);
 
         this.setAccountTimeout(LOCK_TIMEOUT);
     }
@@ -74,7 +74,7 @@ export default class Account {
         this.checkPassword(password);
 
         const seed = this.decryptSeed(password);
-        this.hdWallet = new HDWallet(seed, this.config, COINS);
+        this.hdWallet = new HDWallet(seed, this.config, ENABLED_COINS);
     }
 
     public checkPassword(password: String) {
@@ -103,29 +103,29 @@ export default class Account {
     public getRegularAddress(chainId: string, account: number = 0): string {
         this.requireAuth();
 
-        const coin = this.hdWallet.getCoin(CoinType[chainId], account);
+        const coin = this.hdWallet.getCoin(CoinType[chainId]);
 
-        return coin.getAddress();
+        return coin.getAddress(account);
     }
 
     public getRegularPrivateKey(chainId: string, accountIndex: number, password: string): string {
         this.unlockAccount(password);
 
-        const coin = this.hdWallet.getCoin(CoinType[chainId], accountIndex);
+        const coin = this.hdWallet.getCoin(CoinType[chainId]);
 
-        return coin.getPrivateKey();
+        return coin.getPrivateKey(accountIndex);
     }
 
     public async getBalances(): Promise<{ [key in CoinType]?: string }> {
         this.requireAuth();
 
-        return this.hdWallet.getBalances();
+        return this.hdWallet.getBalances(0); // FIXME: for all accounts
     }
 
     public async getBalance(chainId: string, account: number = 0): Promise<[string, string]> {
         this.requireAuth();
-        const coin = this.hdWallet.getCoin(CoinType[chainId], account);
-        const balance = await coin.getBalance();
+        const coin = this.hdWallet.getCoin(CoinType[chainId]);
+        const balance = await coin.getBalance(account);
         const readable = await coin.fromBaseUnit(balance);
 
         return [balance, readable];
@@ -134,8 +134,8 @@ export default class Account {
     public async transfer(chainId: string, account: number, to: string, amount: string): Promise<void> {
         this.requireAuth();
 
-        const coin = this.hdWallet.getCoin(CoinType[chainId], account);
-        await coin.transfer(to, amount);
+        const coin = this.hdWallet.getCoin(CoinType[chainId]);
+        await coin.transfer(account, to, amount);
     }
     // TODO: END
 
