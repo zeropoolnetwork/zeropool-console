@@ -1,3 +1,5 @@
+import 'regenerator-runtime/runtime';
+
 import jQuery from 'jquery';
 import initTerminal from 'jquery.terminal';
 import initAutocomplete from 'jquery.terminal/js/autocomplete_menu';
@@ -8,7 +10,7 @@ import { CoinType } from 'zeropool-api-js';
 import Account, { Env } from './account';
 
 // TODO: Better state management
-let account: Account | null = null;
+let account: Account;
 
 const PRIVATE_COMMANDS = [
     'set-seed',
@@ -31,6 +33,8 @@ const ALL_COMMANDS = [
     'help',
 ];
 
+const GREETING = '[[;green;]ZeroPool console]';
+
 jQuery(function ($) {
     initTerminal($);
     initAutocomplete($);
@@ -41,13 +45,14 @@ jQuery(function ($) {
     set-seed <seedPhrase> <password> - replace the seed phrase for the current account
     get-seed <password> - print the seed phrase for the current account
     gen-seed - generate and print a new seed phrase
-    get-address <chain id> [account index] - derive and print a new address with specified coin_type
-    get-private-key <chain id> <account index> <password> - print the private key for the current NEAR account
-    get-balance <chain id> [account index] - fetch and print account balance
+    get-address <coin type> [account index] - derive a new address with specified coin type
+    get-private-address <coin type> [account index] - generate a new private address
+    get-private-key <coin type> <account index> <password> - print the private key for the current NEAR account
+    get-balance <coin type> [account index] - fetch and print account balance
     get-balances <account index> - print balances for all
     unlock <password> - unlock the current account if was locked by a timeout
-    transfer <chain id> <account index> <to> <amount> - transfer <chain id> token, <amount> in base units (e.g.: yoctoNEAR, Wei)
-    transfer-private <chain id> <from> <to> <amount> - unimplemented
+    transfer <coin type> <account index> <to> <amount> - transfer <coin type> token, <amount> in base units (e.g.: yoctoNEAR, Wei)
+    transfer-private <coin type> <from> <to> <amount> - unimplemented
     clear - clear terminal
     reset - reset console state
     help - print help message`;
@@ -70,6 +75,10 @@ jQuery(function ($) {
             const address = account.getRegularAddress(chainId, parseInt(accountIndex));
             this.echo(`[[;gray;]Address: ${address}]`);
         },
+        'get-private-address': function (chainId: string, accountIndex: string = '0') {
+            const address = account.getPrivateAddress(chainId, parseInt(accountIndex));
+            this.echo(`[[;gray;]Private address: ${address}]`);
+        },
         'get-private-key': function (chainId: string, accountIndex: string, password: string) {
             const seed = account.getRegularPrivateKey(chainId, parseInt(accountIndex), password);
             this.echo(`[[;gray;]Private key: ${seed}]`);
@@ -82,8 +91,12 @@ jQuery(function ($) {
             const balances = await account.getBalances();
             let buf = '';
 
-            for (const [coinType, balance] of Object.entries(balances)) {
-                buf += `    ${CoinType[coinType]}: ${balance}\n`;
+            for (const [coinType, coinBalances] of Object.entries(balances)) {
+                buf += `    ${CoinType[coinType]}:\n`;
+
+                for (const balance of coinBalances) {
+                    buf += `        ${balance.address}: ${balance.balance}\n`;
+                }
             }
 
             this.echo(`Balances:\n${buf}`);
@@ -108,7 +121,7 @@ jQuery(function ($) {
     };
 
     const options = {
-        greetings: '[[;green;]ZeroPool interactive CLI]',
+        greetings: GREETING,
         checkArity: false,
         processArguments: false,
         wordAutocomplete: false,
@@ -158,6 +171,8 @@ jQuery(function ($) {
                 }
             } while (!account || account.isLocked());
 
+            this.clear();
+            this.echo(GREETING);
             help.apply(this);
         },
         prompt: function () {

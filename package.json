@@ -5,10 +5,10 @@
   "author": "Dmitry Vdovin <voidxnull@gmail.com>",
   "homepage": "https://github.com/zeropoolnetwork/zeropool-console",
   "scripts": {
-    "build": "parcel build index.html",
-    "build-gh": "parcel build index.html --public-url /zeropool-console",
-    "clean": "rm -rf dist",
-    "dev": "parcel serve index.html",
+    "dev": "webpack serve --mode=development --progress",
+    "build": "webpack",
+    "build:prod": "webpack --config webpack.config.prod.js",
+    "build-gh": "ASSET_PATH=/zeropool-console webpack --config webpack.config.prod.js",
     "predeploy": "yarn build-gh",
     "deploy": "gh-pages -d dist"
   },
@@ -19,11 +19,17 @@
     "crypto-js": "^4.0.0",
     "jquery": "^3.5.1",
     "jquery.terminal": "^2.18.3",
-    "zeropool-api-js": "zeropoolnetwork/zeropool-api-js"
+    "zeropool-api-js": "../zeropool-api-js"
   },
   "devDependencies": {
+    "clean-webpack-plugin": "^3.0.0",
     "gh-pages": "^3.1.0",
-    "parcel": "^1.12.4",
-    "typescript": "^4.1.2"
+    "html-webpack-plugin": "^5.3.1",
+    "tsconfig-paths-webpack-plugin": "^3.5.1",
+    "typescript": "^4.1.2",
+    "webpack": "^5.28.0",
+    "webpack-cli": "^4.6.0",
+    "webpack-dev-server": "^3.11.2",
+    "webpack-merge": "^5.7.3"
   }
 }

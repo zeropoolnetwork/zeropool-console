@@ -2,7 +2,7 @@ import AES from 'crypto-js/aes';
 import Utf8 from 'crypto-js/enc-utf8';
 import bcrypt from 'bcryptjs';
 
-import { HDWallet, CoinType } from 'zeropool-api-js';
+import { HDWallet, CoinType, Balance } from 'zeropool-api-js';
 import { Config } from 'zeropool-api-js/lib/config';
 import devConfig from 'zeropool-api-js/src/config.dev';
 import prodConfig from 'zeropool-api-js/src/config.prod';
@@ -10,12 +10,12 @@ import prodConfig from 'zeropool-api-js/src/config.prod';
 const LOCK_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
 interface AccountStorage {
-    get(accountName: string, field: string): string;
+    get(accountName: string, field: string): string | null;
     set(accountName: string, field: string, value: string);
 }
 
 class LocalAccountStorage implements AccountStorage {
-    get(accountName: string, field: string): string {
+    get(accountName: string, field: string): string | null {
         return localStorage.getItem(`zconsole.${accountName}.${field}`);
     }
     set(accountName: string, field: string, value: string) {
@@ -23,7 +23,7 @@ class LocalAccountStorage implements AccountStorage {
     }
 }
 
-const ENABLED_COINS = [CoinType.ethereum, CoinType.near];
+const ENABLED_COINS = [CoinType.ethereum, CoinType.near, CoinType.waves];
 
 export enum Env {
     Prod = 'prod',
@@ -35,7 +35,7 @@ export default class Account {
     private lockTimeout?: ReturnType<typeof setTimeout>;
     readonly accountName: string;
     private storage: AccountStorage;
-    private hdWallet?: HDWallet;
+    private hdWallet: HDWallet;
     private config: Config;
 
     constructor(accountName: string, env: Env) {
@@ -103,28 +103,36 @@ export default class Account {
     public getRegularAddress(chainId: string, account: number = 0): string {
         this.requireAuth();
 
-        const coin = this.hdWallet.getCoin(CoinType[chainId]);
+        const coin = this.hdWallet.getCoin(chainId as CoinType);
 
         return coin.getAddress(account);
+    }
+
+    public getPrivateAddress(chainId: string, account: number = 0): string {
+        this.requireAuth();
+
+        const coin = this.hdWallet.getCoin(chainId as CoinType);
+
+        return coin.generatePrivateAddress(account);
     }
 
     public getRegularPrivateKey(chainId: string, accountIndex: number, password: string): string {
         this.unlockAccount(password);
 
-        const coin = this.hdWallet.getCoin(CoinType[chainId]);
+        const coin = this.hdWallet.getCoin(chainId as CoinType);
 
         return coin.getPrivateKey(accountIndex);
     }
 
-    public async getBalances(): Promise<{ [key in CoinType]?: string }> {
+    public async getBalances(): Promise<{ [key in CoinType]?: Balance[] }> {
         this.requireAuth();
 
-        return this.hdWallet.getBalances(0); // FIXME: for all accounts
+        return this.hdWallet.getBalances(5);
     }
 
     public async getBalance(chainId: string, account: number = 0): Promise<[string, string]> {
         this.requireAuth();
-        const coin = this.hdWallet.getCoin(CoinType[chainId]);
+        const coin = this.hdWallet.getCoin(chainId as CoinType);
         const balance = await coin.getBalance(account);
         const readable = await coin.fromBaseUnit(balance);
 
@@ -134,7 +142,7 @@ export default class Account {
     public async transfer(chainId: string, account: number, to: string, amount: string): Promise<void> {
         this.requireAuth();
 
-        const coin = this.hdWallet.getCoin(CoinType[chainId]);
+        const coin = this.hdWallet.getCoin(chainId as CoinType);
         await coin.transfer(account, to, amount);
     }
     // TODO: END
