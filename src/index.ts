@@ -1,11 +1,13 @@
-import 'regenerator-runtime/runtime';
-
 import jQuery from 'jquery';
-import initTerminal from 'jquery.terminal';
-import initAutocomplete from 'jquery.terminal/js/autocomplete_menu';
+// @ts-ignore
+import initTerminal from 'imports-loader?additionalCode=var%20define=false;!jquery.terminal';
+// @ts-ignore
+import initAutocomplete from 'imports-loader?additionalCode=var%20define=false;!jquery.terminal/js/autocomplete_menu';
 import bip39 from 'bip39-light';
 import { generateMnemonic } from 'zeropool-api-js/lib/utils';
 import { CoinType } from 'zeropool-api-js';
+
+import './styles.css';
 
 import Account, { Env } from './account';
 
@@ -184,5 +186,7 @@ jQuery(function ($) {
         },
     };
 
+    // jquery.terminal doesn't have proper type definitions for async callbacks
+    // @ts-ignore
     $('#terminal').terminal(commands, options);
 });

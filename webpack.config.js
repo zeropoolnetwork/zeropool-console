@@ -1,10 +1,12 @@
 const path = require('path');
+const webpack = require('webpack');
 const CleanWebpackPlugin = require('clean-webpack-plugin').CleanWebpackPlugin;
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const ASSET_PATH = process.env.ASSET_PATH || '/';
 
 module.exports = {
+  mode: 'development',
   entry: './src/index.ts',
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -13,6 +15,18 @@ module.exports = {
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
+    fallback: {
+      'http': require.resolve('stream-http'),
+      'https': require.resolve('https-browserify'),
+      'crypto': require.resolve('crypto-browserify'),
+      'os': require.resolve('os-browserify/browser'),
+      'path': require.resolve('path-browserify'),
+      'fs': false,
+    },
+    alias: {
+      process: 'process/browser.js',
+      stream: 'stream-browserify',
+    }
   },
   devServer: {
     contentBase: 'dist',
@@ -26,6 +40,14 @@ module.exports = {
         use: 'ts-loader',
         exclude: /node_modules/,
       },
+      {
+        test: /\.css$/i,
+        use: ['style-loader', 'css-loader'],
+      },
+      // {
+      //   test: /\.wasm$/i,
+      //   type: 'asset/resource',
+      // },
     ],
   },
   plugins: [
@@ -40,5 +62,15 @@ module.exports = {
         useShortDoctype: true,
       },
     }),
+    new webpack.DefinePlugin({
+      'process.env.NODE_DEBUG': JSON.stringify(process.env.NODE_DEBUG),
+    }),
+    new webpack.ProvidePlugin({
+      Buffer: ['buffer', 'Buffer'],
+      process: 'process'
+    })
   ],
+  experiments: {
+    syncWebAssembly: true,
+  }
 };

@@ -2,10 +2,8 @@ import AES from 'crypto-js/aes';
 import Utf8 from 'crypto-js/enc-utf8';
 import bcrypt from 'bcryptjs';
 
-import { HDWallet, CoinType, Balance } from 'zeropool-api-js';
+import { HDWallet, CoinType, Balance, devConfig, prodConfig } from 'zeropool-api-js';
 import { Config } from 'zeropool-api-js/lib/config';
-import devConfig from 'zeropool-api-js/src/config.dev';
-import prodConfig from 'zeropool-api-js/src/config.prod';
 
 const LOCK_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
