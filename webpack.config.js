@@ -21,6 +21,7 @@ module.exports = {
       'crypto': require.resolve('crypto-browserify'),
       'os': require.resolve('os-browserify/browser'),
       'path': require.resolve('path-browserify'),
+      'assert': require.resolve('assert'),
       'fs': false,
     },
     alias: {
@@ -44,9 +45,14 @@ module.exports = {
         test: /\.css$/i,
         use: ['style-loader', 'css-loader'],
       },
+      {
+        test: /\.wasm$/,
+        type: 'webassembly/async',
+      },
       // {
-      //   test: /\.wasm$/i,
-      //   type: 'asset/resource',
+      //   test: /\.js$/,
+      //   enforce: 'pre',
+      //   use: ['source-map-loader'],
       // },
     ],
   },
@@ -71,6 +77,6 @@ module.exports = {
     })
   ],
   experiments: {
-    syncWebAssembly: true,
+    asyncWebAssembly: true,
   }
 };
