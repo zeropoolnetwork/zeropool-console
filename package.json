@@ -8,7 +8,7 @@
     "dev": "webpack serve --mode=development --progress",
     "build": "webpack",
     "build:prod": "webpack --config webpack.config.prod.js",
-    "build-gh": "ASSET_PATH=/zeropool-console webpack --config webpack.config.prod.js",
+    "build-gh": "ASSET_PATH=/zeropool-console/ webpack --config webpack.config.prod.js",
     "predeploy": "yarn build-gh",
     "deploy": "gh-pages -d dist"
   },
@@ -23,6 +23,7 @@
     "https-browserify": "^1.0.0",
     "jquery": "^3.5.1",
     "jquery.terminal": "^2.18.3",
+    "libzeropool-wasm": "../libzeropool-wasm",
     "os-browserify": "^0.3.0",
     "path-browserify": "^1.0.1",
     "process": "^0.11.10",

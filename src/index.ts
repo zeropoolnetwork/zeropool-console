@@ -6,6 +6,7 @@ import initAutocomplete from 'imports-loader?additionalCode=var%20define=false;!
 import bip39 from 'bip39-light';
 import { generateMnemonic } from 'zeropool-api-js/lib/utils';
 import { CoinType } from 'zeropool-api-js';
+import { testPoseidonMerkleRoot } from 'libzeropool-wasm';
 
 import './styles.css';
 
@@ -57,6 +58,7 @@ jQuery(function ($) {
     transfer-private <coin type> <from> <to> <amount> - unimplemented
     clear - clear terminal
     reset - reset console state
+    test - testCircuitPoseidonMerkleRoot
     help - print help message`;
         this.echo(help);
     }
@@ -118,6 +120,15 @@ jQuery(function ($) {
         'reset': function () {
             account = null;
             this.reset();
+        },
+        'test': function () {
+            testPoseidonMerkleRoot((msg: String, time: number) => {
+                if (time) {
+                    this.echo(`${msg} (${time}s)`);
+                } else {
+                    this.echo(msg);
+                }
+            });
         },
         help,
     };
