@@ -3650,10 +3650,7 @@ kind-of@^6.0.0, kind-of@^6.0.2:
   resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-6.0.3.tgz#07c05034a6c349fa06e24fa35aa76db4580ce4dd"
   integrity sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw==
 
-libzeropool-wasm@../libzeropool-wasm:
-  version "0.1.7"
-
-libzeropool-wasm@^0.1.6:
+libzeropool-wasm@^0.1.6, libzeropool-wasm@^0.1.7:
   version "0.1.7"
   resolved "https://registry.yarnpkg.com/libzeropool-wasm/-/libzeropool-wasm-0.1.7.tgz#29c0a927d66f38977b36409115b39c5957f4aa5a"
   integrity sha512-sJcm0XQdHO7F7p/+l85RVKP1GLh6D3wblS5YvNYu7SmzhW9DzEl0UDB0mfEwY7Gd7fZKE55otqEquXlIqKEhGg==
