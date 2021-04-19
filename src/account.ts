@@ -106,12 +106,12 @@ export default class Account {
         return coin.getAddress(account);
     }
 
-    public getPrivateAddress(chainId: string, account: number = 0): string {
+    public getPrivateAddress(chainId: string): string {
         this.requireAuth();
 
         const coin = this.hdWallet.getCoin(chainId as CoinType);
 
-        return coin.generatePrivateAddress(account);
+        return coin.generatePrivateAddress();
     }
 
     public getRegularPrivateKey(chainId: string, accountIndex: number, password: string): string {

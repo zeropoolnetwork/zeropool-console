@@ -49,7 +49,7 @@ jQuery(function ($) {
     get-seed <password> - print the seed phrase for the current account
     gen-seed - generate and print a new seed phrase
     get-address <coin type> [account index] - derive a new address with specified coin type
-    gen-private-address <coin type> [account index] - generate a new private address
+    gen-private-address <coin type> - generate a new private address
     get-private-key <coin type> <account index> <password> - print the private key for the current NEAR account
     get-balance <coin type> [account index] - fetch and print account balance
     get-balances <account index> - print balances for all
@@ -79,9 +79,9 @@ jQuery(function ($) {
             const address = account.getRegularAddress(chainId, parseInt(accountIndex));
             this.echo(`[[;gray;]Address: ${address}]`);
         },
-        'gen-private-address': function (chainId: string, accountIndex: string = '0') {
-            const address = account.getPrivateAddress(chainId, parseInt(accountIndex));
-            this.echo(`[[;gray;]Private address: ${address}]`);
+        'gen-private-address': function (chainId: string) {
+            const address = account.getPrivateAddress(chainId);
+            this.echo(`[[;gray;]${address}]`);
         },
         'get-private-key': function (chainId: string, accountIndex: string, password: string) {
             const seed = account.getRegularPrivateKey(chainId, parseInt(accountIndex), password);
