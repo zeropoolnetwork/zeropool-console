@@ -34,6 +34,7 @@ module.exports = {
     compress: true,
     port: 3000,
   },
+  devtool: 'eval-source-map',
   module: {
     rules: [
       {
@@ -49,11 +50,15 @@ module.exports = {
         test: /\.wasm$/,
         type: 'webassembly/async',
       },
-      // {
-      //   test: /\.js$/,
-      //   enforce: 'pre',
-      //   use: ['source-map-loader'],
-      // },
+      {
+        test: /\.js$/,
+        enforce: 'pre',
+        use: ['source-map-loader'],
+      },
+      {
+        test: /\.bin/,
+        type: 'asset/resource'
+      },
     ],
   },
   plugins: [
@@ -78,5 +83,6 @@ module.exports = {
   ],
   experiments: {
     asyncWebAssembly: true,
-  }
+  },
+  ignoreWarnings: [/Failed to parse source map/],
 };

@@ -6,7 +6,6 @@ import initAutocomplete from 'imports-loader?additionalCode=var%20define=false;!
 import bip39 from 'bip39-light';
 import { generateMnemonic } from 'zeropool-api-js/lib/utils';
 import { CoinType } from 'zeropool-api-js';
-import { testPoseidonMerkleRoot } from 'libzeropool-wasm';
 
 import './styles.css';
 
@@ -55,7 +54,10 @@ jQuery(function ($) {
     get-balances <account index> - print balances for all
     unlock <password> - unlock the current account if was locked by a timeout
     transfer <coin type> <account index> <to> <amount> - transfer <coin type> token, <amount> in base units (e.g.: yoctoNEAR, Wei)
-    transfer-private <coin type> <from> <to> <amount> - unimplemented
+    transfer-private <coin type> <account> <to> <amount>
+    deposit-private <coin type> <account> <amount>
+    withdraw-private <coin type> <account> <amount>
+    make-private-tx <coin type> <to> <amount>
     clear - clear terminal
     reset - reset console state
     test - testCircuitPoseidonMerkleRoot
@@ -83,12 +85,12 @@ jQuery(function ($) {
             const address = account.getPrivateAddress(chainId);
             this.echo(`[[;gray;]${address}]`);
         },
-        'get-private-key': function (chainId: string, accountIndex: string, password: string) {
-            const seed = account.getRegularPrivateKey(chainId, parseInt(accountIndex), password);
+        'get-private-key': async function (chainId: string, accountIndex: string, password: string) {
+            const seed = await account.getRegularPrivateKey(chainId, parseInt(accountIndex), password);
             this.echo(`[[;gray;]Private key: ${seed}]`);
         },
         'get-balance': async function (chainId: string, accountIndex: string = '0') {
-            const [balance, readable] = await account.getBalance(chainId, parseInt(accountIndex));
+            const [balance, readable] = await account.getBalance(chainId as CoinType, parseInt(accountIndex));
             this.echo(`[[;gray;]Balance: ${readable} (${balance})]`);
         },
         'get-balances': async function () {
@@ -108,11 +110,21 @@ jQuery(function ($) {
         'transfer': async function (chainId: string, accountIndex: string, to: string, amount: string) {
             await account.transfer(chainId, parseInt(accountIndex), to, amount);
         },
-        'transfer-private': function () {
-            throw new Error('unimplemented');
+        'transfer-private': async function (chainId: string, to: string, amount: string) {
+            await account.transferPrivate(chainId, 0, to, amount);
         },
-        'unlock': function (password) {
-            account.unlockAccount(password);
+        'deposit-private': async function (chainId: string, accountIndex: string, amount: string) {
+            await account.depositPrivate(chainId, parseInt(accountIndex), amount);
+        },
+        'withdraw-private': async function (chainId: string, accountIndex: string, amount: string) {
+            await account.withdrawPrivate(chainId, parseInt(accountIndex), amount);
+        },
+        'make-private-tx': function (chainId: string, to: string, amount: string) {
+            let tx = account.makePrivateTx(chainId, to, amount);
+            this.echo(tx);
+        },
+        'unlock': async function (password) {
+            await account.unlockAccount(password);
         },
         'clear': function () {
             this.clear();
@@ -120,15 +132,6 @@ jQuery(function ($) {
         'reset': function () {
             account = null;
             this.reset();
-        },
-        'test': function () {
-            testPoseidonMerkleRoot((msg: String, time: number) => {
-                if (time) {
-                    this.echo(`${msg} (${time}s)`);
-                } else {
-                    this.echo(msg);
-                }
-            });
         },
         help,
     };
@@ -161,7 +164,7 @@ jQuery(function ($) {
 
                     if (account.isAccountPresent()) {
                         const password = await this.read('Enter password: ');
-                        account.unlockAccount(password);
+                        await account.unlockAccount(password);
                     } else {
                         let seed = await this.read(`Enter seed phrase or leave empty to generate a new one: `);
 
