@@ -2,7 +2,8 @@ import AES from 'crypto-js/aes';
 import Utf8 from 'crypto-js/enc-utf8';
 import bcrypt from 'bcryptjs';
 
-import paramsUrl from '../assets/params.bin';
+import transferParamsUrl from '../assets/transfer_params.bin';
+import treeParamsUrl from '../assets/tree_update_params.bin';
 import { HDWallet, CoinType, Balance, devConfig, prodConfig } from 'zeropool-api-js';
 import { Config } from 'zeropool-api-js/lib/config';
 
@@ -50,10 +51,11 @@ export default class Account {
                 break;
         }
 
-        this.config.ethereum.contractAddress = '0xF0F6Aa84993071Bf92f26fC0c0DD33991f431851';
+        this.config.ethereum.contractAddress = '0x7d6748e900326c726C1daf6eD020D9dFc8fee2bA';
         this.config.ethereum.httpProviderUrl = 'http://127.0.0.1:8545';
 
-        this.config.paramsUrl = paramsUrl;
+        this.config.transferParamsUrl = transferParamsUrl;
+        this.config.treeParamsUrl = treeParamsUrl;
     }
 
     public async login(seed: string, password: string) {
@@ -156,7 +158,7 @@ export default class Account {
 
         const coin = this.hdWallet.getCoin(chainId as CoinType);
         await coin.updatePrivateState();
-        await coin.transferPrivateSimple(account, [{ to, amount }]);
+        await coin.transferPrivateToPrivate(account, [{ to, amount }]);
     }
 
     public async depositPrivate(chainId: string, account: number, amount: string): Promise<void> {

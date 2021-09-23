@@ -114,7 +114,9 @@ jQuery(function ($) {
             await account.transferPrivate(chainId, 0, to, amount);
         },
         'deposit-private': async function (chainId: string, accountIndex: string, amount: string) {
+            this.echo('Performing deposit');
             await account.depositPrivate(chainId, parseInt(accountIndex), amount);
+            this.echo('Done');
         },
         'withdraw-private': async function (chainId: string, accountIndex: string, amount: string) {
             await account.withdrawPrivate(chainId, parseInt(accountIndex), amount);
