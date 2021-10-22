@@ -7,6 +7,8 @@ import treeParamsUrl from '../assets/tree_update_params.bin';
 import { HDWallet, CoinType, Balance, devConfig, prodConfig } from 'zeropool-api-js';
 import { Config } from 'zeropool-api-js/lib/config';
 
+import addresses from '../../pool-evm-single-l1/addresses.json';
+
 const LOCK_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
 interface AccountStorage {
@@ -51,7 +53,8 @@ export default class Account {
                 break;
         }
 
-        this.config.ethereum.contractAddress = '0x7d6748e900326c726C1daf6eD020D9dFc8fee2bA';
+        this.config.ethereum.contractAddress = addresses.pool;
+        this.config.ethereum.tokenContractAddress = addresses.token;
         this.config.ethereum.httpProviderUrl = 'http://127.0.0.1:8545';
 
         this.config.transferParamsUrl = transferParamsUrl;
