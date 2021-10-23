@@ -2,8 +2,10 @@ import AES from 'crypto-js/aes';
 import Utf8 from 'crypto-js/enc-utf8';
 import bcrypt from 'bcryptjs';
 
-import transferParamsUrl from '../assets/transfer_params.bin';
-import treeParamsUrl from '../assets/tree_update_params.bin';
+import transferParamsUrl from '../assets/tx_params.bin';
+import treeParamsUrl from '../assets/tree_params.bin';
+import transferVk from '../assets/tx_vk.json';
+import treeVk from '../assets/tree_vk.json';
 import { HDWallet, CoinType, Balance, devConfig, prodConfig } from 'zeropool-api-js';
 import { Config } from 'zeropool-api-js/lib/config';
 
@@ -57,8 +59,10 @@ export default class Account {
         this.config.ethereum.tokenContractAddress = addresses.token;
         this.config.ethereum.httpProviderUrl = 'http://127.0.0.1:8545';
 
-        this.config.transferParamsUrl = transferParamsUrl;
-        this.config.treeParamsUrl = treeParamsUrl;
+        this.config.snarkParams.transferParamsUrl = transferParamsUrl;
+        this.config.snarkParams.treeParamsUrl = treeParamsUrl;
+        this.config.snarkParams.transferVk = transferVk;
+        this.config.snarkParams.treeVk = treeVk;
     }
 
     public async login(seed: string, password: string) {
