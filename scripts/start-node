@@ -1,0 +1,4 @@
+ #!/usr/bin/env bash
+
+cd ../pool-evm-single-l1
+./scripts/start.sh
