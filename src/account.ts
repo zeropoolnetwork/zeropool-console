@@ -25,7 +25,7 @@ class LocalAccountStorage implements AccountStorage {
     }
 }
 
-const ENABLED_COINS = [CoinType.ethereum, CoinType.near, CoinType.waves];
+const ENABLED_COINS = [CoinType.ethereum];
 
 export enum Env {
     Prod = 'prod',
@@ -66,7 +66,7 @@ export default class Account {
         this.storage.set(this.accountName, 'pwHash', await bcrypt.hash(password, await bcrypt.genSalt(10)));
         this.hdWallet = await HDWallet.init(seed, this.config, ENABLED_COINS);
 
-        this.setAccountTimeout(LOCK_TIMEOUT);
+        // this.setAccountTimeout(LOCK_TIMEOUT);
     }
 
     public isAccountPresent(): boolean {
@@ -84,6 +84,7 @@ export default class Account {
 
         const seed = this.decryptSeed(password);
         this.hdWallet = await HDWallet.init(seed, this.config, ENABLED_COINS);
+        console.log('done');
     }
 
     public checkPassword(password: String) {
@@ -93,7 +94,7 @@ export default class Account {
             throw new Error('Incorrect password');
         }
 
-        this.setAccountTimeout(LOCK_TIMEOUT);
+        // this.setAccountTimeout(LOCK_TIMEOUT);
     }
 
     public isLocked(): boolean {
@@ -105,7 +106,7 @@ export default class Account {
             throw Error('Account is locked. Unlock the account first');
         }
 
-        this.setAccountTimeout(LOCK_TIMEOUT);
+        // this.setAccountTimeout(LOCK_TIMEOUT);
     }
 
     public getRegularAddress(chainId: string, account: number = 0): string {
@@ -136,6 +137,14 @@ export default class Account {
         this.requireAuth();
 
         return this.hdWallet.getBalances(5);
+    }
+
+    public async getPrivateBalance(chainId: CoinType): Promise<string> {
+        this.requireAuth();
+        const coin = this.hdWallet.getCoin(chainId);
+        const balance = await coin.getPrivateBalance();
+
+        return balance;
     }
 
     public async getBalance(chainId: CoinType, account: number = 0): Promise<[string, string]> {

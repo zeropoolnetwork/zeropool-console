@@ -51,6 +51,7 @@ jQuery(function ($) {
     gen-private-address <coin type> - generate a new private address
     get-private-key <coin type> <account index> <password> - print the private key for the current NEAR account
     get-balance <coin type> [account index] - fetch and print account balance
+    get-private-balance <coin type> - get calculated private balance
     get-balances <account index> - print balances for all
     unlock <password> - unlock the current account if was locked by a timeout
     transfer <coin type> <account index> <to> <amount> - transfer <coin type> token, <amount> in base units (e.g.: yoctoNEAR, Wei)
@@ -92,6 +93,10 @@ jQuery(function ($) {
         'get-balance': async function (chainId: string, accountIndex: string = '0') {
             const [balance, readable] = await account.getBalance(chainId as CoinType, parseInt(accountIndex));
             this.echo(`[[;gray;]Balance: ${readable} (${balance})]`);
+        },
+        'get-private-balance': async function (chainId: string) {
+            const balance = await account.getPrivateBalance(chainId as CoinType);
+            this.echo(`[[;gray;]Private balance: ${balance}]`);
         },
         'get-balances': async function () {
             const balances = await account.getBalances();
@@ -151,7 +156,13 @@ jQuery(function ($) {
             const list = Object.values(Env).join(', ');
 
             // Environment prompt
-            let env = await this.read(`Choose environment (${list}): `);
+            // let env = await this.read(`Choose environment (${list}): `);
+
+            // if (!list.includes(env)) {
+            //     throw new Error(`Unknown environment: ${env}`);
+            // }
+
+            let env = 'dev' as Env;
 
             // Account prompt
             do {
@@ -195,9 +206,9 @@ jQuery(function ($) {
         },
         prompt: function () {
             if (account) {
-                return `${account.accountName}>`;
+                return `[[;gray;]${account.accountName}>]`;
             } else {
-                return '>';
+                return '[[;gray;]>]';
             }
         },
     };
