@@ -1,4 +1,7 @@
  #!/usr/bin/env bash
 
+export MOCK_TX_VERIFIER=false
+export MOCK_TREE_VERIFIER=false
+
 cd ../pool-evm-single-l1
 ./scripts/start.sh
