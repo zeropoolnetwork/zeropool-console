@@ -44,25 +44,24 @@ jQuery(function ($) {
     function help() {
         // TODO: Better help
         const help = `Available commands:
-    set-seed <seedPhrase> <password> - replace the seed phrase for the current account
-    get-seed <password> - print the seed phrase for the current account
-    gen-seed - generate and print a new seed phrase
-    get-address <coin type> [account index] - derive a new address with specified coin type
-    gen-private-address <coin type> - generate a new private address
-    get-private-key <coin type> <account index> <password> - print the private key for the current NEAR account
-    get-balance <coin type> [account index] - fetch and print account balance
-    get-private-balance <coin type> - get calculated private balance
-    get-balances <account index> - print balances for all
-    unlock <password> - unlock the current account if was locked by a timeout
-    transfer <coin type> <account index> <to> <amount> - transfer <coin type> token, <amount> in base units (e.g.: yoctoNEAR, Wei)
+    set-seed <seedPhrase> <password> [[;gray;]- replace the seed phrase for the current account]
+    get-seed <password> [[;gray;]- print the seed phrase for the current account]
+    gen-seed [[;gray;]- generate and print a new seed phrase]
+    get-address <coin type> [account index] [[;gray;]- derive a new address with specified coin type]
+    gen-private-address <coin type> [[;gray;]- generate a new private address]
+    get-private-key <coin type> <account index> <password> [[;gray;]- print the private key for the current NEAR account]
+    get-balance <coin type> [account index] [[;gray;]- fetch and print account balance]
+    get-private-balance <coin type> [[;gray;]- get calculated private balance]
+    get-balances <account index> [[;gray;]- print balances for all]
+    unlock <password> [[;gray;]- unlock the current account if was locked by a timeout]
+    transfer <coin type> <account index> <to> <amount> [[;gray;]- transfer <coin type> token, <amount> in base units (e.g.: yoctoNEAR, Wei)]
     transfer-private <coin type> <account> <to> <amount>
     deposit-private <coin type> <account> <amount>
     withdraw-private <coin type> <account> <amount>
     make-private-tx <coin type> <to> <amount>
-    clear - clear terminal
-    reset - reset console state
-    test - testCircuitPoseidonMerkleRoot
-    help - print help message`;
+    clear [[;gray;]- clear terminal]
+    reset [[;gray;]- reset console state]
+    help [[;gray;]- print help message]`;
         this.echo(help);
     }
 
