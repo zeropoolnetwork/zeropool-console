@@ -95,7 +95,7 @@ jQuery(function ($) {
         },
         'get-private-balance': async function (chainId: string) {
             const [total, acc, note] = await account.getPrivateBalances(chainId as CoinType);
-            this.echo(`[[;gray;]Private balance: ${total} (${acc} + ${note})]`);
+            this.echo(`[[;gray;]Private balance (total, account, notes): ${total} (${acc} + ${note})]`);
         },
         'get-balances': async function () {
             const balances = await account.getBalances();
@@ -115,15 +115,19 @@ jQuery(function ($) {
             await account.transfer(chainId, parseInt(accountIndex), to, amount);
         },
         'transfer-private': async function (chainId: string, accountIndex: number, to: string, amount: string) {
+            this.echo('Performing private transfer...');
             await account.transferPrivate(chainId, accountIndex, to, amount);
+            this.echo('Done');
         },
         'deposit-private': async function (chainId: string, accountIndex: string, amount: string) {
-            this.echo('Performing deposit');
+            this.echo('Performing private deposit...');
             await account.depositPrivate(chainId, parseInt(accountIndex), amount);
             this.echo('Done');
         },
         'withdraw-private': async function (chainId: string, accountIndex: string, amount: string) {
+            this.echo('Performing private withdraw...');
             await account.withdrawPrivate(chainId, parseInt(accountIndex), amount);
+            this.echo('Done');
         },
         'make-private-tx': function (chainId: string, to: string, amount: string) {
             let tx = account.makePrivateTx(chainId, to, amount);
