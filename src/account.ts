@@ -143,13 +143,13 @@ export default class Account {
         return this.hdWallet.getBalances(5);
     }
 
-    public async getPrivateBalance(chainId: CoinType): Promise<string> {
+    public async getPrivateBalances(chainId: CoinType): Promise<[string, string, string]> {
         this.requireAuth();
         const coin = this.hdWallet.getCoin(chainId);
         await coin.updatePrivateState();
-        const balance = await coin.getPrivateBalance();
+        const balances = await coin.getPrivateBalances();
 
-        return balance;
+        return balances;
     }
 
     public async getBalance(chainId: CoinType, account: number = 0): Promise<[string, string]> {

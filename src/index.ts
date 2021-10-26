@@ -95,8 +95,8 @@ jQuery(function ($) {
             this.echo(`[[;gray;]Balance: ${readable} (${balance})]`);
         },
         'get-private-balance': async function (chainId: string) {
-            const balance = await account.getPrivateBalance(chainId as CoinType);
-            this.echo(`[[;gray;]Private balance: ${balance}]`);
+            const [total, acc, note] = await account.getPrivateBalances(chainId as CoinType);
+            this.echo(`[[;gray;]Private balance: ${total} (${acc} + ${note})]`);
         },
         'get-balances': async function () {
             const balances = await account.getBalances();
