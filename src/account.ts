@@ -9,7 +9,7 @@ import treeVk from '../assets/tree_vk.json';
 import { HDWallet, CoinType, Balance, devConfig, prodConfig } from 'zeropool-api-js';
 import { Config } from 'zeropool-api-js/lib/config';
 
-import addresses from '../../pool-evm-single-l1/addresses.json';
+import addresses from '../deps/pool-evm-single-l1/addresses.json';
 
 const LOCK_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
