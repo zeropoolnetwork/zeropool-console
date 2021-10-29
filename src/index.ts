@@ -22,7 +22,7 @@ const PRIVATE_COMMANDS = [
   'unlock',
 ];
 
-const COMMANDS = {
+const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   'set-seed': [c.setSeed, '<seed phrase> <password>', 'replace the seed phrase for the current account'],
   'get-seed': [c.getSeed, '<password>', 'print the seed phrase for the current account'],
   'gen-seed': [c.genSeed, '', 'generate and print a new seed phrase'],
@@ -135,7 +135,7 @@ jQuery(function ($) {
 
       this.clear();
       this.echo(GREETING);
-      COMMANDS['help'][1][0].apply(this);
+      COMMANDS['help'][0].apply(this);
     },
     prompt: function () {
       if (account) {
