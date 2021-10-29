@@ -106,11 +106,11 @@ jQuery(function ($) {
             throw new Error('Account name cannot be empty');
           }
 
-          account = new Account(accountName, env);
+          this.account = new Account(accountName, env);
 
-          if (account.isAccountPresent()) {
+          if (this.account.isAccountPresent()) {
             const password = await this.read('Enter password: ');
-            await account.unlockAccount(password);
+            await this.account.unlockAccount(password);
           } else {
             let seed = await this.read(`Enter seed phrase or leave empty to generate a new one: `);
 
@@ -126,20 +126,20 @@ jQuery(function ($) {
               throw new Error('Password is too weak');
             }
 
-            await account.login(seed, password);
+            await this.account.login(seed, password);
           }
         } catch (e) {
           this.error(e);
         }
-      } while (!account || account.isLocked());
+      } while (!this.account || this.account.isLocked());
 
       this.clear();
       this.echo(GREETING);
       COMMANDS['help'][0].apply(this);
     },
     prompt: function () {
-      if (account) {
-        return `[[;gray;]${account.accountName}>] `;
+      if (this.account) {
+        return `[[;gray;]${this.account.accountName}>] `;
       } else {
         return '[[;gray;]>] ';
       }
