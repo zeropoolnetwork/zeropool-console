@@ -91,3 +91,13 @@ export function reset() {
     this.account = null;
     this.reset();
 }
+
+export function showState() {
+    const account: Account = this.account;
+    const data = account.hdWallet.getCoin(CoinType.ethereum)!.privateAccount.getWholeState();
+    console.log(data);
+
+    for (const [index, tx] of data.txs) {
+        this.echo(`${index}: ${JSON.stringify(tx)}`);
+    }
+}

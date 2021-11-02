@@ -39,6 +39,7 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   'withdraw-private': [c.withdrawPrivate, '<coin type> <account> <amount>', ''],
   'clear': [c.clear, '', 'clear terminal'],
   'reset': [c.reset, '', 'reset console state'],
+  'private-state': [c.showState, '', 'show internal state'],
   'help': [
     function () {
       const message = 'Available commands:\n' + Object.entries(COMMANDS)
