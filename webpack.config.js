@@ -22,6 +22,7 @@ module.exports = {
       'os': require.resolve('os-browserify/browser'),
       'path': require.resolve('path-browserify'),
       'assert': require.resolve('assert'),
+      'constants': require.resolve('constants-browserify'),
       'fs': false,
     },
     alias: {
@@ -48,7 +49,7 @@ module.exports = {
       },
       {
         test: /\.wasm$/,
-        type: 'webassembly/async',
+        type: 'asset/resource',
       },
       {
         test: /\.js$/,
@@ -58,6 +59,10 @@ module.exports = {
       {
         test: /\.bin/,
         type: 'asset/resource'
+      },
+      {
+        resourceQuery: /asset/,
+        type: 'asset/resource',
       },
     ],
   },
@@ -81,8 +86,5 @@ module.exports = {
       process: 'process'
     })
   ],
-  experiments: {
-    asyncWebAssembly: true,
-  },
   ignoreWarnings: [/Failed to parse source map/],
 };

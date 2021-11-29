@@ -1,13 +1,17 @@
 import AES from 'crypto-js/aes';
 import Utf8 from 'crypto-js/enc-utf8';
 import bcrypt from 'bcryptjs';
+import { HDWallet, CoinType, Balance, devConfig, prodConfig, init } from 'zeropool-api-js';
+// @ts-ignore
+import wasmPath from 'libzeropool-rs-wasm-web/libzeropool_rs_wasm_bg.wasm';
+// @ts-ignore
+import workerPath from 'zeropool-api-js/lib/worker.js?asset';
+import { Config } from 'zeropool-api-js/lib/config';
 
 import transferParamsUrl from '../assets/tx_params.bin';
 import treeParamsUrl from '../assets/tree_params.bin';
 import transferVk from '../assets/tx_vk.json';
 import treeVk from '../assets/tree_vk.json';
-import { HDWallet, CoinType, Balance, devConfig, prodConfig } from 'zeropool-api-js';
-import { Config } from 'zeropool-api-js/lib/config';
 
 import addresses from '../deps/pool-evm-single-l1/addresses.json';
 
@@ -63,6 +67,13 @@ export default class Account {
         this.config.snarkParams.treeParamsUrl = treeParamsUrl;
         this.config.snarkParams.transferVk = transferVk;
         this.config.snarkParams.treeVk = treeVk;
+        // @ts-ignore
+        this.config.wasmPath = wasmPath;
+        this.config.workerPath = workerPath;
+    }
+
+    public async init(): Promise<void> {
+        await init(wasmPath);
     }
 
     public async login(seed: string, password: string) {
@@ -192,16 +203,6 @@ export default class Account {
         const coin = this.hdWallet.getCoin(chainId as CoinType);
         await coin.updatePrivateState();
         await coin.withdrawPrivate(account, amount);
-    }
-
-    public async makePrivateTx(chainId: string, to: string, amount: string): Promise<string> {
-        this.requireAuth();
-
-        const coin = this.hdWallet.getCoin(chainId as CoinType);
-        await coin.updatePrivateState();
-        const tx = await coin.privateAccount.createTx('transfer', [{ to, amount }]);
-
-        return JSON.stringify(tx, null, 2);
     }
 
     private setAccountTimeout(ms: number) {

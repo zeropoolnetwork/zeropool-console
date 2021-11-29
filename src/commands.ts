@@ -92,9 +92,11 @@ export function reset() {
     this.reset();
 }
 
-export function showState() {
+export async function showState() {
     const account: Account = this.account;
-    const data = account.hdWallet.getCoin(CoinType.ethereum)!.privateAccount.getWholeState();
+    const coin = account.hdWallet.getCoin(CoinType.ethereum)!;
+    await coin.updatePrivateState();
+    const data = coin.privateAccount.getWholeState();
     console.log(data);
 
     for (const [index, tx] of data.txs) {

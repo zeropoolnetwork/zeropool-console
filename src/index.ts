@@ -4,8 +4,6 @@ import initTerminal from 'imports-loader?additionalCode=var%20define=false;!jque
 // @ts-ignore
 import initAutocomplete from 'imports-loader?additionalCode=var%20define=false;!jquery.terminal/js/autocomplete_menu';
 import bip39 from 'bip39-light';
-import { generateMnemonic } from 'zeropool-api-js/lib/utils';
-import { CoinType } from 'zeropool-api-js';
 
 import './styles.css';
 
@@ -67,9 +65,10 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
 
 const GREETING = '[[;green;]ZeroPool console]';
 
-jQuery(function ($) {
+jQuery(async function ($) {
   initTerminal($);
   initAutocomplete($);
+
 
   const commands = {};
 
@@ -108,6 +107,7 @@ jQuery(function ($) {
           }
 
           this.account = new Account(accountName, env);
+          await this.account.init();
 
           if (this.account.isAccountPresent()) {
             const password = await this.read('Enter password: ');
