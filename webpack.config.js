@@ -78,13 +78,13 @@ module.exports = {
         useShortDoctype: true,
       },
     }),
-    new webpack.DefinePlugin({
-      'process.env.NODE_DEBUG': JSON.stringify(process.env.NODE_DEBUG),
-    }),
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],
       process: 'process'
-    })
+    }),
+    new webpack.EnvironmentPlugin([
+      'CONTRACT_ADDRESS', 'TOKEN_ADDRESS', 'RELAYER_URL', 'EVM_RPC'
+    ]),
   ],
   ignoreWarnings: [/Failed to parse source map/],
 };

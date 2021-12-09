@@ -23,6 +23,7 @@
     "https-browserify": "^1.0.0",
     "jquery": "^3.5.1",
     "jquery.terminal": "^2.18.3",
+    "libzeropool-rs-wasm-web": "0.3.2",
     "os-browserify": "^0.3.0",
     "path-browserify": "^1.0.1",
     "process": "^0.11.10",

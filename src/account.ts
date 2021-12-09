@@ -8,12 +8,13 @@ import wasmPath from 'libzeropool-rs-wasm-web/libzeropool_rs_wasm_bg.wasm';
 import workerPath from 'zeropool-api-js/lib/worker.js?asset';
 import { Config } from 'zeropool-api-js/lib/config';
 
-import transferParamsUrl from '../assets/tx_params.bin';
-import treeParamsUrl from '../assets/tree_params.bin';
-import transferVk from '../assets/tx_vk.json';
-import treeVk from '../assets/tree_vk.json';
+import transferParamsUrl from '../assets/transfer_params.bin';
+import treeParamsUrl from '../assets/tree_update_params.bin';
+import transferVk from '../assets/transfer_verification_key.json';
+import treeVk from '../assets/tree_update_verification_key.json';
 
-import addresses from '../deps/pool-evm-single-l1/addresses.json';
+// 
+// import addresses from '../deps/pool-evm-single-l1/addresses.json';
 
 const LOCK_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
@@ -59,9 +60,10 @@ export default class Account {
                 break;
         }
 
-        this.config.ethereum.contractAddress = addresses.pool;
-        this.config.ethereum.tokenContractAddress = addresses.token;
-        this.config.ethereum.httpProviderUrl = 'http://127.0.0.1:8545';
+        this.config.ethereum.contractAddress = process.env.CONTRACT_ADDRESS;
+        this.config.ethereum.tokenContractAddress = process.env.TOKEN_ADDRESS;
+        this.config.ethereum.relayerUrl = process.env.RELAYER_URL;
+        this.config.ethereum.httpProviderUrl = process.env.EVM_RPC;
 
         this.config.snarkParams.transferParamsUrl = transferParamsUrl;
         this.config.snarkParams.treeParamsUrl = treeParamsUrl;

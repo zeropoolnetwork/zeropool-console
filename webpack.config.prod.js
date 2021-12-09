@@ -1,6 +1,7 @@
 const merge = require('webpack-merge').merge;
-
 const common = require('./webpack.config.js');
+
+common.module.rules = common.module.rules.filter(({ use }) => use !== 'ts-loader');
 
 module.exports = merge(common, {
   devtool: false,
