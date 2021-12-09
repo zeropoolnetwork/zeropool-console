@@ -1,0 +1,9 @@
+version: '3'
+services:
+  web:
+    image: zeropool-console
+    build: .
+    container_name: zeropool-console
+    restart: always
+    ports:
+      - "80:80"
