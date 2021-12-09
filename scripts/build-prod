@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+rm -rf dist
+
+export EVM_RPC='http://localhost:8545/'
+export RELAYER_URL='https://localhost'
+export TOKEN_ADDRESS=''
+export CONTRACT_ADDRESS=''
+
+yarn build:prod
