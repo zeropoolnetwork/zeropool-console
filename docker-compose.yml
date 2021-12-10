@@ -7,3 +7,8 @@ services:
     restart: always
     ports:
       - "80:80"
+    environment:
+      EVM_RPC: ${EVM_RPC}
+      RELAYER_URL: ${RELAYER_URL}
+      CONTRACT_ADDRESS: ${CONTRACT_ADDRESS}
+      TOKEN_ADDRESS: ${TOKEN_ADDRESS}

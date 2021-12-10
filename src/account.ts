@@ -60,10 +60,10 @@ export default class Account {
                 break;
         }
 
-        this.config.ethereum.contractAddress = process.env.CONTRACT_ADDRESS;
-        this.config.ethereum.tokenContractAddress = process.env.TOKEN_ADDRESS;
-        this.config.ethereum.relayerUrl = process.env.RELAYER_URL;
-        this.config.ethereum.httpProviderUrl = process.env.EVM_RPC;
+        this.config.ethereum.contractAddress = CONTRACT_ADDRESS;
+        this.config.ethereum.tokenContractAddress = TOKEN_ADDRESS;
+        this.config.ethereum.relayerUrl = RELAYER_URL;
+        this.config.ethereum.httpProviderUrl = EVM_RPC;
 
         this.config.snarkParams.transferParamsUrl = transferParamsUrl;
         this.config.snarkParams.treeParamsUrl = treeParamsUrl;

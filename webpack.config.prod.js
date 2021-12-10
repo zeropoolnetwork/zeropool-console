@@ -1,3 +1,4 @@
+const CompressionPlugin = require('compression-webpack-plugin');
 const merge = require('webpack-merge').merge;
 const common = require('./webpack.config.js');
 
@@ -17,5 +18,6 @@ module.exports = merge(common, {
         }
       }
     ],
-  }
+  },
+  plugins: [new CompressionPlugin()]
 });

@@ -81,9 +81,12 @@ module.exports = {
       Buffer: ['buffer', 'Buffer'],
       process: 'process'
     }),
-    new webpack.EnvironmentPlugin([
-      'CONTRACT_ADDRESS', 'TOKEN_ADDRESS', 'RELAYER_URL', 'EVM_RPC'
-    ]),
+    new webpack.EnvironmentPlugin({
+      CONTRACT_ADDRESS: null,
+      TOKEN_ADDRESS: null,
+      RELAYER_URL: null,
+      EVM_RPC: null,
+    }),
   ],
   ignoreWarnings: [/Failed to parse source map/],
 };
