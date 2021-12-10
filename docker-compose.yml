@@ -1,7 +1,7 @@
 version: '3'
 services:
   web:
-    image: zeropool-console
+    image: voidxnull/zeropool-console
     build: .
     container_name: zeropool-console
     restart: always

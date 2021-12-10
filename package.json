@@ -8,7 +8,7 @@
     "dev": "webpack serve --mode=development --progress",
     "build": "webpack",
     "build:prod": "webpack --config webpack.config.prod.js",
-    "build-gh": "ASSET_PATH=/zeropool-console/ webpack --config webpack.config.prod.js",
+    "build-gh": "webpack --config webpack.config.prod.js",
     "predeploy": "yarn build-gh",
     "deploy": "gh-pages -d dist"
   },

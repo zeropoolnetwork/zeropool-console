@@ -3,7 +3,6 @@ const webpack = require('webpack');
 const CleanWebpackPlugin = require('clean-webpack-plugin').CleanWebpackPlugin;
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-const ASSET_PATH = process.env.ASSET_PATH || '/';
 
 module.exports = {
   mode: 'development',
@@ -11,7 +10,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle-[hash].js',
-    publicPath: ASSET_PATH,
+    publicPath: './',
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
