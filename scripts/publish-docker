@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+docker build -t voidxnull/zeropool-console . && \
+docker push voidxnull/zeropool-console
