@@ -2,11 +2,10 @@ import AES from 'crypto-js/aes';
 import Utf8 from 'crypto-js/enc-utf8';
 import bcrypt from 'bcryptjs';
 import { HDWallet, CoinType, Balance, devConfig, prodConfig, init } from 'zeropool-api-js';
-// @ts-ignore
-import wasmPath from 'libzeropool-rs-wasm-web/libzeropool_rs_wasm_bg.wasm';
-// @ts-ignore
-import workerPath from 'zeropool-api-js/lib/worker.js?asset';
 import { Config } from 'zeropool-api-js/lib/config';
+
+const wasmPath = new URL('npm:libzeropool-rs-wasm-web/libzeropool_rs_wasm_bg.wasm', import.meta.url);
+const workerPath = new URL('npm:zeropool-api-js/lib/worker.js', import.meta.url);
 
 const LOCK_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
@@ -63,9 +62,8 @@ export default class Account {
         this.config.snarkParams.transferVkUrl = './assets/transfer_verification_key.json';
         this.config.snarkParams.treeVkUrl = './assets/tree_update_verification_key.json';
 
-        // @ts-ignore
-        this.config.wasmPath = wasmPath;
-        this.config.workerPath = workerPath;
+        this.config.wasmPath = wasmPath.toString();
+        this.config.workerPath = workerPath.toString();
     }
 
     public async init(): Promise<void> {

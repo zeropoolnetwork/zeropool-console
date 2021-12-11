@@ -1,8 +1,6 @@
 import jQuery from 'jquery';
-// @ts-ignore
-import initTerminal from 'imports-loader?additionalCode=var%20define=false;!jquery.terminal';
-// @ts-ignore
-import initAutocomplete from 'imports-loader?additionalCode=var%20define=false;!jquery.terminal/js/autocomplete_menu';
+import initTerminal from 'jquery.terminal';
+import initAutocomplete from 'jquery.terminal/js/autocomplete_menu';
 import bip39 from 'bip39-light';
 
 import './styles.css';

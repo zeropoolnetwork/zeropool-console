@@ -1,4 +1,4 @@
-@import "jquery.terminal/css/jquery.terminal.css";
+@import "npm:jquery.terminal/css/jquery.terminal.css";
 
 body {
   height: 100%;
