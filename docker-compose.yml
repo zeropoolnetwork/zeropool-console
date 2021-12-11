@@ -1,4 +1,5 @@
 version: '3'
+
 services:
   zeropool-console:
     image: voidxnull/zeropool-console
@@ -7,6 +8,8 @@ services:
     restart: always
     ports:
       - "80:80"
+    volumes:
+      - "./assets:/usr/share/nginx/html/assets:ro"
     environment:
       EVM_RPC: ${EVM_RPC}
       RELAYER_URL: ${RELAYER_URL}
