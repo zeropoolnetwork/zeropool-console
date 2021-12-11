@@ -8,13 +8,6 @@ import wasmPath from 'libzeropool-rs-wasm-web/libzeropool_rs_wasm_bg.wasm';
 import workerPath from 'zeropool-api-js/lib/worker.js?asset';
 import { Config } from 'zeropool-api-js/lib/config';
 
-// import transferParamsUrl from '../assets/transfer_params.bin';
-// import treeParamsUrl from '../assets/tree_update_params.bin';
-// // @ts-ignore
-// import transferVkUrl from '../assets/transfer_verification_key.json?asset';
-// // @ts-ignore
-// import treeVkUrl from '../assets/tree_update_verification_key.json?asset';
-
 const LOCK_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
 interface AccountStorage {
@@ -65,10 +58,10 @@ export default class Account {
         this.config.ethereum.relayerUrl = RELAYER_URL;
         this.config.ethereum.httpProviderUrl = EVM_RPC;
 
-        this.config.snarkParams.transferParamsUrl = TRANSFER_PARAMS_URL || this.config.snarkParams.transferParamsUrl;
-        this.config.snarkParams.treeParamsUrl = TREE_PARAMS_URL || this.config.snarkParams.treeParamsUrl;
-        this.config.snarkParams.transferVkUrl = TRANSFER_VK_URL || this.config.snarkParams.transferVkUrl;
-        this.config.snarkParams.treeVkUrl = TREE_VK_URL || this.config.snarkParams.treeVkUrl;
+        this.config.snarkParams.transferParamsUrl = `./assets/${this.config.snarkParams.transferParamsUrl}`;
+        this.config.snarkParams.treeParamsUrl = `./assets/${this.config.snarkParams.treeParamsUrl}`;
+        this.config.snarkParams.transferVkUrl = `./assets/${this.config.snarkParams.transferVkUrl}`;
+        this.config.snarkParams.treeVkUrl = `./assets/${this.config.snarkParams.treeVkUrl}`;
 
         // @ts-ignore
         this.config.wasmPath = wasmPath;
