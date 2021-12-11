@@ -8,13 +8,12 @@ import wasmPath from 'libzeropool-rs-wasm-web/libzeropool_rs_wasm_bg.wasm';
 import workerPath from 'zeropool-api-js/lib/worker.js?asset';
 import { Config } from 'zeropool-api-js/lib/config';
 
-import transferParamsUrl from '../assets/transfer_params.bin';
-import treeParamsUrl from '../assets/tree_update_params.bin';
-import transferVk from '../assets/transfer_verification_key.json';
-import treeVk from '../assets/tree_update_verification_key.json';
-
-// 
-// import addresses from '../deps/pool-evm-single-l1/addresses.json';
+// import transferParamsUrl from '../assets/transfer_params.bin';
+// import treeParamsUrl from '../assets/tree_update_params.bin';
+// // @ts-ignore
+// import transferVkUrl from '../assets/transfer_verification_key.json?asset';
+// // @ts-ignore
+// import treeVkUrl from '../assets/tree_update_verification_key.json?asset';
 
 const LOCK_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
@@ -31,8 +30,6 @@ class LocalAccountStorage implements AccountStorage {
         localStorage.setItem(`zconsole.${accountName}.${field}`, value);
     }
 }
-
-const ENABLED_COINS = [CoinType.ethereum];
 
 export enum Env {
     Prod = 'prod',
@@ -60,15 +57,19 @@ export default class Account {
                 break;
         }
 
+        delete this.config.waves;
+        delete this.config.near;
+
         this.config.ethereum.contractAddress = CONTRACT_ADDRESS;
         this.config.ethereum.tokenContractAddress = TOKEN_ADDRESS;
         this.config.ethereum.relayerUrl = RELAYER_URL;
         this.config.ethereum.httpProviderUrl = EVM_RPC;
 
-        this.config.snarkParams.transferParamsUrl = transferParamsUrl;
-        this.config.snarkParams.treeParamsUrl = treeParamsUrl;
-        this.config.snarkParams.transferVk = transferVk;
-        this.config.snarkParams.treeVk = treeVk;
+        this.config.snarkParams.transferParamsUrl = TRANSFER_PARAMS_URL;
+        this.config.snarkParams.treeParamsUrl = TREE_PARAMS_URL;
+        this.config.snarkParams.transferVkUrl = TRANSFER_VK_URL;
+        this.config.snarkParams.treeVkUrl = TREE_VK_URL;
+
         // @ts-ignore
         this.config.wasmPath = wasmPath;
         this.config.workerPath = workerPath;
@@ -81,7 +82,7 @@ export default class Account {
     public async login(seed: string, password: string) {
         this.storage.set(this.accountName, 'seed', await AES.encrypt(seed, password).toString());
         this.storage.set(this.accountName, 'pwHash', await bcrypt.hash(password, await bcrypt.genSalt(10)));
-        this.hdWallet = await HDWallet.init(seed, this.config, ENABLED_COINS);
+        this.hdWallet = await HDWallet.init(seed, this.config);
 
         // this.setAccountTimeout(LOCK_TIMEOUT);
     }
@@ -100,7 +101,7 @@ export default class Account {
         this.checkPassword(password);
 
         const seed = this.decryptSeed(password);
-        this.hdWallet = await HDWallet.init(seed, this.config, ENABLED_COINS);
+        this.hdWallet = await HDWallet.init(seed, this.config);
         console.log('done');
     }
 

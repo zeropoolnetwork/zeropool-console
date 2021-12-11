@@ -29,19 +29,8 @@ module.exports = {
       stream: 'stream-browserify',
     }
   },
-  devServer: {
-    contentBase: 'dist',
-    compress: true,
-    port: 3000,
-  },
-  devtool: 'eval-source-map',
   module: {
     rules: [
-      {
-        test: /\.tsx?$/,
-        use: 'ts-loader',
-        exclude: /node_modules/,
-      },
       {
         test: /\.css$/i,
         use: ['style-loader', 'css-loader'],
