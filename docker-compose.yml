@@ -1,6 +1,6 @@
 version: '3'
 services:
-  web:
+  zeropool-console:
     image: voidxnull/zeropool-console
     build: .
     container_name: zeropool-console
