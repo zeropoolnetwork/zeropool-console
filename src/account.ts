@@ -58,10 +58,10 @@ export default class Account {
         this.config.ethereum.relayerUrl = RELAYER_URL;
         this.config.ethereum.httpProviderUrl = EVM_RPC;
 
-        this.config.snarkParams.transferParamsUrl = `./assets/${this.config.snarkParams.transferParamsUrl}`;
-        this.config.snarkParams.treeParamsUrl = `./assets/${this.config.snarkParams.treeParamsUrl}`;
-        this.config.snarkParams.transferVkUrl = `./assets/${this.config.snarkParams.transferVkUrl}`;
-        this.config.snarkParams.treeVkUrl = `./assets/${this.config.snarkParams.treeVkUrl}`;
+        this.config.snarkParams.transferParamsUrl = './assets/transfer_params.bin';
+        this.config.snarkParams.treeParamsUrl = './assets/tree_update_params.bin';
+        this.config.snarkParams.transferVkUrl = './assets/transfer_verification_key.json';
+        this.config.snarkParams.treeVkUrl = './assets/tree_update_verification_key.json';
 
         // @ts-ignore
         this.config.wasmPath = wasmPath;
