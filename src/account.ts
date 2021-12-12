@@ -100,7 +100,7 @@ export default class Account {
         const hash = this.storage.get(this.accountName, 'pwHash');
 
         if (!bcrypt.compare(hash, password)) {
-            throw new Error('Incorrect password');
+            throw new Error('Wrong password');
         }
 
         // this.setAccountTimeout(LOCK_TIMEOUT);

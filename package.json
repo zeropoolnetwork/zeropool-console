@@ -6,21 +6,16 @@
   "homepage": "https://github.com/zeropoolnetwork/zeropool-console",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
-    "dev": "parcel src/index.html",
+    "dev": "cp -r assets dist/assets && parcel src/index.html",
     "build": "parcel build src/index.html && cp src/env.js dist",
     "prebuild": "rm -rf dist"
-  },
-  "staticFiles": {
-    "staticPath": [
-      "assets"
-    ]
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "crypto-js": "^4.1.1",
     "jquery": "^3.5.1",
     "jquery.terminal": "^2.18.3",
-    "libzeropool-rs-wasm-web": "0.3.3",
+    "libzeropool-rs-wasm-web": "0.3.4",
     "zeropool-api-js": "https://github.com/zeropoolnetwork/zeropool-api-js"
   },
   "devDependencies": {
