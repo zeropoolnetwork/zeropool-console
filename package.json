@@ -7,7 +7,13 @@
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
     "dev": "parcel src/index.html",
-    "build:prod": "parcel build src/index.html"
+    "build": "parcel build src/index.html && cp src/env.js dist",
+    "prebuild": "rm -rf dist"
+  },
+  "staticFiles": {
+    "staticPath": [
+      "assets"
+    ]
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
