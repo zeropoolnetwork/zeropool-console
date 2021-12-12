@@ -4,10 +4,8 @@ COPY ./src ./src
 COPY ./package.json .
 COPY ./package-lock.json .
 COPY ./tsconfig.json .
-COPY ./tsconfig.prod.json .
-COPY ./webpack.config.js .
-COPY ./webpack.config.prod.js .
-RUN npm install && npm run build:prod
+COPY ./.parcelrc .
+RUN npm install && npm run build
 
 FROM nginx
 WORKDIR /usr/share/nginx/html
