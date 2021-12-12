@@ -166,6 +166,20 @@ export default class Account {
         return [balance, readable];
     }
 
+    // TODO: Support multiple tokens
+    public async getTokenBalance(chainId: CoinType, account: number = 0): Promise<string> {
+        this.requireAuth();
+        const coin = this.hdWallet.getCoin(chainId);
+        const balance = await coin.getTokenBalance(account, '');
+        return balance;
+    }
+
+    public async mint(chainId: CoinType, account: number = 0, amount: string): Promise<void> {
+        this.requireAuth();
+        const coin = this.hdWallet.getCoin(chainId);
+        await coin.mint(account, amount);
+    }
+
     public async transfer(chainId: string, account: number, to: string, amount: string): Promise<void> {
         this.requireAuth();
 

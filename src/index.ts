@@ -28,6 +28,8 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   'get-balance': [c.getBalance, '<coin type> [account index]', 'fetch and print account balance'],
   'get-private-balance': [c.getPrivateBalance, '<coin type>', 'get calculated private balance'],
   'get-balances': [c.getBalances, '<account index>', 'print balances for all'],
+  'mint': [c.mint, '<coin type> <account index> <amount>', ''],
+  'get-token-balance': [c.getTokenBalance, '<coin type> <account index>', ''],
   // 'unlock': [c.unlock, ''],
   'transfer': [c.transfer, '<coin type> <account index> <to> <amount>', 'transfer <coin type> token, <amount> in base units (e.g.: yoctoNEAR, Wei)]'],
   'transfer-private': [c.transferPrivate, '<coin type> <account> <to> <amount>', ''],

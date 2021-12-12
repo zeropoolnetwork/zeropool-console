@@ -57,6 +57,15 @@ export async function getBalances() {
     this.echo(`Balances:\n${buf}`);
 }
 
+export async function getTokenBalance(chainId: string, accountIndex: string) {
+    return this.account.getTokenBalance(chainId, accountIndex);
+}
+
+
+export async function mint(chainId: string, accountIndex: string, amount: string) {
+    return this.account.mint(chainId, accountIndex, amount);
+}
+
 export async function transfer(chainId: string, accountIndex: string, to: string, amount: string) {
     await this.account.transfer(chainId, parseInt(accountIndex), to, amount);
 }
