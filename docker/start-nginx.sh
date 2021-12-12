@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+echo 'Replacing env variables...'
 original='env.js'
 tmp=$(mktemp)
 cp --attributes-only --preserve $original $tmp

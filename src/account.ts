@@ -170,7 +170,7 @@ export default class Account {
     public async getTokenBalance(chainId: CoinType, account: number = 0): Promise<string> {
         this.requireAuth();
         const coin = this.hdWallet.getCoin(chainId);
-        const balance = await coin.getTokenBalance(account, '');
+        const balance = await coin.getTokenBalance(account);
         return balance;
     }
 
