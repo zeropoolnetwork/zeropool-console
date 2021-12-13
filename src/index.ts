@@ -3,8 +3,6 @@ import initTerminal from 'jquery.terminal';
 import initAutocomplete from 'jquery.terminal/js/autocomplete_menu';
 import bip39 from 'bip39-light';
 
-import './styles.css';
-
 import Account, { Env } from './account';
 import * as c from './commands';
 
@@ -40,7 +38,7 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   'private-state': [c.showState, '', 'show internal state'],
   'help': [
     function () {
-      const message = 'Available commands:\n' + Object.entries(COMMANDS)
+      let message = '\nAvailable commands:\n' + Object.entries(COMMANDS)
         .map(pair => {
           let line = `    ${pair[0]}`;
 
@@ -55,20 +53,41 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
           return line;
         })
         .join('\n');
+      message += '\n';
       this.echo(message);
     },
     '',
     'print help message'
   ],
+  'intro': [
+    function () {
+      const message = String.raw`
+TODO: Help
+Enter 'help' for more info on available commands.
+`;
+      this.echo(message);
+    },
+    '',
+    'print introduction message'
+  ]
 };
 
 
-const GREETING = '[[;green;]ZeroPool console]';
+const GREETING = String.raw`
+ _____              ____             _
+|__  /___ _ __ ___ |  _ \ ___   ___ | |
+  / // _ \ '__/ _ \| |_) / _ \ / _ \| |
+ / /|  __/ | | (_) |  __/ (_) | (_) | |
+/____\___|_|  \___/|_|   \___/ \___/|_|
+`;
+
+function greeting(term) {
+  term.echo(GREETING, { raw: true });
+}
 
 jQuery(async function ($) {
   initTerminal($);
   initAutocomplete($);
-
 
   const commands = {};
 
@@ -110,13 +129,15 @@ jQuery(async function ($) {
           await this.account.init();
 
           if (this.account.isAccountPresent()) {
+            this.set_mask(true);
             const password = await this.read('Enter password: ');
+            this.set_mask(false);
             await this.account.unlockAccount(password);
           } else {
             let seed = await this.read(`Enter seed phrase or leave empty to generate a new one: `);
 
             // TODO: Proper validation
-            if (seed.trim().split(' ').length !== 12) {
+            if (!bip39.validateMnemonic(seed)) {
               throw new Error('Invalid seed phrase');
             }
 
@@ -141,7 +162,7 @@ jQuery(async function ($) {
 
       this.clear();
       this.echo(GREETING);
-      COMMANDS['help'][0].apply(this);
+      COMMANDS['intro'][0].apply(this);
     },
     prompt: function () {
       if (this.account) {
