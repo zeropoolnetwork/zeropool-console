@@ -142,15 +142,17 @@ jQuery(async function ($) {
             this.set_mask(true);
             const password = await this.read('Enter password: ');
             this.set_mask(false);
+            this.pause();
             await this.account.unlockAccount(password, () => {
               this.echo(BEFORE_LOAD);
             });
+            this.resume();
           } else {
             let seed = await this.read(`Enter seed phrase or leave empty to generate a new one: `);
 
             if (seed.trim().length == 0) {
               seed = bip39.generateMnemonic();
-              this.echo(`New mnemonic: ${seed}]`);
+              this.echo(`New mnemonic: ${seed}`);
             } else if (!bip39.validateMnemonic(seed)) {
               throw new Error('Invalid seed phrase');
             }
@@ -164,9 +166,11 @@ jQuery(async function ($) {
               throw new Error('Password is too weak');
             }
 
+            this.pause();
             await this.account.login(seed, password, () => {
               this.echo(BEFORE_LOAD);
             });
+            this.resume();
           }
         } catch (e) {
           this.error(e);
