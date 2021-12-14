@@ -6,10 +6,13 @@
   "homepage": "https://github.com/zeropoolnetwork/zeropool-console",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
-    "dev": "cp -r assets dist/assets && cp src/env.js dist && parcel src/index.html",
+    "dev": "rm -rf dist/* && cp -r assets dist/assets && cp src/env.js dist && parcel src/index.html",
     "build": "parcel build src/index.html && cp src/env.js dist",
-    "prebuild": "rm -rf dist"
+    "prebuild": "rm -rf dist/*"
   },
+  "parcelIgnore": [
+    "env.js"
+  ],
   "dependencies": {
     "crypto-js": "^4.1.1",
     "jquery": "^3.5.1",
@@ -20,6 +23,7 @@
   },
   "devDependencies": {
     "@parcel/compressor-gzip": "^2.0.1",
+    "parcel-resolver-ignore": "^2.0.0",
     "parcel": "^2.0.1"
   }
 }
