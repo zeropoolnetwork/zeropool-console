@@ -148,13 +148,11 @@ jQuery(async function ($) {
           } else {
             let seed = await this.read(`Enter seed phrase or leave empty to generate a new one: `);
 
-            if (!bip39.validateMnemonic(seed)) {
-              throw new Error('Invalid seed phrase');
-            }
-
             if (seed.trim().length == 0) {
               seed = bip39.generateMnemonic();
               this.echo(`New mnemonic: ${seed}]`);
+            } else if (!bip39.validateMnemonic(seed)) {
+              throw new Error('Invalid seed phrase');
             }
 
             this.set_mask(true);

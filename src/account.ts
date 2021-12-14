@@ -63,7 +63,7 @@ export default class Account {
 
     public async login(seed: string, password: string, beforeLoad: () => void) {
         this.storage.set(this.accountName, 'seed', await AES.encrypt(seed, password).toString());
-        this.unlockAccount(password, beforeLoad);
+        await this.unlockAccount(password, beforeLoad);
     }
 
     public isAccountPresent(): boolean {
@@ -71,14 +71,10 @@ export default class Account {
     }
 
     public getSeed(password: string): string {
-        this.checkPassword(password);
-
         return this.decryptSeed(password);
     }
 
     public async unlockAccount(password: string, beforeLoad: () => void) {
-        this.checkPassword(password);
-
         const seed = this.decryptSeed(password);
         if (this.hdWallet) {
             this.hdWallet.free();
@@ -87,10 +83,6 @@ export default class Account {
 
         beforeLoad();
         this.hdWallet = await HDWallet.init(seed, this.config);
-    }
-
-    public checkPassword(password: string) {
-        this.decryptSeed(password);
     }
 
     public getRegularAddress(chainId: string, account: number = 0): string {
@@ -104,7 +96,7 @@ export default class Account {
     }
 
     public async getRegularPrivateKey(chainId: string, accountIndex: number, password: string): Promise<string> {
-        this.checkPassword(password);
+        this.decryptSeed(password);
 
         const coin = this.hdWallet.getCoin(chainId as CoinType);
         return coin.getPrivateKey(accountIndex);
