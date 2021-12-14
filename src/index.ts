@@ -94,6 +94,9 @@ Enter 'help' for more info on available commands.
   ]
 };
 
+const BEFORE_LOAD = String.raw`
+Loading approximately 80mb of data...
+`;
 
 const GREETING = String.raw`
  _____              ____             _
@@ -102,11 +105,7 @@ const GREETING = String.raw`
  / /|  __/ | | (_) |  __/ (_) | (_) | |
 /____\___|_|  \___/|_|   \___/ \___/|_|
 
- `;
-
-const BEFORE_LOAD = `
-Loading approximately 80mb of data...
-`;
+    `;
 
 jQuery(async function ($) {
   initTerminal($);
