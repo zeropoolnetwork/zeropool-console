@@ -94,10 +94,6 @@ Enter 'help' for more info on available commands.
   ]
 };
 
-const BEFORE_LOAD = String.raw`
-Loading approximately 80mb of data...
-`;
-
 const GREETING = String.raw`
  _____              ____             _
 |__  /___ _ __ ___ |  _ \ ___   ___ | |
@@ -135,8 +131,10 @@ jQuery(async function ($) {
             throw new Error('Account name cannot be empty');
           }
 
+          this.pause();
           this.account = new Account(accountName);
           await this.account.init();
+          this.resume();
 
           if (this.account.isAccountPresent()) {
             this.set_mask(true);
@@ -144,7 +142,7 @@ jQuery(async function ($) {
             this.set_mask(false);
             this.pause();
             await this.account.unlockAccount(password, () => {
-              this.echo(BEFORE_LOAD);
+              this.echo('Loading data files...');
             });
             this.resume();
           } else {
@@ -168,7 +166,7 @@ jQuery(async function ($) {
 
             this.pause();
             await this.account.login(seed, password, () => {
-              this.echo(BEFORE_LOAD);
+              this.echo('Loading data files...');
             });
             this.resume();
           }
