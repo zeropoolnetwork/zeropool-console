@@ -1,13 +1,11 @@
 import AES from 'crypto-js/aes';
 import Utf8 from 'crypto-js/enc-utf8';
-import bcrypt from 'bcryptjs';
-import { HDWallet, CoinType, Balance, devConfig, prodConfig, init } from 'zeropool-api-js';
+import { HDWallet, CoinType, Balance, init } from 'zeropool-api-js';
 import { Config } from 'zeropool-api-js/lib/config';
+import bip39 from 'bip39-light';
 
 const wasmPath = new URL('npm:libzeropool-rs-wasm-web/libzeropool_rs_wasm_bg.wasm', import.meta.url);
 const workerPath = new URL('npm:zeropool-api-js/lib/worker.js', import.meta.url);
-
-const LOCK_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
 interface AccountStorage {
     get(accountName: string, field: string): string | null;
@@ -23,63 +21,53 @@ class LocalAccountStorage implements AccountStorage {
     }
 }
 
-export enum Env {
-    Prod = 'prod',
-    Dev = 'dev',
-}
-
 // TODO: Extract timeout management code
 export default class Account {
-    private lockTimeout?: ReturnType<typeof setTimeout>;
     readonly accountName: string;
     private storage: AccountStorage;
     public hdWallet: HDWallet;
     private config: Config;
 
-    constructor(accountName: string, env: Env) {
+    constructor(accountName: string) {
         this.accountName = accountName;
         this.storage = new LocalAccountStorage();
 
-        switch (env) {
-            case Env.Prod:
-                this.config = prodConfig;
-                break;
-            case Env.Dev:
-                this.config = devConfig;
-                break;
+        if (process.env.NODE_ENV === 'development') {
+            CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
+            TOKEN_ADDRESS = process.env.TOKEN_ADDRESS;
+            RELAYER_URL = process.env.RELAYER_URL;
+            EVM_RPC = process.env.EVM_RPC;
         }
 
-        delete this.config.waves;
-        delete this.config.near;
-
-        this.config.ethereum.contractAddress = CONTRACT_ADDRESS;
-        this.config.ethereum.tokenContractAddress = TOKEN_ADDRESS;
-        this.config.ethereum.relayerUrl = RELAYER_URL;
-        this.config.ethereum.httpProviderUrl = EVM_RPC;
-
-        this.config.snarkParams.transferParamsUrl = './assets/transfer_params.bin';
-        this.config.snarkParams.treeParamsUrl = './assets/tree_update_params.bin';
-        this.config.snarkParams.transferVkUrl = './assets/transfer_verification_key.json';
-        this.config.snarkParams.treeVkUrl = './assets/tree_update_verification_key.json';
-
-        this.config.wasmPath = wasmPath.toString();
-        this.config.workerPath = workerPath.toString();
+        this.config = {
+            ethereum: {
+                contractAddress: CONTRACT_ADDRESS,
+                tokenContractAddress: TOKEN_ADDRESS,
+                relayerUrl: RELAYER_URL,
+                httpProviderUrl: EVM_RPC,
+            },
+            snarkParams: {
+                transferParamsUrl: './assets/transfer_params.bin',
+                treeParamsUrl: './assets/tree_update_params.bin',
+                transferVkUrl: './assets/transfer_verification_key.json',
+                treeVkUrl: './assets/tree_update_verification_key.json',
+            },
+            wasmPath: wasmPath.toString(),
+            workerPath: workerPath.toString(),
+        };
     }
 
     public async init(): Promise<void> {
         await init(wasmPath);
     }
 
-    public async login(seed: string, password: string) {
+    public async login(seed: string, password: string, beforeLoad: () => void) {
         this.storage.set(this.accountName, 'seed', await AES.encrypt(seed, password).toString());
-        this.storage.set(this.accountName, 'pwHash', await bcrypt.hash(password, await bcrypt.genSalt(10)));
-        this.hdWallet = await HDWallet.init(seed, this.config);
-
-        // this.setAccountTimeout(LOCK_TIMEOUT);
+        this.unlockAccount(password, beforeLoad);
     }
 
     public isAccountPresent(): boolean {
-        return !!this.storage.get(this.accountName, 'pwHash');
+        return !!this.storage.get(this.accountName, 'seed');
     }
 
     public getSeed(password: string): string {
@@ -88,68 +76,45 @@ export default class Account {
         return this.decryptSeed(password);
     }
 
-    public async unlockAccount(password: string) {
+    public async unlockAccount(password: string, beforeLoad: () => void) {
         this.checkPassword(password);
 
         const seed = this.decryptSeed(password);
+        if (this.hdWallet) {
+            this.hdWallet.free();
+            this.hdWallet = null;
+        }
+
+        beforeLoad();
         this.hdWallet = await HDWallet.init(seed, this.config);
-        console.log('done');
     }
 
-    public checkPassword(password: String) {
-        const hash = this.storage.get(this.accountName, 'pwHash');
-
-        if (!bcrypt.compare(hash, password)) {
-            throw new Error('Wrong password');
-        }
-
-        // this.setAccountTimeout(LOCK_TIMEOUT);
-    }
-
-    public isLocked(): boolean {
-        return !this.hdWallet;
-    }
-
-    public requireAuth() {
-        if (this.isLocked()) {
-            throw Error('Account is locked. Unlock the account first');
-        }
-
-        // this.setAccountTimeout(LOCK_TIMEOUT);
+    public checkPassword(password: string) {
+        this.decryptSeed(password);
     }
 
     public getRegularAddress(chainId: string, account: number = 0): string {
-        this.requireAuth();
-
         const coin = this.hdWallet.getCoin(chainId as CoinType);
-
         return coin.getAddress(account);
     }
 
     public getPrivateAddress(chainId: string): string {
-        this.requireAuth();
-
         const coin = this.hdWallet.getCoin(chainId as CoinType);
-
         return coin.generatePrivateAddress();
     }
 
     public async getRegularPrivateKey(chainId: string, accountIndex: number, password: string): Promise<string> {
-        await this.unlockAccount(password);
+        this.checkPassword(password);
 
         const coin = this.hdWallet.getCoin(chainId as CoinType);
-
         return coin.getPrivateKey(accountIndex);
     }
 
     public async getBalances(): Promise<{ [key in CoinType]?: Balance[] }> {
-        this.requireAuth();
-
         return this.hdWallet.getBalances(5);
     }
 
     public async getPrivateBalances(chainId: CoinType): Promise<[string, string, string]> {
-        this.requireAuth();
         const coin = this.hdWallet.getCoin(chainId);
         await coin.updatePrivateState();
         const balances = await coin.getPrivateBalances();
@@ -158,7 +123,6 @@ export default class Account {
     }
 
     public async getBalance(chainId: CoinType, account: number = 0): Promise<[string, string]> {
-        this.requireAuth();
         const coin = this.hdWallet.getCoin(chainId);
         const balance = await coin.getBalance(account);
         const readable = await coin.fromBaseUnit(balance);
@@ -168,21 +132,17 @@ export default class Account {
 
     // TODO: Support multiple tokens
     public async getTokenBalance(chainId: CoinType, account: number = 0): Promise<string> {
-        this.requireAuth();
         const coin = this.hdWallet.getCoin(chainId);
         const balance = await coin.getTokenBalance(account);
         return balance;
     }
 
     public async mint(chainId: CoinType, account: number = 0, amount: string): Promise<void> {
-        this.requireAuth();
         const coin = this.hdWallet.getCoin(chainId);
         await coin.mint(account, amount);
     }
 
     public async transfer(chainId: string, account: number, to: string, amount: string): Promise<void> {
-        this.requireAuth();
-
         const coin = this.hdWallet.getCoin(chainId as CoinType);
         await coin.transfer(account, to, amount);
     }
@@ -190,42 +150,32 @@ export default class Account {
 
     // TODO: account number is temporary, it should not be needed when using a relayer
     public async transferPrivate(chainId: string, account: number, to: string, amount: string): Promise<void> {
-        this.requireAuth();
-
         const coin = this.hdWallet.getCoin(chainId as CoinType);
         await coin.updatePrivateState();
         await coin.transferPrivateToPrivate(account, [{ to, amount }]);
     }
 
     public async depositPrivate(chainId: string, account: number, amount: string): Promise<void> {
-        this.requireAuth();
-
         const coin = this.hdWallet.getCoin(chainId as CoinType);
         await coin.updatePrivateState();
         await coin.depositPrivate(account, amount);
     }
 
     public async withdrawPrivate(chainId: string, account: number, amount: string): Promise<void> {
-        this.requireAuth();
-
         const coin = this.hdWallet.getCoin(chainId as CoinType);
         await coin.updatePrivateState();
         await coin.withdrawPrivate(account, amount);
     }
 
-    private setAccountTimeout(ms: number) {
-        if (this.lockTimeout) {
-            clearTimeout(this.lockTimeout);
-        }
-
-        this.lockTimeout = setTimeout(function () {
-            this.seed = null;
-        }, ms);
-    }
-
     private decryptSeed(password: string): string {
         const cipherText = this.storage.get(this.accountName, 'seed');
-        const seed = AES.decrypt(cipherText, password).toString(Utf8);
+        let seed;
+        try {
+            seed = AES.decrypt(cipherText, password).toString(Utf8);
+            if (!bip39.validateMnemonic(seed)) throw new Error();
+        } catch (_) {
+            throw new Error('Incorrect password');
+        }
 
         return seed;
     }

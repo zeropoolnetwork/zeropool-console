@@ -2,6 +2,10 @@ import { CoinType } from 'zeropool-api-js';
 import { generateMnemonic } from 'zeropool-api-js/lib/utils';
 import Account from './account';
 
+// const CHAIN_ID = NETWORK.toLowerCase();
+// FIXME: temporary
+const CHAIN_ID = 'ethereum';
+
 export async function setSeed(seed: string, password: string) {
     await this.account.login(seed, password);
 }
@@ -16,29 +20,34 @@ export function genSeed() {
     this.echo(`[[;gray;]Generated mnemonic: ${seed}]`);
 }
 
-export function getAddress(chainId: string, accountIndex: string = '0') {
-    const address = this.account.getRegularAddress(chainId, parseInt(accountIndex));
+export function getAddress(accountIndex: string = '0') {
+    const address = this.account.getRegularAddress(CHAIN_ID, parseInt(accountIndex));
     this.echo(`[[;gray;]Address: ${address}]`);
 }
 
-export function genPrivateAddress(chainId: string) {
-    const address = this.account.getPrivateAddress(chainId);
+export function genPrivateAddress() {
+    const address = this.account.getPrivateAddress(CHAIN_ID);
     this.echo(`[[;gray;]${address}]`);
 }
 
-export async function getPrivateKey(chainId: string, accountIndex: string, password: string) {
-    const seed = await this.account.getRegularPrivateKey(chainId, parseInt(accountIndex), password);
+export async function getPrivateKey(accountIndex: string, password: string) {
+    const seed = await this.account.getRegularPrivateKey(CHAIN_ID, parseInt(accountIndex), password);
     this.echo(`[[;gray;]Private key: ${seed}]`);
 }
 
-export async function getBalance(chainId: string, accountIndex: string = '0') {
-    const [balance, readable] = await this.account.getBalance(chainId as CoinType, parseInt(accountIndex));
+export async function getBalance(accountIndex: string = '0') {
+    const [balance, readable] = await this.account.getBalance(CHAIN_ID as CoinType, parseInt(accountIndex));
     this.echo(`[[;gray;]Balance: ${readable} (${balance})]`);
 }
 
-export async function getPrivateBalance(chainId: string) {
-    const [total, acc, note] = await this.account.getPrivateBalances(chainId as CoinType);
-    this.echo(`[[;gray;]Private balance (total, account, notes): ${total} (${acc} + ${note})]`);
+export async function getPrivateBalance() {
+    const [total, acc, note] = await this.account.getPrivateBalances(CHAIN_ID as CoinType);
+    this.echo(`[[;gray;]
+Private balance:
+    total: ${total} (account + note)
+    account: ${acc}
+    note: ${note}
+]`);
 }
 
 export async function getBalances() {
@@ -57,39 +66,34 @@ export async function getBalances() {
     this.echo(`Balances:\n${buf}`);
 }
 
-export async function getTokenBalance(chainId: string, accountIndex: string) {
-    return this.account.getTokenBalance(chainId, accountIndex);
+export async function getTokenBalance(accountIndex: string) {
+    return this.account.getTokenBalance(CHAIN_ID, accountIndex);
 }
 
-
-export async function mint(chainId: string, accountIndex: string, amount: string) {
-    return this.account.mint(chainId, accountIndex, amount);
+export async function mint(accountIndex: string, amount: string) {
+    return this.account.mint(CHAIN_ID, accountIndex, amount);
 }
 
-export async function transfer(chainId: string, accountIndex: string, to: string, amount: string) {
-    await this.account.transfer(chainId, parseInt(accountIndex), to, amount);
+export async function transfer(accountIndex: string, to: string, amount: string) {
+    await this.account.transfer(CHAIN_ID, parseInt(accountIndex), to, amount);
 }
 
-export async function transferPrivate(chainId: string, accountIndex: number, to: string, amount: string) {
+export async function transferPrivate(accountIndex: number, to: string, amount: string) {
     this.echo('Performing private transfer...');
-    await this.account.transferPrivate(chainId, accountIndex, to, amount);
+    await this.account.transferPrivate(CHAIN_ID, accountIndex, to, amount);
     this.echo('Done');
 }
 
-export async function depositPrivate(chainId: string, accountIndex: string, amount: string) {
+export async function depositPrivate(accountIndex: string, amount: string) {
     this.echo('Performing private deposit...');
-    await this.account.depositPrivate(chainId, parseInt(accountIndex), amount);
+    await this.account.depositPrivate(CHAIN_ID, parseInt(accountIndex), amount);
     this.echo('Done');
 }
 
-export async function withdrawPrivate(chainId: string, accountIndex: string, amount: string) {
+export async function withdrawPrivate(accountIndex: string, amount: string) {
     this.echo('Performing private withdraw...');
-    await this.account.withdrawPrivate(chainId, parseInt(accountIndex), amount);
+    await this.account.withdrawPrivate(CHAIN_ID, parseInt(accountIndex), amount);
     this.echo('Done');
-}
-
-export async function unlock(password) {
-    await this.account.unlockAccount(password);
 }
 
 export function clear() {
@@ -105,7 +109,7 @@ export async function showState() {
     const account: Account = this.account;
     const coin = account.hdWallet.getCoin(CoinType.ethereum)!;
     await coin.updatePrivateState();
-    const data = coin.privateAccount.getWholeState();
+    const data = coin.zpState.account.getWholeState();
     console.log(data);
 
     for (const [index, tx] of data.txs) {
