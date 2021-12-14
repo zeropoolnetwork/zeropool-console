@@ -69,17 +69,17 @@ enough balance to pay for gas. You may use the 'transfer' command
 to transfer native coin if needed.
 
 Usage example:
-  // Mint 5 ** 18 tokens.
+  // Mint 5 * 10^18 tokens.
   mint 0 5000000000000000000
   // Check that the newly minted tokens are there.
   get-token-balance 0
-  // Deposit 2 ** 18 of those tokens to the pool.
+  // Deposit 2 * 10^18 of those tokens to the pool.
   deposit-private 0 2000000000000000000
   // Generate a private address.
   gen-private-address
-  // Transfer 1 ** 18 of deposited tokens the specified address.
+  // Transfer 1 * 10^18 of deposited tokens the specified address.
   transfer-private 0 <address> 1000000000000000000
-  // Withdraw the remaining 2 ** 18 from the pool.
+  // Withdraw the remaining 2 * 10^18 from the pool.
   withdraw-private 0 2000000000000000000
 
 If you want to check your private balance between '*-private' commands:
