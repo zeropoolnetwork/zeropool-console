@@ -2,10 +2,10 @@ FROM node
 WORKDIR /app
 COPY ./src ./src
 COPY ./package.json .
-COPY ./package-lock.json .
+COPY ./yarn.lock .
 COPY ./tsconfig.json .
 COPY ./.parcelrc .
-RUN npm install && npm run build
+RUN yarn && yarn build
 
 FROM nginx
 WORKDIR /usr/share/nginx/html
