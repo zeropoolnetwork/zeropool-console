@@ -78,7 +78,7 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   <div class="command-example">get-balances</div>
   <div class="comment">// Or get balance for an account with a particular index.</div>
   <div class="command-example">get-balance 0</div>
-  <div class="comment">// If you don't have any native tokens you have two choices:.</div>
+  <div class="comment">// If you don't have any native tokens you have two choices:</div>
   <div class="comment">//   1. Use the current network's faucet to get some.</div>
   <div class="comment">//   2. Transfer from a different account.</div>
   <div class="comment">// If you want to transfer from a different account you'll need to know.</div>
@@ -93,7 +93,7 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   <div class="comment">// Generate a new shielded address.</div>
   <div class="command-example">gen-shielded-address</div>
   <div class="comment">// Transfer 1 * 10^18 of deposited tokens the specified address.</div>
-  <div class="command-example">transfer-shielded 0 <address> 1000000000000000000</div>
+  <div class="command-example">transfer-shielded 0 &ltaddress&gt 1000000000000000000</div>
   <div class="comment">// Withdraw the remaining 2 * 10^18 from the pool.</div>
   <div class="command-example">withdraw-shielded 0 2000000000000000000</div>
   <div class="comment">// If you want to check your shielded balance between '*-shielded' commands:</div>
