@@ -40,7 +40,7 @@ export async function getBalance(accountIndex: string) {
     this.echo(`[[;gray;]Balance: ${readable} (${balance})]`);
 }
 
-export async function getPrivateBalance() {
+export async function getShieldedBalance() {
     this.pause();
     const [total, acc, note] = await this.account.getPrivateBalances(CHAIN_ID as CoinType);
     this.echo(`[[;gray;]
@@ -80,7 +80,7 @@ export async function transfer(accountIndex: string, to: string, amount: string)
     await this.account.transfer(CHAIN_ID, parseInt(accountIndex), to, amount);
 }
 
-export async function transferPrivate(accountIndex: number, to: string, amount: string) {
+export async function transferShielded(accountIndex: number, to: string, amount: string) {
     this.echo('Performing private transfer...');
     this.pause();
     await this.account.transferPrivate(CHAIN_ID, accountIndex, to, amount);
@@ -88,7 +88,7 @@ export async function transferPrivate(accountIndex: number, to: string, amount: 
     this.echo('Done');
 }
 
-export async function depositPrivate(accountIndex: string, amount: string) {
+export async function depositShielded(accountIndex: string, amount: string) {
     this.echo('Performing private deposit...');
     this.pause();
     await this.account.depositPrivate(CHAIN_ID, parseInt(accountIndex), amount);
@@ -96,7 +96,7 @@ export async function depositPrivate(accountIndex: string, amount: string) {
     this.echo('Done');
 }
 
-export async function withdrawPrivate(accountIndex: string, amount: string) {
+export async function withdrawShielded(accountIndex: string, amount: string) {
     this.echo('Performing private withdraw...');
     this.pause();
     await this.account.withdrawPrivate(CHAIN_ID, parseInt(accountIndex), amount);

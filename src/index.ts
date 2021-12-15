@@ -22,17 +22,17 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   'gen-shielded-address': [c.genShieldedAddress, '', 'generate a new shielded address'],
   'get-private-key': [c.getPrivateKey, '<account index> <password>', 'print the private key'],
   'get-balance': [c.getBalance, '<account index>', 'fetch and print account balance'],
-  'get-private-balance': [c.getPrivateBalance, '', 'get calculated private balance'],
+  'get-shielded-balance': [c.getShieldedBalance, '', 'get calculated private balance'],
   'get-balances': [c.getBalances, '', 'print balances for all'],
   'get-token-balance': [c.getTokenBalance, '<account index>', ''],
   'testnet-mint': [c.mint, '<account index> <amount>', ''],
   'transfer': [c.transfer, '<account index> <to> <amount>', 'transfer token, <amount> in base units (e.g.: yoctoNEAR, Wei)'],
-  'transfer-private': [c.transferPrivate, '<account> <to> <amount>', ''],
-  'deposit-private': [c.depositPrivate, '<account> <amount>', ''],
-  'withdraw-private': [c.withdrawPrivate, '<account> <amount>', ''],
+  'transfer-shielded': [c.transferShielded, '<account> <to> <amount>', ''],
+  'deposit-shielded': [c.depositShielded, '<account> <amount>', ''],
+  'withdraw-shielded': [c.withdrawShielded, '<account> <amount>', ''],
   'clear': [c.clear, '', 'clear terminal'],
   'reset': [c.reset, '', 'reset console state'],
-  'private-state': [c.showState, '', 'show internal state'],
+  'internal-state': [c.showState, '', 'show internal state'],
   'help': [
     function () {
       let message = '\nAvailable commands:\n' + Object.entries(COMMANDS)
@@ -89,15 +89,15 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   <div class="comment">// Check that the newly minted tokens are there.</div>
   <div class="command-example">get-token-balance 0</div>
   <div class="comment">// Deposit 2 * 10^18 of those tokens to the pool.</div>
-  <div class="command-example">deposit-private 0 2000000000000000000</div>
+  <div class="command-example">deposit-shielded 0 2000000000000000000</div>
   <div class="comment">// Generate a new shielded address.</div>
   <div class="command-example">gen-shielded-address</div>
   <div class="comment">// Transfer 1 * 10^18 of deposited tokens the specified address.</div>
-  <div class="command-example">transfer-private 0 1000000000000000000</div>
+  <div class="command-example">transfer-shielded 0 <address> 1000000000000000000</div>
   <div class="comment">// Withdraw the remaining 2 * 10^18 from the pool.</div>
-  <div class="command-example">withdraw-private 0 2000000000000000000</div>
-  <div class="comment">// If you want to check your private balance between '*-private' commands:</div>
-  <div class="command-example">get-private-balance</div>
+  <div class="command-example">withdraw-shielded 0 2000000000000000000</div>
+  <div class="comment">// If you want to check your shielded balance between '*-shielded' commands:</div>
+  <div class="command-example">get-shielded-balance</div>
 </p>
 
 <p>
