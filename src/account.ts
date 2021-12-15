@@ -85,7 +85,7 @@ export default class Account {
         this.hdWallet = await HDWallet.init(seed, this.config);
     }
 
-    public getRegularAddress(chainId: string, account: number = 0): string {
+    public getRegularAddress(chainId: string, account: number): string {
         const coin = this.hdWallet.getCoin(chainId as CoinType);
         return coin.getAddress(account);
     }
@@ -114,7 +114,7 @@ export default class Account {
         return balances;
     }
 
-    public async getBalance(chainId: CoinType, account: number = 0): Promise<[string, string]> {
+    public async getBalance(chainId: CoinType, account: number): Promise<[string, string]> {
         const coin = this.hdWallet.getCoin(chainId);
         const balance = await coin.getBalance(account);
         const readable = await coin.fromBaseUnit(balance);
@@ -123,13 +123,13 @@ export default class Account {
     }
 
     // TODO: Support multiple tokens
-    public async getTokenBalance(chainId: CoinType, account: number = 0): Promise<string> {
+    public async getTokenBalance(chainId: CoinType, account: number): Promise<string> {
         const coin = this.hdWallet.getCoin(chainId);
         const balance = await coin.getTokenBalance(account);
         return balance;
     }
 
-    public async mint(chainId: CoinType, account: number = 0, amount: string): Promise<void> {
+    public async mint(chainId: CoinType, account: number, amount: string): Promise<void> {
         const coin = this.hdWallet.getCoin(chainId);
         await coin.mint(account, amount);
     }

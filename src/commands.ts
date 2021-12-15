@@ -20,12 +20,12 @@ export function genSeed() {
     this.echo(`[[;gray;]Generated mnemonic: ${seed}]`);
 }
 
-export function getAddress(accountIndex: string = '0') {
+export function getAddress(accountIndex: string) {
     const address = this.account.getRegularAddress(CHAIN_ID, parseInt(accountIndex));
     this.echo(`[[;gray;]Address: ${address}]`);
 }
 
-export function genPrivateAddress() {
+export function genShieldedAddress() {
     const address = this.account.getPrivateAddress(CHAIN_ID);
     this.echo(`[[;gray;]${address}]`);
 }
@@ -35,7 +35,7 @@ export async function getPrivateKey(accountIndex: string, password: string) {
     this.echo(`[[;gray;]Private key: ${seed}]`);
 }
 
-export async function getBalance(accountIndex: string = '0') {
+export async function getBalance(accountIndex: string) {
     const [balance, readable] = await this.account.getBalance(CHAIN_ID as CoinType, parseInt(accountIndex));
     this.echo(`[[;gray;]Balance: ${readable} (${balance})]`);
 }

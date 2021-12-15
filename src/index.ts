@@ -18,14 +18,14 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   'set-seed': [c.setSeed, '<seed phrase> <password>', 'replace the seed phrase for the current account'],
   'get-seed': [c.getSeed, '<password>', 'print the seed phrase for the current account'],
   'gen-seed': [c.genSeed, '', 'generate and print a new seed phrase'],
-  'get-address': [c.getAddress, '[account index]', 'derive a new address for specified index (0 if not specified)'],
-  'gen-private-address': [c.genPrivateAddress, '', 'generate a new private address'],
+  'get-address': [c.getAddress, '<account index>', 'derive a new address for specified index (0 if not specified)'],
+  'gen-shielded-address': [c.genShieldedAddress, '', 'generate a new shielded address'],
   'get-private-key': [c.getPrivateKey, '<account index> <password>', 'print the private key'],
-  'get-balance': [c.getBalance, '[account index]', 'fetch and print account balance'],
+  'get-balance': [c.getBalance, '<account index>', 'fetch and print account balance'],
   'get-private-balance': [c.getPrivateBalance, '', 'get calculated private balance'],
   'get-balances': [c.getBalances, '', 'print balances for all'],
   'get-token-balance': [c.getTokenBalance, '<account index>', ''],
-  'mint': [c.mint, '<account index> <amount>', ''],
+  'testnet-mint': [c.mint, '<account index> <amount>', ''],
   'transfer': [c.transfer, '<account index> <to> <amount>', 'transfer token, <amount> in base units (e.g.: yoctoNEAR, Wei)'],
   'transfer-private': [c.transferPrivate, '<account> <to> <amount>', ''],
   'deposit-private': [c.depositPrivate, '<account> <amount>', ''],
@@ -62,32 +62,49 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   'intro': [
     function () {
       const message = String.raw`
-Welcome to the ZeroPool console for ${NETWORK}.
+<h3>
+  Welcome to the ZeroPool console for ${NETWORK}.
+</h3>
 
-Before using any of the listed command make sure you have
-enough balance to pay for gas. You may use the 'transfer' command
-to transfer native coin if needed.
+<p>
+  Before using any of the listed command make sure you have<br>
+  enough balance to pay for gas. You may use the 'transfer' command<br>
+  to transfer native coin if needed.
+</p>
 
-Usage example:
-  // Mint 5 * 10^18 tokens.
-  mint 0 5000000000000000000
-  // Check that the newly minted tokens are there.
-  get-token-balance 0
-  // Deposit 2 * 10^18 of those tokens to the pool.
-  deposit-private 0 2000000000000000000
-  // Generate a private address.
-  gen-private-address
-  // Transfer 1 * 10^18 of deposited tokens the specified address.
-  transfer-private 0 <address> 1000000000000000000
-  // Withdraw the remaining 2 * 10^18 from the pool.
-  withdraw-private 0 2000000000000000000
+<p>
+  <h4>Usage example:</h4>
+  <div class="comment">// Get native balances for first few account for the current seed phrase.</div>
+  <div class="command-example">get-balances</div>
+  <div class="comment">// Or get balance for an account with a particular index.</div>
+  <div class="command-example">get-balance 0</div>
+  <div class="comment">// If you don't have any native tokens you have two choices:.</div>
+  <div class="comment">//   1. Use the current network's faucet to get some.</div>
+  <div class="comment">//   2. Transfer from a different account.</div>
+  <div class="comment">// If you want to transfer from a different account you'll need to know.</div>
+  <div class="comment">// one of the addresses for your current account:</div>
+  <div class="command-example">get-address 0</div>
+  <div class="comment">// Mint 5 * 10^18 tokens for the account with index 0.</div>
+  <div class="command-example">testnet-mint 0 5000000000000000000</div>
+  <div class="comment">// Check that the newly minted tokens are there.</div>
+  <div class="command-example">get-token-balance 0</div>
+  <div class="comment">// Deposit 2 * 10^18 of those tokens to the pool.</div>
+  <div class="command-example">deposit-private 0 2000000000000000000</div>
+  <div class="comment">// Generate a new shielded address.</div>
+  <div class="command-example">gen-shielded-address</div>
+  <div class="comment">// Transfer 1 * 10^18 of deposited tokens the specified address.</div>
+  <div class="command-example">transfer-private 0 1000000000000000000</div>
+  <div class="comment">// Withdraw the remaining 2 * 10^18 from the pool.</div>
+  <div class="command-example">withdraw-private 0 2000000000000000000</div>
+  <div class="comment">// If you want to check your private balance between '*-private' commands:</div>
+  <div class="command-example">get-private-balance</div>
+</p>
 
-If you want to check your private balance between '*-private' commands:
-  get-private-balance
-
+<p>
 Enter 'help' for more info on available commands.
+</p>
 `;
-      this.echo(message);
+      this.echo(message, { raw: true });
     },
     '',
     'print introduction message'

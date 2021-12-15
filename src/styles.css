@@ -8,3 +8,11 @@ body {
 body .terminal {
   height: 100%;
 }
+
+.comment {
+  color: gray;
+}
+
+.command-example {
+  white-space: nowrap;
+}
