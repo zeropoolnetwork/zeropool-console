@@ -27,7 +27,7 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   'get-token-balance': [c.getTokenBalance, '<account index>', ''],
   'testnet-mint': [c.mint, '<account index> <amount>', ''],
   'transfer': [c.transfer, '<account index> <to> <amount>', 'transfer token, <amount> in base units (e.g.: yoctoNEAR, Wei)'],
-  'transfer-shielded': [c.transferShielded, '<account> <to> <amount>', ''],
+  'transfer-shielded': [c.transferShielded, '<account> <shielded address> <amount>', ''],
   'deposit-shielded': [c.depositShielded, '<account> <amount>', ''],
   'withdraw-shielded': [c.withdrawShielded, '<account> <amount>', ''],
   'clear': [c.clear, '', 'clear terminal'],
@@ -93,7 +93,7 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   <div class="comment">// Generate a new shielded address.</div>
   <div class="command-example">gen-shielded-address</div>
   <div class="comment">// Transfer 1 * 10^18 of deposited tokens the specified address.</div>
-  <div class="command-example">transfer-shielded 0 &ltaddress&gt 1000000000000000000</div>
+  <div class="command-example">transfer-shielded 0 &ltshielded address&gt 1000000000000000000</div>
   <div class="comment">// Withdraw the remaining 2 * 10^18 from the pool.</div>
   <div class="command-example">withdraw-shielded 0 2000000000000000000</div>
   <div class="comment">// If you want to check your shielded balance between '*-shielded' commands:</div>
@@ -137,6 +137,10 @@ jQuery(async function ($) {
     completion: Object.keys(COMMANDS),
     historyFilter: function (command) {
       return PRIVATE_COMMANDS.indexOf(command) == -1;
+    },
+    exceptionHandler: function (err) {
+      this.resume();
+      this.exception(err);
     },
     onInit: async function () {
       // Account prompt
@@ -188,6 +192,7 @@ jQuery(async function ($) {
             this.resume();
           }
         } catch (e) {
+          this.resume();
           this.error(e);
         }
       } while (!this.account || !this.account.hdWallet);
