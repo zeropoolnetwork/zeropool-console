@@ -1,6 +1,6 @@
 import AES from 'crypto-js/aes';
 import Utf8 from 'crypto-js/enc-utf8';
-import { HDWallet, CoinType, Balance, init } from 'zeropool-api-js';
+import { HDWallet, NetworkType, Balance, init } from 'zeropool-api-js';
 import { Config } from 'zeropool-api-js/lib/config';
 import bip39 from 'bip39-light';
 
@@ -39,11 +39,13 @@ export default class Account {
             EVM_RPC = process.env.EVM_RPC;
         }
 
+        const networkId = NETWORK.toLowerCase() as NetworkType;
+        if (!(networkId in NetworkType)) {
+            throw new Error(`Unknown network ID: ${networkId}`);
+        }
+
         this.config = {
             ethereum: {
-                contractAddress: CONTRACT_ADDRESS,
-                tokenContractAddress: TOKEN_ADDRESS,
-                relayerUrl: RELAYER_URL,
                 httpProviderUrl: EVM_RPC,
             },
             snarkParams: {
@@ -51,6 +53,13 @@ export default class Account {
                 treeParamsUrl: './assets/tree_update_params.bin',
                 transferVkUrl: './assets/transfer_verification_key.json',
                 treeVkUrl: './assets/tree_update_verification_key.json',
+            },
+            networks: {
+                [networkId]: {
+                    contractAddress: CONTRACT_ADDRESS,
+                    tokenContractAddress: TOKEN_ADDRESS,
+                    relayerUrl: RELAYER_URL,
+                }
             },
             wasmPath: wasmPath.toString(),
             workerPath: workerPath.toString(),
@@ -86,36 +95,36 @@ export default class Account {
     }
 
     public getRegularAddress(chainId: string, account: number): string {
-        const coin = this.hdWallet.getCoin(chainId as CoinType);
+        const coin = this.hdWallet.getNetwork(chainId as NetworkType);
         return coin.getAddress(account);
     }
 
     public getPrivateAddress(chainId: string): string {
-        const coin = this.hdWallet.getCoin(chainId as CoinType);
+        const coin = this.hdWallet.getNetwork(chainId as NetworkType);
         return coin.generatePrivateAddress();
     }
 
     public async getRegularPrivateKey(chainId: string, accountIndex: number, password: string): Promise<string> {
         this.decryptSeed(password);
 
-        const coin = this.hdWallet.getCoin(chainId as CoinType);
+        const coin = this.hdWallet.getNetwork(chainId as NetworkType);
         return coin.getPrivateKey(accountIndex);
     }
 
-    public async getBalances(): Promise<{ [key in CoinType]?: Balance[] }> {
+    public async getBalances(): Promise<{ [key in NetworkType]?: Balance[] }> {
         return this.hdWallet.getBalances(5);
     }
 
-    public async getPrivateBalances(chainId: CoinType): Promise<[string, string, string]> {
-        const coin = this.hdWallet.getCoin(chainId);
+    public async getShieldedBalances(chainId: NetworkType): Promise<[string, string, string]> {
+        const coin = this.hdWallet.getNetwork(chainId);
         await coin.updatePrivateState();
-        const balances = await coin.getPrivateBalances();
+        const balances = await coin.getShieldedBalances();
 
         return balances;
     }
 
-    public async getBalance(chainId: CoinType, account: number): Promise<[string, string]> {
-        const coin = this.hdWallet.getCoin(chainId);
+    public async getBalance(chainId: NetworkType, account: number): Promise<[string, string]> {
+        const coin = this.hdWallet.getNetwork(chainId);
         const balance = await coin.getBalance(account);
         const readable = await coin.fromBaseUnit(balance);
 
@@ -123,40 +132,40 @@ export default class Account {
     }
 
     // TODO: Support multiple tokens
-    public async getTokenBalance(chainId: CoinType, account: number): Promise<string> {
-        const coin = this.hdWallet.getCoin(chainId);
-        const balance = await coin.getTokenBalance(account);
+    public async getTokenBalance(chainId: NetworkType, account: number): Promise<string> {
+        const coin = this.hdWallet.getNetwork(chainId);
+        const balance = await coin.getTokenBalance(account, TOKEN_ADDRESS);
         return balance;
     }
 
-    public async mint(chainId: CoinType, account: number, amount: string): Promise<void> {
-        const coin = this.hdWallet.getCoin(chainId);
-        await coin.mint(account, amount);
+    public async mint(chainId: NetworkType, account: number, amount: string): Promise<void> {
+        const coin = this.hdWallet.getNetwork(chainId);
+        await coin.mint(account, TOKEN_ADDRESS, amount);
     }
 
     public async transfer(chainId: string, account: number, to: string, amount: string): Promise<void> {
-        const coin = this.hdWallet.getCoin(chainId as CoinType);
+        const coin = this.hdWallet.getNetwork(chainId as NetworkType);
         await coin.transfer(account, to, amount);
     }
 
 
     // TODO: account number is temporary, it should not be needed when using a relayer
-    public async transferPrivate(chainId: string, account: number, to: string, amount: string): Promise<void> {
-        const coin = this.hdWallet.getCoin(chainId as CoinType);
+    public async transferShielded(chainId: string, to: string, amount: string): Promise<void> {
+        const coin = this.hdWallet.getNetwork(chainId as NetworkType);
         await coin.updatePrivateState();
-        await coin.transferPrivateToPrivate(account, [{ to, amount }]);
+        await coin.transferShielded(TOKEN_ADDRESS, [{ to, amount }]);
     }
 
-    public async depositPrivate(chainId: string, account: number, amount: string): Promise<void> {
-        const coin = this.hdWallet.getCoin(chainId as CoinType);
+    public async depositShielded(chainId: string, account: number, amount: string): Promise<void> {
+        const coin = this.hdWallet.getNetwork(chainId as NetworkType);
         await coin.updatePrivateState();
-        await coin.depositPrivate(account, amount);
+        await coin.depositShielded(account, TOKEN_ADDRESS, amount);
     }
 
-    public async withdrawPrivate(chainId: string, account: number, amount: string): Promise<void> {
-        const coin = this.hdWallet.getCoin(chainId as CoinType);
+    public async withdrawShielded(chainId: string, account: number, amount: string): Promise<void> {
+        const coin = this.hdWallet.getNetwork(chainId as NetworkType);
         await coin.updatePrivateState();
-        await coin.withdrawPrivate(account, amount);
+        await coin.withdrawShielded(account, TOKEN_ADDRESS, amount);
     }
 
     private decryptSeed(password: string): string {

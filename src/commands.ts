@@ -1,4 +1,4 @@
-import { CoinType } from 'zeropool-api-js';
+import { NetworkType } from 'zeropool-api-js';
 import { generateMnemonic } from 'zeropool-api-js/lib/utils';
 import Account from './account';
 
@@ -36,13 +36,13 @@ export async function getPrivateKey(accountIndex: string, password: string) {
 }
 
 export async function getBalance(accountIndex: string) {
-    const [balance, readable] = await this.account.getBalance(CHAIN_ID as CoinType, parseInt(accountIndex));
+    const [balance, readable] = await this.account.getBalance(CHAIN_ID as NetworkType, parseInt(accountIndex));
     this.echo(`[[;gray;]Balance: ${readable} (${balance})]`);
 }
 
 export async function getShieldedBalance() {
     this.pause();
-    const [total, acc, note] = await this.account.getPrivateBalances(CHAIN_ID as CoinType);
+    const [total, acc, note] = await this.account.getPrivateBalances(CHAIN_ID as NetworkType);
     this.echo(`[[;gray;]
 Private balance:
     total: ${total} (account + note)
@@ -58,7 +58,7 @@ export async function getBalances() {
     let buf = '';
 
     for (const [coinType, coinBalances] of Object.entries(balances)) {
-        buf += `    ${CoinType[coinType]}:\n`;
+        buf += `    ${NetworkType[coinType]}:\n`;
 
         for (const balance of coinBalances) {
             buf += `        ${balance.address}: ${balance.balance}\n`;
@@ -115,7 +115,7 @@ export function reset() {
 
 export async function showState() {
     const account: Account = this.account;
-    const coin = account.hdWallet.getCoin(CoinType.ethereum)!;
+    const coin = account.hdWallet.getNetwork(NetworkType.ethereum)!;
     await coin.updatePrivateState();
     const data = coin.zpState.account.getWholeState();
     console.log(data);
