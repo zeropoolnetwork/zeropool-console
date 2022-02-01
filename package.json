@@ -17,7 +17,7 @@
     "crypto-js": "^4.1.1",
     "jquery": "^3.5.1",
     "jquery.terminal": "^2.18.3",
-    "libzeropool-rs-wasm-web": "0.3.5",
+    "libzeropool-rs-wasm-web": "0.3.6",
     "tslib": "^2.3.1",
     "zeropool-api-js": "https://github.com/zeropoolnetwork/zeropool-api-js"
   },
