@@ -2,16 +2,21 @@ version: '3'
 
 services:
   zeropool-console:
-    image: voidxnull/zeropool-console
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
     container_name: zeropool-console
     restart: always
     ports:
-      - "80:80"
+      - "1234:1234"
     volumes:
-      - "./assets:/usr/share/nginx/html/assets:ro"
+      - ./src:/home/node/app/src
+      - ./assets:/home/node/app/assets:ro
     environment:
+      NETWORK: ${NETWORK}
       EVM_RPC: ${EVM_RPC}
       RELAYER_URL: ${RELAYER_URL}
       CONTRACT_ADDRESS: ${CONTRACT_ADDRESS}
       TOKEN_ADDRESS: ${TOKEN_ADDRESS}
+    command: yarn dev

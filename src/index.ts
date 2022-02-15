@@ -38,8 +38,6 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
       let message = '\nAvailable commands:\n' + Object.entries(COMMANDS)
         .map(([name, values]) => {
           const [fn, args, desc] = values;
-          console.log(fn.toString());
-
           let line = `    ${name}`;
 
           if (args && args.length > 0) {
