@@ -15,7 +15,7 @@ services:
       - ./assets:/home/node/app/assets:ro
     environment:
       NETWORK: ${NETWORK}
-      EVM_RPC: ${EVM_RPC}
+      RPC_URL: ${RPC_URL}
       RELAYER_URL: ${RELAYER_URL}
       CONTRACT_ADDRESS: ${CONTRACT_ADDRESS}
       TOKEN_ADDRESS: ${TOKEN_ADDRESS}
