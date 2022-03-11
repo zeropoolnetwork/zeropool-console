@@ -1,8 +1,14 @@
+import './styles.css';
 import jQuery from 'jquery';
+// // @ts-ignore
+// import initTerminal from 'imports-loader?additionalCode=var%20define=false;!jquery.terminal';
+// // @ts-ignore
+// import initAutocomplete from 'imports-loader?additionalCode=var%20define=false;!jquery.terminal/js/autocomplete_menu';
 //@ts-ignore
 import initTerminal from 'jquery.terminal';
-import initAutocomplete from 'jquery.terminal/js/autocomplete_menu';
+// import initAutocomplete from 'jquery.terminal/js/autocomplete_menu';
 import bip39 from 'bip39-light';
+
 
 import Account from './account';
 import * as c from './commands';
@@ -17,15 +23,15 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   'set-seed': [c.setSeed, '<seed phrase> <password>', 'replace the seed phrase for the current account'],
   'get-seed': [c.getSeed, '<password>', 'print the seed phrase for the current account'],
   'gen-seed': [c.genSeed, '', 'generate and print a new seed phrase'],
-  'get-address': [c.getAddress, '<account index>', 'derive a new address for specified index (0 if not specified)'],
+  'get-address': [c.getAddress, '', 'derive a new address for specified index (0 if not specified)'],
   'gen-shielded-address': [c.genShieldedAddress, '', 'generate a new shielded address'],
-  // 'get-private-key': [c.getPrivateKey, '<account index> <password>', 'print the private key'],
-  'get-balance': [c.getBalance, '<account index>', 'fetch and print account balance'],
+  // 'get-private-key': [c.getPrivateKey, ' <password>', 'print the private key'],
+  'get-balance': [c.getBalance, '', 'fetch and print account balance'],
   'get-shielded-balance': [c.getShieldedBalance, '', 'get calculated private balance'],
   // 'get-balances': [c.getBalances, '', 'print balances for all'],
-  'get-token-balance': [c.getTokenBalance, '<account index>', ''],
-  'testnet-mint': [c.mint, '<account index> <amount>', ''],
-  'transfer': [c.transfer, '<account index> <to> <amount>', 'transfer token, <amount> in base units (e.g.: yoctoNEAR, Wei)'],
+  'get-token-balance': [c.getTokenBalance, '', ''],
+  'testnet-mint': [c.mint, ' <amount>', ''],
+  'transfer': [c.transfer, ' <to> <amount>', 'transfer token, <amount> in base units (e.g.: yoctoNEAR, Wei)'],
   'transfer-shielded': [c.transferShielded, '<account> <shielded address> <amount>', ''],
   'deposit-shielded': [c.depositShielded, '<account> <amount>', ''],
   'withdraw-shielded': [c.withdrawShielded, '<account> <amount>', ''],
@@ -71,28 +77,26 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
 
 <p>
   <h4>Usage example:</h4>
-  <div class="comment">// Get native balances for first few account for the current seed phrase.</div>
-  <div class="command-example">get-balances</div>
-  <div class="comment">// Or get balance for an account with a particular index.</div>
-  <div class="command-example">get-balance 0</div>
+  <div class="comment">// Check your balance.</div>
+  <div class="command-example">get-balance</div>
   <div class="comment">// If you don't have any native tokens you have two choices:</div>
   <div class="comment">//   1. Use the current network's faucet to get some.</div>
   <div class="comment">//   2. Transfer from a different account.</div>
   <div class="comment">// If you want to transfer from a different account you'll need to know.</div>
   <div class="comment">// one of the addresses for your current account:</div>
-  <div class="command-example">get-address 0</div>
+  <div class="command-example">get-address</div>
   <div class="comment">// Mint 5 * 10^18 tokens for the account with index 0.</div>
-  <div class="command-example">testnet-mint 0 5000000000000000000</div>
+  <div class="command-example">testnet-mint 5000000000000000000</div>
   <div class="comment">// Check that the newly minted tokens are there.</div>
-  <div class="command-example">get-token-balance 0</div>
+  <div class="command-example">get-token-balance</div>
   <div class="comment">// Deposit 2 * 10^18 of those tokens to the pool.</div>
-  <div class="command-example">deposit-shielded 0 2000000000000000000</div>
+  <div class="command-example">deposit-shielded 2000000000000000000</div>
   <div class="comment">// Generate a new shielded address.</div>
   <div class="command-example">gen-shielded-address</div>
   <div class="comment">// Transfer 1 * 10^18 of deposited tokens the specified address.</div>
-  <div class="command-example">transfer-shielded 0 &ltshielded address&gt 1000000000000000000</div>
+  <div class="command-example">transfer-shielded "shielded address here" 1000000000000000000</div>
   <div class="comment">// Withdraw the remaining 2 * 10^18 from the pool.</div>
-  <div class="command-example">withdraw-shielded 0 2000000000000000000</div>
+  <div class="command-example">withdraw-shielded 2000000000000000000</div>
   <div class="comment">// If you want to check your shielded balance between '*-shielded' commands:</div>
   <div class="command-example">get-shielded-balance</div>
 </p>
@@ -119,7 +123,7 @@ const GREETING = String.raw`
 
 jQuery(async function ($) {
   initTerminal($);
-  initAutocomplete($);
+  // initAutocomplete($);
 
   const commands = {};
   for (const [name, values] of Object.entries(COMMANDS)) {
@@ -187,8 +191,9 @@ jQuery(async function ($) {
         } catch (e) {
           this.resume();
           this.error(e);
+          console.error(e);
         }
-      } while (!this.account || !this.account.hdWallet);
+      } while (!this.account || !this.account.isInitialized());
 
       this.clear();
       this.echo(GREETING);

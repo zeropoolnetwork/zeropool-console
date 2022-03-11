@@ -6,9 +6,23 @@ import bip39 from 'bip39-light';
 import HDWalletProvider from '@truffle/hdwallet-provider';
 import { deriveSpendingKey } from 'zeropool-client-js/lib/utils';
 import { NetworkType } from 'zeropool-client-js/lib/network-type';
+import { EvmNetwork } from 'zeropool-client-js/lib/networks/evm';
+import { PolkadotNetwork } from 'zeropool-client-js/lib/networks/polkadot';
 
-const wasmPath = new URL('npm:libzeropool-rs-wasm-web/libzeropool_rs_wasm_bg.wasm', import.meta.url);
-const workerPath = new URL('npm:zeropool-client-js/lib/worker.js', import.meta.url);
+// @ts-ignore
+import wasmPath from 'libzeropool-rs-wasm-web/libzeropool_rs_wasm_bg.wasm';
+// @ts-ignore
+import workerPath from 'zeropool-client-js/lib/worker.js?asset';
+// const wasmPath = new URL('npm:libzeropool-rs-wasm-web/libzeropool_rs_wasm_bg.wasm', import.meta.url);
+// const workerPath = new URL('npm:zeropool-client-js/lib/worker.js', import.meta.url);
+
+function isEvmBased(network: string): boolean {
+    return ['ethereum', 'aurora', 'xdai'].includes(network);
+}
+
+function isSubstrateBased(network: string): boolean {
+    return ['polkadot', 'kusama'].includes(network);
+}
 
 interface AccountStorage {
     get(accountName: string, field: string): string | null;
@@ -53,25 +67,26 @@ export default class Account {
             treeVkUrl: './assets/tree_update_verification_key.json',
         };
 
-        const { worker, snarkParams } = await init(wasmPath.toString(), workerPath.toString(), snarkParamsConfig);
         let compactSignature = true;
-
-        if (NETWORK === 'polkadot' || NETWORK === 'kusama') {
+        if (isSubstrateBased(NETWORK)) {
             compactSignature = false;
             snarkParamsConfig.transferParamsUrl = './assets/transfer_verification_key.bin';
             snarkParamsConfig.treeVkUrl = './assets/tree_update_verification_key.bin';
         }
 
-        let client;
-        if (['ethereum', 'aurora', 'xdai'].includes(NETWORK)) {
+        const { worker, snarkParams } = await init(wasmPath, workerPath, snarkParamsConfig);
+
+        let client, network;
+        if (isEvmBased(NETWORK)) {
             const provider = new HDWalletProvider({
                 mnemonic,
                 providerOrUrl: RPC_URL,
-                addressIndex: 0
             });
             client = new EthereumClient(provider);
-        } else if (['polkadot', 'kusama'].includes(NETWORK)) {
-            client = PolkadotClient.create(mnemonic, RPC_URL);
+            network = new EvmNetwork(RPC_URL, CONTRACT_ADDRESS);
+        } else if (isSubstrateBased(NETWORK)) {
+            client = await PolkadotClient.create(mnemonic, RPC_URL);
+            network = new PolkadotNetwork();
         }
 
         const networkType = NETWORK as NetworkType;
@@ -88,7 +103,7 @@ export default class Account {
                 }
             },
             networkName: NETWORK,
-            compactSignature,
+            network,
         });
 
         this.storage.set(this.accountName, 'seed', await AES.encrypt(mnemonic, password).toString());
@@ -96,17 +111,24 @@ export default class Account {
 
     public async unlockAccount(password: string) {
         let seed = this.decryptSeed(password);
-        this.init(seed, password);
+        await this.init(seed, password);
+    }
+
+    public isInitialized(): boolean {
+        return !!this.client;
     }
 
     public isAccountPresent(): boolean {
         return !!this.storage.get(this.accountName, 'seed');
     }
 
-    public getRegularAddress(): string {
-        return this.client.getAddress();
+    public async getRegularAddress(): Promise<string> {
+        return await this.client.getAddress();
     }
 
+    public genShieldedAddress(): string {
+        return this.zpClient.generateAddress(TOKEN_ADDRESS);
+    }
 
     public async getShieldedBalances(): Promise<[string, string, string]> {
         const balances = this.zpClient.getBalances(TOKEN_ADDRESS);
@@ -140,11 +162,15 @@ export default class Account {
     }
 
     public async depositShielded(amount: string): Promise<void> {
-        await this.zpClient.deposit(TOKEN_ADDRESS, amount, async (_data) => 'FIXME');
+        let fromAddress = null;
+        if (isSubstrateBased(NETWORK)) {
+            fromAddress = await this.getRegularAddress();
+        }
+        await this.zpClient.deposit(TOKEN_ADDRESS, amount, this.client.sign, fromAddress);
     }
 
     public async withdrawShielded(amount: string): Promise<void> {
-        const address = this.getRegularAddress();
+        const address = await this.getRegularAddress();
         await this.zpClient.withdraw(TOKEN_ADDRESS, address, amount);
     }
 

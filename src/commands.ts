@@ -15,13 +15,13 @@ export function genSeed() {
     this.echo(`[[;gray;]Generated mnemonic: ${seed}]`);
 }
 
-export function getAddress() {
-    const address = this.account.getRegularAddress();
+export async function getAddress() {
+    const address = await this.account.getRegularAddress();
     this.echo(`[[;gray;]Address: ${address}]`);
 }
 
 export function genShieldedAddress() {
-    const address = this.account.getPrivateAddress();
+    const address = this.account.genShieldedAddress();
     this.echo(`[[;gray;]${address}]`);
 }
 
