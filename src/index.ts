@@ -11,7 +11,6 @@ const PRIVATE_COMMANDS = [
   'set-seed',
   'get-seed',
   'get-private-key',
-  'unlock',
 ];
 
 const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
@@ -20,10 +19,10 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   'gen-seed': [c.genSeed, '', 'generate and print a new seed phrase'],
   'get-address': [c.getAddress, '<account index>', 'derive a new address for specified index (0 if not specified)'],
   'gen-shielded-address': [c.genShieldedAddress, '', 'generate a new shielded address'],
-  'get-private-key': [c.getPrivateKey, '<account index> <password>', 'print the private key'],
+  // 'get-private-key': [c.getPrivateKey, '<account index> <password>', 'print the private key'],
   'get-balance': [c.getBalance, '<account index>', 'fetch and print account balance'],
   'get-shielded-balance': [c.getShieldedBalance, '', 'get calculated private balance'],
-  'get-balances': [c.getBalances, '', 'print balances for all'],
+  // 'get-balances': [c.getBalances, '', 'print balances for all'],
   'get-token-balance': [c.getTokenBalance, '<account index>', ''],
   'testnet-mint': [c.mint, '<account index> <amount>', ''],
   'transfer': [c.transfer, '<account index> <to> <amount>', 'transfer token, <amount> in base units (e.g.: yoctoNEAR, Wei)'],
@@ -32,7 +31,7 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   'withdraw-shielded': [c.withdrawShielded, '<account> <amount>', ''],
   'clear': [c.clear, '', 'clear terminal'],
   'reset': [c.reset, '', 'reset console state'],
-  'internal-state': [c.showState, '', 'show internal state'],
+  // 'internal-state': [c.showState, '', 'show internal state'],
   'help': [
     function () {
       let message = '\nAvailable commands:\n' + Object.entries(COMMANDS)
@@ -152,7 +151,6 @@ jQuery(async function ($) {
 
           this.pause();
           this.account = new Account(accountName);
-          await this.account.init();
           this.resume();
 
           if (this.account.isAccountPresent()) {
@@ -160,9 +158,8 @@ jQuery(async function ($) {
             const password = await this.read('Enter password: ');
             this.set_mask(false);
             this.pause();
-            await this.account.unlockAccount(password, () => {
-              this.echo('Loading data files...');
-            });
+            this.echo('Loading data files...');
+            await this.account.unlockAccount(password);
             this.resume();
           } else {
             let seed = await this.read(`Enter seed phrase or leave empty to generate a new one: `);
@@ -184,9 +181,7 @@ jQuery(async function ($) {
             }
 
             this.pause();
-            await this.account.login(seed, password, () => {
-              this.echo('Loading data files...');
-            });
+            await this.account.init(seed, password);
             this.resume();
           }
         } catch (e) {

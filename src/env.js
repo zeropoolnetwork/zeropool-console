@@ -1,5 +1,5 @@
-window.NETWORK = '$NETWORK';
-window.EVM_RPC = '$EVM_RPC';
+window.NETWORK = '$NETWORK'.toLowerCase();
+window.RPC_URL = '$RPC_URL';
 window.RELAYER_URL = '$RELAYER_URL';
 window.CONTRACT_ADDRESS = '$CONTRACT_ADDRESS';
 window.TOKEN_ADDRESS = '$TOKEN_ADDRESS';

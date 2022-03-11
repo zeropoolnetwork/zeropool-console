@@ -14,12 +14,16 @@
     "env.js"
   ],
   "dependencies": {
+    "@truffle/hdwallet-provider": "^2.0.3",
+    "bip39-light": "^1.0.7",
     "crypto-js": "^4.1.1",
     "jquery": "^3.5.1",
     "jquery.terminal": "^2.18.3",
     "libzeropool-rs-wasm-web": "0.3.6",
     "tslib": "^2.3.1",
-    "zeropool-api-js": "https://github.com/zeropoolnetwork/zeropool-api-js"
+    "web3": "^1.7.1",
+    "zeropool-client-js": "https://github.com/zeropoolnetwork/zeropool-client-js",
+    "zeropool-support-js": "https://github.com/zeropoolnetwork/zeropool-support-js"
   },
   "devDependencies": {
     "@parcel/compressor-gzip": "^2.0.1",

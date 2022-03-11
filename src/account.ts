@@ -1,11 +1,14 @@
 import AES from 'crypto-js/aes';
 import Utf8 from 'crypto-js/enc-utf8';
-import { HDWallet, NetworkType, Balance, init } from 'zeropool-api-js';
-import { Config } from 'zeropool-api-js/lib/config';
+import { EthereumClient, PolkadotClient, Client as NetworkClient } from 'zeropool-support-js';
+import { init, ZeropoolClient } from 'zeropool-client-js';
 import bip39 from 'bip39-light';
+import HDWalletProvider from '@truffle/hdwallet-provider';
+import { deriveSpendingKey } from 'zeropool-client-js/lib/utils';
+import { NetworkType } from 'zeropool-client-js/lib/network-type';
 
 const wasmPath = new URL('npm:libzeropool-rs-wasm-web/libzeropool_rs_wasm_bg.wasm', import.meta.url);
-const workerPath = new URL('npm:zeropool-api-js/lib/worker.js', import.meta.url);
+const workerPath = new URL('npm:zeropool-client-js/lib/worker.js', import.meta.url);
 
 interface AccountStorage {
     get(accountName: string, field: string): string | null;
@@ -25,149 +28,124 @@ class LocalAccountStorage implements AccountStorage {
 export default class Account {
     readonly accountName: string;
     private storage: AccountStorage;
-    public hdWallet: HDWallet;
-    private config: Config;
+    public client: NetworkClient;
+    private zpClient: ZeropoolClient;
 
     constructor(accountName: string) {
         this.accountName = accountName;
         this.storage = new LocalAccountStorage();
 
         if (process.env.NODE_ENV === 'development') {
-            NETWORK = process.env.NETWORK;
+            NETWORK = process.env.NETWORK.toLowerCase();
             CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
             TOKEN_ADDRESS = process.env.TOKEN_ADDRESS;
             RELAYER_URL = process.env.RELAYER_URL;
-            EVM_RPC = process.env.EVM_RPC;
+            RPC_URL = process.env.RPC_URL;
         }
 
-        const networkId = NETWORK.toLowerCase() as NetworkType;
-        if (!(networkId in NetworkType)) {
-            throw new Error(`Unknown network ID: ${networkId}`);
+    }
+
+    public async init(mnemonic: string, password: string): Promise<void> {
+        const snarkParamsConfig = {
+            transferParamsUrl: './assets/transfer_params.bin',
+            treeParamsUrl: './assets/tree_update_params.bin',
+            transferVkUrl: './assets/transfer_verification_key.json',
+            treeVkUrl: './assets/tree_update_verification_key.json',
+        };
+
+        const { worker, snarkParams } = await init(wasmPath.toString(), workerPath.toString(), snarkParamsConfig);
+        let compactSignature = true;
+
+        if (NETWORK === 'polkadot' || NETWORK === 'kusama') {
+            compactSignature = false;
+            snarkParamsConfig.transferParamsUrl = './assets/transfer_verification_key.bin';
+            snarkParamsConfig.treeVkUrl = './assets/tree_update_verification_key.bin';
         }
 
-        this.config = {
-            snarkParams: {
-                transferParamsUrl: './assets/transfer_params.bin',
-                treeParamsUrl: './assets/tree_update_params.bin',
-                transferVkUrl: './assets/transfer_verification_key.json',
-                treeVkUrl: './assets/tree_update_verification_key.json',
-            },
-            networks: {
-                [networkId]: {
-                    httpProviderUrl: EVM_RPC,
-                    tokens: {
-                        [TOKEN_ADDRESS]: {
-                            poolAddress: CONTRACT_ADDRESS,
-                            relayerUrl: RELAYER_URL,
-                            denominator: BigInt(1000000000),
-                        }
-                    }
+        let client;
+        if (['ethereum', 'aurora', 'xdai'].includes(NETWORK)) {
+            const provider = new HDWalletProvider({
+                mnemonic,
+                providerOrUrl: RPC_URL,
+                addressIndex: 0
+            });
+            client = new EthereumClient(provider);
+        } else if (['polkadot', 'kusama'].includes(NETWORK)) {
+            client = PolkadotClient.create(mnemonic, RPC_URL);
+        }
+
+        const networkType = NETWORK as NetworkType;
+        const sk = deriveSpendingKey(mnemonic, networkType);
+        this.client = client;
+        this.zpClient = await ZeropoolClient.create({
+            sk,
+            worker,
+            snarkParams,
+            tokens: {
+                [TOKEN_ADDRESS]: {
+                    poolAddress: CONTRACT_ADDRESS,
+                    relayerUrl: RELAYER_URL,
                 }
             },
-            wasmPath: wasmPath.toString(),
-            workerPath: workerPath.toString(),
-        };
+            networkName: NETWORK,
+            compactSignature,
+        });
+
+        this.storage.set(this.accountName, 'seed', await AES.encrypt(mnemonic, password).toString());
     }
 
-    public async init(): Promise<void> {
-        await init(wasmPath);
-    }
-
-    public async login(seed: string, password: string, beforeLoad: () => void) {
-        this.storage.set(this.accountName, 'seed', await AES.encrypt(seed, password).toString());
-        await this.unlockAccount(password, beforeLoad);
+    public async unlockAccount(password: string) {
+        let seed = this.decryptSeed(password);
+        this.init(seed, password);
     }
 
     public isAccountPresent(): boolean {
         return !!this.storage.get(this.accountName, 'seed');
     }
 
-    public getSeed(password: string): string {
-        return this.decryptSeed(password);
+    public getRegularAddress(): string {
+        return this.client.getAddress();
     }
 
-    public async unlockAccount(password: string, beforeLoad: () => void) {
-        const seed = this.decryptSeed(password);
-        if (this.hdWallet) {
-            this.hdWallet.free();
-            this.hdWallet = null;
-        }
 
-        beforeLoad();
-        this.hdWallet = await HDWallet.init(seed, this.config);
-    }
-
-    public getRegularAddress(chainId: string, account: number): string {
-        const network = this.hdWallet.getNetwork(chainId as NetworkType);
-        return network.getAddress(account);
-    }
-
-    public getPrivateAddress(chainId: string): string {
-        const network = this.hdWallet.getNetwork(chainId as NetworkType);
-        return network.generatePrivateAddress();
-    }
-
-    public async getRegularPrivateKey(chainId: string, accountIndex: number, password: string): Promise<string> {
-        this.decryptSeed(password);
-
-        const network = this.hdWallet.getNetwork(chainId as NetworkType);
-        return network.getPrivateKey(accountIndex);
-    }
-
-    public async getBalances(): Promise<{ [key in NetworkType]?: Balance[] }> {
-        return this.hdWallet.getBalances(5);
-    }
-
-    public async getShieldedBalances(chainId: NetworkType): Promise<[string, string, string]> {
-        const network = this.hdWallet.getNetwork(chainId);
-        await network.updateState();
-        const balances = network.getShieldedBalances();
+    public async getShieldedBalances(): Promise<[string, string, string]> {
+        const balances = this.zpClient.getBalances(TOKEN_ADDRESS);
 
         return balances;
     }
 
-    public async getBalance(chainId: NetworkType, account: number): Promise<[string, string]> {
-        const network = this.hdWallet.getNetwork(chainId);
-        const balance = await network.getBalance(account);
-        const readable = network.fromBaseUnit(balance);
+    public async getBalance(): Promise<[string, string]> {
+        const balance = await this.client.getBalance();
+        const readable = this.client.fromBaseUnit(balance);
 
         return [balance, readable];
     }
 
     // TODO: Support multiple tokens
-    public async getTokenBalance(chainId: NetworkType, account: number): Promise<string> {
-        const network = this.hdWallet.getNetwork(chainId);
-        const balance = await network.getTokenBalance(account, TOKEN_ADDRESS);
-        return balance;
+    public async getTokenBalance(): Promise<string> {
+        return await this.client.getTokenBalance(TOKEN_ADDRESS);
     }
 
-    public async mint(chainId: NetworkType, account: number, amount: string): Promise<void> {
-        const network = this.hdWallet.getNetwork(chainId);
-        await network.mint(account, TOKEN_ADDRESS, amount);
+    public async mint(amount: string): Promise<void> {
+        await this.client.mint(TOKEN_ADDRESS, amount);
     }
 
-    public async transfer(chainId: string, account: number, to: string, amount: string): Promise<void> {
-        const network = this.hdWallet.getNetwork(chainId as NetworkType);
-        await network.transfer(account, to, amount);
+    public async transfer(to: string, amount: string): Promise<void> {
+        await this.client.transfer(to, amount);
     }
 
     // TODO: account number is temporary, it should not be needed when using a relayer
-    public async transferShielded(chainId: string, to: string, amount: string): Promise<void> {
-        const network = this.hdWallet.getNetwork(chainId as NetworkType);
-        await network.updateState();
-        await network.transferShielded(TOKEN_ADDRESS, [{ to, amount }]);
+    public async transferShielded(to: string, amount: string): Promise<void> {
+        await this.zpClient.transfer(TOKEN_ADDRESS, [{ to, amount }]);
     }
 
-    public async depositShielded(chainId: string, account: number, amount: string): Promise<void> {
-        const network = this.hdWallet.getNetwork(chainId as NetworkType);
-        await network.updateState();
-        await network.depositShielded(account, TOKEN_ADDRESS, amount);
+    public async depositShielded(amount: string): Promise<void> {
+        await this.zpClient.deposit(TOKEN_ADDRESS, amount, async (_data) => 'FIXME');
     }
 
-    public async withdrawShielded(chainId: string, account: number, amount: string): Promise<void> {
-        const network = this.hdWallet.getNetwork(chainId as NetworkType);
-        await network.updateState();
-        await network.withdrawShielded(account, TOKEN_ADDRESS, amount);
+    public async withdrawShielded(amount: string): Promise<void> {
+        const address = this.getRegularAddress();
+        await this.zpClient.withdraw(TOKEN_ADDRESS, address, amount);
     }
 
     private decryptSeed(password: string): string {
@@ -175,7 +153,7 @@ export default class Account {
         let seed;
         try {
             seed = AES.decrypt(cipherText, password).toString(Utf8);
-            if (!bip39.validateMnemonic(seed)) throw new Error();
+            if (!bip39.validateMnemonic(seed)) throw new Error('invalid mnemonic');
         } catch (_) {
             throw new Error('Incorrect password');
         }
