@@ -167,7 +167,7 @@ export default class Account {
         if (isSubstrateBased(NETWORK)) {
             fromAddress = await this.getRegularAddress();
         }
-        await this.zpClient.deposit(TOKEN_ADDRESS, amount, this.client.sign, fromAddress);
+        await this.zpClient.deposit(TOKEN_ADDRESS, amount, (data) => this.client.sign(data), fromAddress);
     }
 
     public async withdrawShielded(amount: string): Promise<void> {
