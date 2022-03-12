@@ -50,7 +50,8 @@ export default class Account {
         this.storage = new LocalAccountStorage();
 
         if (process.env.NODE_ENV === 'development') {
-            NETWORK = process.env.NETWORK.toLowerCase();
+            console.log('Dev environment, using local env variables.');
+            NETWORK = process.env.NETWORK;
             CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
             TOKEN_ADDRESS = process.env.TOKEN_ADDRESS;
             RELAYER_URL = process.env.RELAYER_URL;
@@ -70,8 +71,6 @@ export default class Account {
         let compactSignature = true;
         if (isSubstrateBased(NETWORK)) {
             compactSignature = false;
-            snarkParamsConfig.transferParamsUrl = './assets/transfer_verification_key.bin';
-            snarkParamsConfig.treeVkUrl = './assets/tree_update_verification_key.bin';
         }
 
         const { worker, snarkParams } = await init(wasmPath, workerPath, snarkParamsConfig);
@@ -87,6 +86,8 @@ export default class Account {
         } else if (isSubstrateBased(NETWORK)) {
             client = await PolkadotClient.create(mnemonic, RPC_URL);
             network = new PolkadotNetwork();
+        } else {
+            throw new Error(`Unknown network ${NETWORK}`);
         }
 
         const networkType = NETWORK as NetworkType;

@@ -26,7 +26,6 @@ module.exports = merge(common, {
     },
     plugins: [
         new webpack.EnvironmentPlugin({
-            NODE_ENV: 'development',
             NETWORK: null,
             CONTRACT_ADDRESS: null,
             TOKEN_ADDRESS: null,

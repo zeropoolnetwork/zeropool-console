@@ -1884,9 +1884,9 @@ ansi-regex@^3.0.0:
   integrity sha1-7QMXwyIGT3lGbAKWa922Bas32Zg=
 
 ansi-regex@^4.1.0:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/ansi-regex/-/ansi-regex-4.1.0.tgz#8b9f8f08cf1acb843756a839ca8c7e3168c51997"
-  integrity sha512-1apePfXM1UOSqw0o9IiFAovVz9M5S1Dg+4TrDwfMewQ6p/rmMueb7tWZjQ1rx4Loy1ArBggoqGpfqqdI4rondg==
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/ansi-regex/-/ansi-regex-4.1.1.tgz#164daac87ab2d6f6db3a29875e2d1766582dabed"
+  integrity sha512-ILlv4k/3f6vfQ4OoP2AGvirOktlQ98ZEL1k9FaQjxa3L1abBgbuTDAdPOpvbGncC0BTVQrl+OM8xZGK6tWXt7g==
 
 ansi-regex@^5.0.1:
   version "5.0.1"
@@ -3649,9 +3649,9 @@ es-to-primitive@^1.2.1:
     is-symbol "^1.0.2"
 
 es5-ext@^0.10.35, es5-ext@^0.10.50:
-  version "0.10.57"
-  resolved "https://registry.yarnpkg.com/es5-ext/-/es5-ext-0.10.57.tgz#440574256186e2bf22223d673087caae83edabd2"
-  integrity sha512-L7cCNoPwTkAp7IBHxrKLsh7NKiVFkcdxlP9vbVw9QUvb7gF0Mz9bEBN0WY9xqdTjGF907EMT/iG013vnbqwu1Q==
+  version "0.10.58"
+  resolved "https://registry.yarnpkg.com/es5-ext/-/es5-ext-0.10.58.tgz#5b97d94236285fb87c8ffc782cf42eb0a25d2ae0"
+  integrity sha512-LHO+KBBaHGwjy32ibSaMY+ZzjpC4K4I5bPoijICMBL7gXEXfrEUrzssmNP+KigbQEp1dRUnGkry/vUnxOqptLQ==
   dependencies:
     es6-iterator "^2.0.3"
     es6-symbol "^3.1.3"
@@ -5886,10 +5886,10 @@ levn@^0.3.0, levn@~0.3.0:
     prelude-ls "~1.1.2"
     type-check "~0.3.2"
 
-libzeropool-rs-wasm-web@0.3.6, libzeropool-rs-wasm-web@^0.3.6:
-  version "0.3.6"
-  resolved "https://registry.yarnpkg.com/libzeropool-rs-wasm-web/-/libzeropool-rs-wasm-web-0.3.6.tgz#094497ed85744ecf71c156d0ba15e4c205d26c1c"
-  integrity sha512-f/lEmm5Mk0EzCeHwQ5x77k41k3os+SFecoTfjicP7ALYz6XwHQKiMsv6je4Fla4N2rj6+1pBPp1WoUEYhhVgog==
+libzeropool-rs-wasm-web@^0.3.7:
+  version "0.3.7"
+  resolved "https://registry.yarnpkg.com/libzeropool-rs-wasm-web/-/libzeropool-rs-wasm-web-0.3.7.tgz#a80eb93dd01c5ae1177084c4b68e298cd0f8cf3f"
+  integrity sha512-AjNEuteHGYlyN3J+u76Vk+KJQdYmtwbpNRARDfbwUPxnw/795LWa65fL6yu4wIh7kmRegf43ZcWM6MYBpgub+Q==
 
 lilconfig@^2.0.3:
   version "2.0.4"
@@ -9682,12 +9682,12 @@ yargs@^13.3.2:
 
 "zeropool-client-js@https://github.com/zeropoolnetwork/zeropool-client-js":
   version "0.1.0"
-  resolved "https://github.com/zeropoolnetwork/zeropool-client-js#b52f1e967c262dbeedfaf2c139d53e8921e03395"
+  resolved "https://github.com/zeropoolnetwork/zeropool-client-js#67d904e60090a7151d0cbb69c6b52578e25c3d7c"
   dependencies:
     comlink "^4.3.1"
     hdwallet-babyjub "^0.0.1"
     idb "^7.0.0"
-    libzeropool-rs-wasm-web "^0.3.6"
+    libzeropool-rs-wasm-web "^0.3.7"
     regenerator-runtime "^0.13.9"
     web3 "^1.7.0"
     web3-utils "^1.7.0"
