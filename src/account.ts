@@ -62,9 +62,9 @@ export default class Account {
     public async init(mnemonic: string, password: string): Promise<void> {
         const snarkParamsConfig = {
             transferParamsUrl: './assets/transfer_params.bin',
-            treeParamsUrl: './assets/tree_update_params.bin',
+            treeParamsUrl: './assets/tree_params.bin',
             transferVkUrl: './assets/transfer_verification_key.json',
-            treeVkUrl: './assets/tree_update_verification_key.json',
+            treeVkUrl: './assets/tree_verification_key.json',
         };
 
         let compactSignature = true;
