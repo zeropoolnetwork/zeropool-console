@@ -57,7 +57,6 @@ export default class Account {
             RELAYER_URL = process.env.RELAYER_URL;
             RPC_URL = process.env.RPC_URL;
         }
-
     }
 
     public async init(mnemonic: string, password: string): Promise<void> {
@@ -165,13 +164,13 @@ export default class Account {
     public async depositShielded(amount: string): Promise<void> {
         let fromAddress = null;
         if (isSubstrateBased(NETWORK)) {
-            fromAddress = await this.getRegularAddress();
+            fromAddress = await this.client.getPublicKey();
         }
         await this.zpClient.deposit(TOKEN_ADDRESS, amount, (data) => this.client.sign(data), fromAddress);
     }
 
     public async withdrawShielded(amount: string): Promise<void> {
-        const address = await this.getRegularAddress();
+        const address = await this.client.getPublicKey();
         await this.zpClient.withdraw(TOKEN_ADDRESS, address, amount);
     }
 
