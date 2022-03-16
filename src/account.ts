@@ -81,7 +81,7 @@ export default class Account {
                 providerOrUrl: RPC_URL,
             });
             client = new EthereumClient(provider);
-            network = new EvmNetwork(RPC_URL, CONTRACT_ADDRESS);
+            network = new EvmNetwork(RPC_URL);
         } else if (isSubstrateBased(NETWORK)) {
             client = await PolkadotClient.create(mnemonic, RPC_URL);
             network = new PolkadotNetwork();
