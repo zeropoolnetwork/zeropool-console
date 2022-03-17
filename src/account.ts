@@ -114,6 +114,10 @@ export default class Account {
         await this.init(seed, password);
     }
 
+    public getSeed(password: string): string {
+        return this.decryptSeed(password);
+    }
+
     public isInitialized(): boolean {
         return !!this.client;
     }
@@ -166,6 +170,13 @@ export default class Account {
         if (isSubstrateBased(NETWORK)) {
             fromAddress = await this.client.getPublicKey();
         }
+
+        if (isEvmBased(NETWORK)) {
+            console.log('Approving the Pool contract (%s) to spend our tokens (%s)', CONTRACT_ADDRESS, amount);
+            await this.client.approve(TOKEN_ADDRESS, CONTRACT_ADDRESS, amount);
+        }
+
+        console.log('Making deposit...');
         await this.zpClient.deposit(TOKEN_ADDRESS, amount, (data) => this.client.sign(data), fromAddress);
     }
 

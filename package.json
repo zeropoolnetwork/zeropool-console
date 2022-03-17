@@ -33,8 +33,8 @@
     "stream-http": "^3.1.1",
     "tslib": "^2.3.1",
     "web3": "^1.7.1",
-    "zeropool-client-js": "https://github.com/zeropoolnetwork/zeropool-client-js",
-    "zeropool-support-js": "https://github.com/zeropoolnetwork/zeropool-support-js"
+    "zeropool-client-js": "https://github.com/zkBob/zeropool-client-js",
+    "zeropool-support-js": "https://github.com/zkBob/zeropool-support-js"
   },
   "devDependencies": {
     "@parcel/compressor-gzip": "^2.0.1",
