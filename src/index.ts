@@ -8,6 +8,9 @@ import jQuery from 'jquery';
 import initTerminal from 'jquery.terminal';
 // import initAutocomplete from 'jquery.terminal/js/autocomplete_menu';
 import bip39 from 'bip39-light';
+//import {Version} from '../package.json';
+
+var pjson = require('../package.json');
 
 
 import Account from './account';
@@ -37,6 +40,24 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   'withdraw-shielded': [c.withdrawShielded, '<account> <amount>', ''],
   'clear': [c.clear, '', 'clear terminal'],
   'reset': [c.reset, '', 'reset console state'],
+  'version': [
+    function () {
+      this.echo(`zkBob console version ${pjson.version}`);
+    },
+    '',
+    'get console version'
+  ],
+  'environment': [
+    function () {
+      this.echo(`Network: ${NETWORK}`);
+      this.echo(`RPC URL: ${RPC_URL}`);
+      this.echo(`Relayer: ${RELAYER_URL}`);
+      this.echo(`Pool:    ${CONTRACT_ADDRESS}`);
+      this.echo(`Token:   ${TOKEN_ADDRESS}`);
+    },
+    '',
+    'get environment constants'
+  ],
   // 'internal-state': [c.showState, '', 'show internal state'],
   'help': [
     function () {
@@ -66,7 +87,7 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
     function () {
       const message = String.raw`
 <h3>
-  Welcome to the ZeroPool console for ${NETWORK}.
+  Welcome to the ZeroPool console v${pjson.version} for ${NETWORK}.
 </h3>
 
 <p>
@@ -147,6 +168,7 @@ jQuery(async function ($) {
       // Account prompt
       do {
         try {
+          this.echo(`zkBob console [v${pjson.version}]`);
           const accountName = await this.read('Enter account name (new or existing): ');
 
           if (accountName.trim().length == 0) {
