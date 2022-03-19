@@ -172,6 +172,8 @@ export default class Account {
         }
 
         if (isEvmBased(NETWORK)) {
+            fromAddress = await this.client.getAddress();
+
             console.log('Approving the Pool contract (%s) to spend our tokens (%s)', CONTRACT_ADDRESS, amount);
             await this.client.approve(TOKEN_ADDRESS, CONTRACT_ADDRESS, amount);
         }
@@ -181,7 +183,16 @@ export default class Account {
     }
 
     public async withdrawShielded(amount: string): Promise<void> {
-        const address = await this.client.getPublicKey();
+
+        let address = null;
+        if (isEvmBased(NETWORK)) {
+            address = await this.client.getAddress();
+        }
+
+        if (isSubstrateBased(NETWORK)) {
+            address = await this.client.getPublicKey();
+        }
+
         await this.zpClient.withdraw(TOKEN_ADDRESS, address, amount);
     }
 

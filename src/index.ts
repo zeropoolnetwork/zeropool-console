@@ -87,7 +87,7 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
     function () {
       const message = String.raw`
 <h3>
-  Welcome to the ZeroPool console v${pjson.version} for ${NETWORK}.
+  Welcome to the ZeroPool console for ${NETWORK}.
 </h3>
 
 <p>
@@ -139,7 +139,7 @@ const GREETING = String.raw`
   / // _ \ '__/ _ \| |_) / _ \ / _ \| |
  / /|  __/ | | (_) |  __/ (_) | (_) | |
 /____\___|_|  \___/|_|   \___/ \___/|_|
-
+                                 v${pjson.version}
     `;
 
 jQuery(async function ($) {
@@ -168,7 +168,6 @@ jQuery(async function ($) {
       // Account prompt
       do {
         try {
-          this.echo(`zkBob console [v${pjson.version}]`);
           const accountName = await this.read('Enter account name (new or existing): ');
 
           if (accountName.trim().length == 0) {
