@@ -94,6 +94,14 @@ export async function withdrawShielded(amount: string) {
     this.echo(`Done [txHash: ${txHash}]`);
 }
 
+export async function getInternalState() {
+    const state = await this.account.getInternalState();
+    
+    for (const [index, tx] of state.txs) {
+        this.echo(`${index}: ${JSON.stringify(tx)}`);
+    }
+}
+
 export function clear() {
     this.clear();
 }

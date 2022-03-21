@@ -38,6 +38,7 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   'transfer-shielded': [c.transferShielded, '<account> <shielded address> <amount>', ''],
   'deposit-shielded': [c.depositShielded, '<account> <amount>', ''],
   'withdraw-shielded': [c.withdrawShielded, '<account> <amount>', ''],
+  'internal-state': [c.getInternalState, '', ''],
   'clear': [c.clear, '', 'clear terminal'],
   'reset': [c.reset, '', 'reset console state'],
   'version': [

@@ -147,6 +147,10 @@ export default class Account {
         return [balance, readable];
     }
 
+    public async getInternalState(): Promise<any> {
+        return this.zpClient.rawState(TOKEN_ADDRESS);
+    }
+
     // TODO: Support multiple tokens
     public async getTokenBalance(): Promise<string> {
         return await this.client.getTokenBalance(TOKEN_ADDRESS);
