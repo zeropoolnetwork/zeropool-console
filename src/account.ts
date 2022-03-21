@@ -159,30 +159,34 @@ export default class Account {
     public async transfer(to: string, amount: string): Promise<void> {
         await this.client.transfer(to, amount);
     }
+s
+    public async transferShielded(to: string, amount: string): Promise<string> {
+        console.log('Making transfer...');
+        const jobId = await this.zpClient.transfer(TOKEN_ADDRESS, [{ to, amount }]);
+        console.log('Please wait relayer complete the job %s...', jobId);
 
-    // TODO: account number is temporary, it should not be needed when using a relayer
-    public async transferShielded(to: string, amount: string): Promise<void> {
-        await this.zpClient.transfer(TOKEN_ADDRESS, [{ to, amount }]);
+        return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
     }
 
-    public async depositShielded(amount: string): Promise<void> {
+    public async depositShielded(amount: string): Promise<string> {
         let fromAddress = null;
         if (isSubstrateBased(NETWORK)) {
             fromAddress = await this.client.getPublicKey();
         }
 
         if (isEvmBased(NETWORK)) {
-            fromAddress = await this.client.getAddress();
-
-            console.log('Approving the Pool contract (%s) to spend our tokens (%s)', CONTRACT_ADDRESS, amount);
+            console.log('Approving allowance the Pool (%s) to spend our tokens (%s)', CONTRACT_ADDRESS, amount);
             await this.client.approve(TOKEN_ADDRESS, CONTRACT_ADDRESS, amount);
         }
 
         console.log('Making deposit...');
-        await this.zpClient.deposit(TOKEN_ADDRESS, amount, (data) => this.client.sign(data), fromAddress);
+        const jobId = await this.zpClient.deposit(TOKEN_ADDRESS, amount, (data) => this.client.sign(data), fromAddress);
+        console.log('Please wait relayer complete the job %s...', jobId);
+
+        return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
     }
 
-    public async withdrawShielded(amount: string): Promise<void> {
+    public async withdrawShielded(amount: string): Promise<string> {
 
         let address = null;
         if (isEvmBased(NETWORK)) {
@@ -193,7 +197,11 @@ export default class Account {
             address = await this.client.getPublicKey();
         }
 
-        await this.zpClient.withdraw(TOKEN_ADDRESS, address, amount);
+        console.log('Making withdraw...');
+        const jobId = await this.zpClient.withdraw(TOKEN_ADDRESS, address, amount);
+        console.log('Please wait relayer complete the job %s...', jobId);
+
+        return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
     }
 
     private decryptSeed(password: string): string {
