@@ -8,6 +8,9 @@ import jQuery from 'jquery';
 import initTerminal from 'jquery.terminal';
 // import initAutocomplete from 'jquery.terminal/js/autocomplete_menu';
 import bip39 from 'bip39-light';
+//import {Version} from '../package.json';
+
+var pjson = require('../package.json');
 
 
 import Account from './account';
@@ -35,8 +38,27 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   'transfer-shielded': [c.transferShielded, '<account> <shielded address> <amount>', ''],
   'deposit-shielded': [c.depositShielded, '<account> <amount>', ''],
   'withdraw-shielded': [c.withdrawShielded, '<account> <amount>', ''],
+  'internal-state': [c.getInternalState, '', ''],
   'clear': [c.clear, '', 'clear terminal'],
   'reset': [c.reset, '', 'reset console state'],
+  'version': [
+    function () {
+      this.echo(`zkBob console version ${pjson.version}`);
+    },
+    '',
+    'get console version'
+  ],
+  'environment': [
+    function () {
+      this.echo(`Network: ${NETWORK}`);
+      this.echo(`RPC URL: ${RPC_URL}`);
+      this.echo(`Relayer: ${RELAYER_URL}`);
+      this.echo(`Pool:    ${CONTRACT_ADDRESS}`);
+      this.echo(`Token:   ${TOKEN_ADDRESS}`);
+    },
+    '',
+    'get environment constants'
+  ],
   // 'internal-state': [c.showState, '', 'show internal state'],
   'help': [
     function () {
@@ -118,7 +140,7 @@ const GREETING = String.raw`
   / // _ \ '__/ _ \| |_) / _ \ / _ \| |
  / /|  __/ | | (_) |  __/ (_) | (_) | |
 /____\___|_|  \___/|_|   \___/ \___/|_|
-
+                                 v${pjson.version}
     `;
 
 jQuery(async function ($) {

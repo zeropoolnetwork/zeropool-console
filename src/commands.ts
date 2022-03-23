@@ -73,25 +73,33 @@ export async function transfer(to: string, amount: string) {
 export async function transferShielded(to: string, amount: string) {
     this.echo('Performing shielded transfer...');
     this.pause();
-    await this.account.transferShielded(to, amount);
+    const txHash = await this.account.transferShielded(to, amount);
     this.resume();
-    this.echo('Done');
+    this.echo(`Done [txHash: ${txHash}]`);
 }
 
 export async function depositShielded(amount: string) {
     this.echo('Performing shielded deposit...');
     this.pause();
-    await this.account.depositShielded(amount);
+    const txHash = await this.account.depositShielded(amount);
     this.resume();
-    this.echo('Done');
+    this.echo(`Done [txHash: ${txHash}]`);
 }
 
 export async function withdrawShielded(amount: string) {
     this.echo('Performing shielded withdraw...');
     this.pause();
-    await this.account.withdrawShielded(amount);
+    const txHash = await this.account.withdrawShielded(amount);
     this.resume();
-    this.echo('Done');
+    this.echo(`Done [txHash: ${txHash}]`);
+}
+
+export async function getInternalState() {
+    const state = await this.account.getInternalState();
+    
+    for (const [index, tx] of state.txs) {
+        this.echo(`${index}: ${JSON.stringify(tx)}`);
+    }
 }
 
 export function clear() {

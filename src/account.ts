@@ -81,7 +81,7 @@ export default class Account {
                 providerOrUrl: RPC_URL,
             });
             client = new EthereumClient(provider);
-            network = new EvmNetwork(RPC_URL, CONTRACT_ADDRESS);
+            network = new EvmNetwork(RPC_URL);
         } else if (isSubstrateBased(NETWORK)) {
             client = await PolkadotClient.create(mnemonic, RPC_URL);
             network = new PolkadotNetwork();
@@ -114,6 +114,10 @@ export default class Account {
         await this.init(seed, password);
     }
 
+    public getSeed(password: string): string {
+        return this.decryptSeed(password);
+    }
+
     public isInitialized(): boolean {
         return !!this.client;
     }
@@ -143,6 +147,10 @@ export default class Account {
         return [balance, readable];
     }
 
+    public async getInternalState(): Promise<any> {
+        return this.zpClient.rawState(TOKEN_ADDRESS);
+    }
+
     // TODO: Support multiple tokens
     public async getTokenBalance(): Promise<string> {
         return await this.client.getTokenBalance(TOKEN_ADDRESS);
@@ -155,23 +163,49 @@ export default class Account {
     public async transfer(to: string, amount: string): Promise<void> {
         await this.client.transfer(to, amount);
     }
+s
+    public async transferShielded(to: string, amount: string): Promise<string> {
+        console.log('Making transfer...');
+        const jobId = await this.zpClient.transfer(TOKEN_ADDRESS, [{ to, amount }]);
+        console.log('Please wait relayer complete the job %s...', jobId);
 
-    // TODO: account number is temporary, it should not be needed when using a relayer
-    public async transferShielded(to: string, amount: string): Promise<void> {
-        await this.zpClient.transfer(TOKEN_ADDRESS, [{ to, amount }]);
+        return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
     }
 
-    public async depositShielded(amount: string): Promise<void> {
+    public async depositShielded(amount: string): Promise<string> {
         let fromAddress = null;
         if (isSubstrateBased(NETWORK)) {
             fromAddress = await this.client.getPublicKey();
         }
-        await this.zpClient.deposit(TOKEN_ADDRESS, amount, (data) => this.client.sign(data), fromAddress);
+
+        if (isEvmBased(NETWORK)) {
+            console.log('Approving allowance the Pool (%s) to spend our tokens (%s)', CONTRACT_ADDRESS, amount);
+            await this.client.approve(TOKEN_ADDRESS, CONTRACT_ADDRESS, amount);
+        }
+
+        console.log('Making deposit...');
+        const jobId = await this.zpClient.deposit(TOKEN_ADDRESS, amount, (data) => this.client.sign(data), fromAddress);
+        console.log('Please wait relayer complete the job %s...', jobId);
+
+        return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
     }
 
-    public async withdrawShielded(amount: string): Promise<void> {
-        const address = await this.client.getPublicKey();
-        await this.zpClient.withdraw(TOKEN_ADDRESS, address, amount);
+    public async withdrawShielded(amount: string): Promise<string> {
+
+        let address = null;
+        if (isEvmBased(NETWORK)) {
+            address = await this.client.getAddress();
+        }
+
+        if (isSubstrateBased(NETWORK)) {
+            address = await this.client.getPublicKey();
+        }
+
+        console.log('Making withdraw...');
+        const jobId = await this.zpClient.withdraw(TOKEN_ADDRESS, address, amount);
+        console.log('Please wait relayer complete the job %s...', jobId);
+
+        return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
     }
 
     private decryptSeed(password: string): string {
