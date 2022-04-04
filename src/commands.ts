@@ -70,10 +70,10 @@ export async function depositShielded(amount: string) {
     this.echo(`Done: ${this.account.getTransactionUrl(txHash)}`);
 }
 
-export async function withdrawShielded(amount: string) {
+export async function withdrawShielded(amount: string, address: string) {
     this.echo('Performing shielded withdraw...');
     this.pause();
-    const txHash = await this.account.withdrawShielded(amount);
+    const txHash = await this.account.withdrawShielded(amount, address);
     this.resume();
     this.echo(`Done: ${this.account.getTransactionUrl(txHash)}`);
 }

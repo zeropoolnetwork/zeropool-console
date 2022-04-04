@@ -190,15 +190,19 @@ export default class Account {
         return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
     }
 
-    public async withdrawShielded(amount: string): Promise<string> {
+    public async withdrawShielded(amount: string, external_addr: string): Promise<string> {
 
         let address = null;
-        if (isEvmBased(NETWORK)) {
-            address = await this.client.getAddress();
-        }
+        if (external_addr == null) {
+            if (isEvmBased(NETWORK)) {
+                address = await this.client.getAddress();
+            }
 
-        if (isSubstrateBased(NETWORK)) {
-            address = await this.client.getPublicKey();
+            if (isSubstrateBased(NETWORK)) {
+                address = await this.client.getPublicKey();
+            }
+        } else {
+            address = external_addr;
         }
 
         console.log('Making withdraw...');
