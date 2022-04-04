@@ -26,21 +26,21 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   'set-seed': [c.setSeed, '<seed phrase> <password>', 'replace the seed phrase for the current account'],
   'get-seed': [c.getSeed, '<password>', 'print the seed phrase for the current account'],
   'gen-seed': [c.genSeed, '', 'generate and print a new seed phrase'],
-  'get-address': [c.getAddress, '', 'derive a new address for specified index (0 if not specified)'],
-  'gen-shielded-address': [c.genShieldedAddress, '', 'generate a new shielded address'],
+  'get-address': [c.getAddress, '', 'get your native address'],
+  'gen-shielded-address': [c.genShieldedAddress, '', 'generate a new zkBob shielded address'],
   // 'get-private-key': [c.getPrivateKey, ' <password>', 'print the private key'],
-  'get-balance': [c.getBalance, '', 'fetch and print account balance'],
+  'get-balance': [c.getBalance, '', 'fetch and print native account balance'],
   'get-shielded-balance': [c.getShieldedBalance, '', 'get calculated private balance'],
   // 'get-balances': [c.getBalances, '', 'print balances for all'],
-  'get-token-balance': [c.getTokenBalance, '', ''],
-  'testnet-mint': [c.mint, ' <amount>', ''],
-  'transfer': [c.transfer, ' <to> <amount>', 'transfer token, <amount> in base units (e.g.: yoctoNEAR, Wei)'],
-  'transfer-shielded': [c.transferShielded, '<account> <shielded address> <amount>', ''],
-  'deposit-shielded': [c.depositShielded, '<account> <amount>', ''],
-  'withdraw-shielded': [c.withdrawShielded, '<account> <amount>', ''],
-  'internal-state': [c.getInternalState, '', ''],
+  'get-token-balance': [c.getTokenBalance, '', 'get token balance (unshielded)'],
+  'testnet-mint': [c.mint, ' <amount>', 'mint some unshielded tokens'],
+  'transfer': [c.transfer, ' <to> <amount>', 'transfer unshielded tokens, <amount> in base units (e.g.: yoctoNEAR, Wei)'],
+  'transfer-shielded': [c.transferShielded, '<shielded address> <amount>', 'move shielded tokens to the another zkBob address (inside a pool)'],
+  'deposit-shielded': [c.depositShielded, '<amount>', 'shield some tokens'],
+  'withdraw-shielded': [c.withdrawShielded, '<amount> [address]', 'withdraw shielded tokens to the native address (to the your account if addres is ommited)'],
+  'internal-state': [c.getInternalState, '', 'print your account and incoming notes'],
   'clear': [c.clear, '', 'clear terminal'],
-  'reset': [c.reset, '', 'reset console state'],
+  'reset': [c.reset, '', 'log out from the current account'],
   'version': [
     function () {
       this.echo(`zkBob console version ${pjson.version}`);
@@ -118,8 +118,8 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   <div class="comment">// Transfer 1 * 10^18 of deposited tokens the specified address.</div>
   <div class="command-example">transfer-shielded "shielded address here" 1000000000000000000</div>
   <div class="comment">// Withdraw the remaining 2 * 10^18 from the pool.</div>
-  <div class="command-example">withdraw-shielded 2000000000000000000</div>
-  <div class="comment">// If you want to check your shielded balance between '*-shielded' commands:</div>
+  <div class="command-example">withdraw-shielded 2000000000000000000 [optional_external_address]</div>
+  <div class="comment">// Check your shielded balance</div>
   <div class="command-example">get-shielded-balance</div>
 </p>
 
