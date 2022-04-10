@@ -1,7 +1,7 @@
 import AES from 'crypto-js/aes';
 import Utf8 from 'crypto-js/enc-utf8';
 import { EthereumClient, PolkadotClient, Client as NetworkClient } from 'zeropool-support-js';
-import { init, ZeropoolClient } from 'zeropool-client-js';
+import { init, ZeropoolClient, HistoryRecord } from 'zeropool-client-js';
 import bip39 from 'bip39-light';
 import HDWalletProvider from '@truffle/hdwallet-provider';
 import { deriveSpendingKey } from 'zeropool-client-js/lib/utils';
@@ -146,6 +146,11 @@ export default class Account {
     public async getInternalState(): Promise<any> {
         return this.zpClient.rawState(TOKEN_ADDRESS);
     }
+
+    public async getAllHistory(): Promise<HistoryRecord[]> {
+        return this.zpClient.getAllHistory(TOKEN_ADDRESS);
+    }
+
 
     // TODO: Support multiple tokens
     public async getTokenBalance(): Promise<string> {

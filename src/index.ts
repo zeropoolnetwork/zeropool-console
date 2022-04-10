@@ -38,6 +38,7 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   'transfer-shielded': [c.transferShielded, '<shielded address> <amount>', 'move shielded tokens to the another zkBob address (inside a pool)'],
   'deposit-shielded': [c.depositShielded, '<amount>', 'shield some tokens'],
   'withdraw-shielded': [c.withdrawShielded, '<amount> [address]', 'withdraw shielded tokens to the native address (to the your account if addres is ommited)'],
+  'history': [c.printHistory, '', 'print all transactions related to your account'],
   'internal-state': [c.getInternalState, '', 'print your account and incoming notes'],
   'clear': [c.clear, '', 'clear terminal'],
   'reset': [c.reset, '', 'log out from the current account'],
@@ -119,6 +120,8 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   <div class="command-example">withdraw-shielded 2000000000000000000 [optional_external_address]</div>
   <div class="comment">// Check your shielded balance</div>
   <div class="command-example">get-shielded-balance</div>
+  <div class="comment">// Print account history</div>
+  <div class="command-example">history</div>
 </p>
 
 <p>
