@@ -1,5 +1,6 @@
 import Account from './account';
 import bip39 from 'bip39-light';
+import { HistoryRecord, HistoryTransactionType } from 'zeropool-client-js';
 
 export async function setSeed(seed: string, password: string) {
     await this.account.login(seed, password);
@@ -41,22 +42,6 @@ Private balance:
 ]`);
     this.resume();
 }
-
-// export async function getBalances() {
-//     const account: Account = this.account;
-//     const balances = await account.getBalances();
-//     let buf = '';
-
-//     for (const [coinType, coinBalances] of Object.entries(balances)) {
-//         buf += `    ${NetworkType[coinType]}:\n`;
-
-//         for (const balance of coinBalances) {
-//             buf += `        ${balance.address}: ${balance.balance}\n`;
-//         }
-//     }
-
-//     this.echo(`Balances:\n${buf}`);
-// }
 
 export async function getTokenBalance() {
     return this.account.getTokenBalance();
@@ -100,6 +85,38 @@ export async function getInternalState() {
     for (const [index, tx] of state.txs) {
         this.echo(`${index}: ${JSON.stringify(tx)}`);
     }
+}
+
+export async function printHistory() {
+    this.pause();
+    const history: HistoryRecord[] = await this.account.getAllHistory();
+    this.resume();
+    for (const tx of history) {
+        this.echo(`${humanReadable(tx, 1000000000, "TOKEN")}`);
+    }
+}
+
+function humanReadable(record: HistoryRecord, denominator: number, tokenname: string): string {
+    let dt = new Date(record.timestamp * 1000);
+
+    let mainPart: string;
+    if (record.type == HistoryTransactionType.Deposit) {
+      mainPart = `DEPOSITED  ${Number(record.amount) / denominator} ${tokenname} FROM ${record.from}`;      
+    } else if (record.type == HistoryTransactionType.TransferIn) {
+      mainPart = `RECEIVED   ${Number(record.amount) / denominator} sh${tokenname} ON ${record.to}`;
+    } else if (record.type == HistoryTransactionType.TransferOut) {
+      mainPart = `SENDED     ${Number(record.amount) / denominator} sh${tokenname} TO ${record.to}`;
+    } else if (record.type == HistoryTransactionType.Withdrawal) {
+      mainPart = `WITHDRAWED ${Number(record.amount) / denominator} sh${tokenname} TO ${record.to}`;
+    } else {
+      mainPart = `UNKNOWN TRANSACTION TYPE (${record.type})`
+    }
+
+    if (record.fee > 0) {
+      mainPart += `(fee = ${record.fee})`;
+    }
+
+    return `${dt.toLocaleString()} : ${mainPart} [txHash ${record.txHash}]`;
 }
 
 export function clear() {
