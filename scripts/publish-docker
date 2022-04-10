@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
 yarn build:prod && \
-docker buildx build -f Dockerfile.prod --push -t voidxnull/zeropool-console .
+docker buildx build -f Dockerfile.prod --push -t evgenkor/zeropool-console .
