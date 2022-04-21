@@ -56,6 +56,7 @@ export default class Account {
             TOKEN_ADDRESS = process.env.TOKEN_ADDRESS;
             RELAYER_URL = process.env.RELAYER_URL;
             RPC_URL = process.env.RPC_URL;
+            TRANSACTION_URL = process.env.TRANSACTION_URL;
         }
     }
 
@@ -66,11 +67,6 @@ export default class Account {
             transferVkUrl: './assets/transfer_verification_key.json',
             treeVkUrl: './assets/tree_verification_key.json',
         };
-
-        let compactSignature = true;
-        if (isSubstrateBased(NETWORK)) {
-            compactSignature = false;
-        }
 
         const { worker, snarkParams } = await init(wasmPath, workerPath, snarkParamsConfig);
 
@@ -83,7 +79,7 @@ export default class Account {
             client = new EthereumClient(provider);
             network = new EvmNetwork(RPC_URL);
         } else if (isSubstrateBased(NETWORK)) {
-            client = await PolkadotClient.create(mnemonic, RPC_URL);
+            client = await PolkadotClient.create(mnemonic, { rpcUrl: RPC_URL, transactionUrl: TRANSACTION_URL });
             network = new PolkadotNetwork();
         } else {
             throw new Error(`Unknown network ${NETWORK}`);
@@ -163,7 +159,11 @@ export default class Account {
     public async transfer(to: string, amount: string): Promise<void> {
         await this.client.transfer(to, amount);
     }
-s
+
+    public getTransactionUrl(txHash: string): string {
+        return this.client.getTransactionUrl(txHash);
+    }
+
     public async transferShielded(to: string, amount: string): Promise<string> {
         console.log('Making transfer...');
         const jobId = await this.zpClient.transfer(TOKEN_ADDRESS, [{ to, amount }]);

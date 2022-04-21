@@ -109,8 +109,6 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   <div class="command-example">get-address</div>
   <div class="comment">// Mint 5 * 10^18 tokens for the account with index 0.</div>
   <div class="command-example">testnet-mint 5000000000000000000</div>
-  <div class="comment">// Check that the newly minted tokens are there.</div>
-  <div class="command-example">get-token-balance</div>
   <div class="comment">// Deposit 2 * 10^18 of those tokens to the pool.</div>
   <div class="command-example">deposit-shielded 2000000000000000000</div>
   <div class="comment">// Generate a new shielded address.</div>

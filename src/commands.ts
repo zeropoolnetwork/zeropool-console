@@ -42,22 +42,6 @@ Private balance:
     this.resume();
 }
 
-// export async function getBalances() {
-//     const account: Account = this.account;
-//     const balances = await account.getBalances();
-//     let buf = '';
-
-//     for (const [coinType, coinBalances] of Object.entries(balances)) {
-//         buf += `    ${NetworkType[coinType]}:\n`;
-
-//         for (const balance of coinBalances) {
-//             buf += `        ${balance.address}: ${balance.balance}\n`;
-//         }
-//     }
-
-//     this.echo(`Balances:\n${buf}`);
-// }
-
 export async function getTokenBalance() {
     return this.account.getTokenBalance();
 }
@@ -75,7 +59,7 @@ export async function transferShielded(to: string, amount: string) {
     this.pause();
     const txHash = await this.account.transferShielded(to, amount);
     this.resume();
-    this.echo(`Done [txHash: ${txHash}]`);
+    this.echo(`Done: ${this.account.getTransactionUrl(txHash)}`);
 }
 
 export async function depositShielded(amount: string) {
@@ -83,7 +67,7 @@ export async function depositShielded(amount: string) {
     this.pause();
     const txHash = await this.account.depositShielded(amount);
     this.resume();
-    this.echo(`Done [txHash: ${txHash}]`);
+    this.echo(`Done: ${this.account.getTransactionUrl(txHash)}`);
 }
 
 export async function withdrawShielded(amount: string) {
@@ -91,7 +75,7 @@ export async function withdrawShielded(amount: string) {
     this.pause();
     const txHash = await this.account.withdrawShielded(amount);
     this.resume();
-    this.echo(`Done [txHash: ${txHash}]`);
+    this.echo(`Done: ${this.account.getTransactionUrl(txHash)}`);
 }
 
 export async function getInternalState() {
