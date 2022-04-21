@@ -1,6 +1,8 @@
 import Account from './account';
 import bip39 from 'bip39-light';
 import { HistoryRecord, HistoryTransactionType } from 'zeropool-client-js';
+import { NetworkType } from 'zeropool-client-js/lib/network-type';
+import { deriveSpendingKey, bufToHex } from 'zeropool-client-js/lib/utils';
 
 export async function setSeed(seed: string, password: string) {
     await this.account.login(seed, password);
@@ -14,6 +16,13 @@ export function getSeed(password: string) {
 export function genSeed() {
     const seed = bip39.generateMnemonic();
     this.echo(`[[;gray;]Generated mnemonic: ${seed}]`);
+}
+
+export function getSk(password: string) {
+    const seed = this.account.getSeed(password);
+    const networkType = NETWORK as NetworkType;
+    const sk = deriveSpendingKey(seed, networkType);
+    this.echo(`[[;gray;]Spending key: 0x${bufToHex(sk)}]`);
 }
 
 export async function getAddress() {
