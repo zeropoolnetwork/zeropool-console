@@ -26,6 +26,7 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   'set-seed': [c.setSeed, '<seed phrase> <password>', 'replace the seed phrase for the current account'],
   'get-seed': [c.getSeed, '<password>', 'print the seed phrase for the current account'],
   'gen-seed': [c.genSeed, '', 'generate and print a new seed phrase'],
+  'get-sk': [c.getSk, '<password>', 'get zkBob account spending key'],
   'get-address': [c.getAddress, '', 'get your native address'],
   'gen-shielded-address': [c.genShieldedAddress, '', 'generate a new zkBob shielded address'],
   // 'get-private-key': [c.getPrivateKey, ' <password>', 'print the private key'],
