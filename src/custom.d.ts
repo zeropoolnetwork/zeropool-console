@@ -11,3 +11,4 @@ declare var RPC_URL: string;
 declare var RELAYER_URL: string;
 declare var TOKEN_ADDRESS: string;
 declare var CONTRACT_ADDRESS: string;
+declare var TRANSACTION_URL: string;
