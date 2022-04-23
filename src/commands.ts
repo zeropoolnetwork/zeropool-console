@@ -117,6 +117,8 @@ function humanReadable(record: HistoryRecord, denominator: number, tokenname: st
       mainPart = `SENDED     ${Number(record.amount) / denominator} sh${tokenname} TO ${record.to}`;
     } else if (record.type == HistoryTransactionType.Withdrawal) {
       mainPart = `WITHDRAWED ${Number(record.amount) / denominator} sh${tokenname} TO ${record.to}`;
+    } else if (record.type == HistoryTransactionType.TransferLoopback) {
+      mainPart = `SENDED     ${Number(record.amount) / denominator} sh${tokenname} TO MYSELF`;
     } else {
       mainPart = `UNKNOWN TRANSACTION TYPE (${record.type})`
     }
