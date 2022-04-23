@@ -69,7 +69,7 @@ export async function transferShielded(to: string, amount: string) {
     this.pause();
     const txHash = await this.account.transferShielded(to, amount);
     this.resume();
-    this.echo(`Done: ${this.account.getTransactionUrl(txHash)}`);
+    this.echo(`Done: [[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`);
 }
 
 export async function depositShielded(amount: string) {
@@ -77,7 +77,7 @@ export async function depositShielded(amount: string) {
     this.pause();
     const txHash = await this.account.depositShielded(amount);
     this.resume();
-    this.echo(`Done: ${this.account.getTransactionUrl(txHash)}`);
+    this.echo(`Done: [[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`);
 }
 
 export async function withdrawShielded(amount: string, address: string) {
@@ -85,7 +85,7 @@ export async function withdrawShielded(amount: string, address: string) {
     this.pause();
     const txHash = await this.account.withdrawShielded(amount, address);
     this.resume();
-    this.echo(`Done: ${this.account.getTransactionUrl(txHash)}`);
+    this.echo(`Done: [[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`);
 }
 
 export async function getInternalState() {
@@ -101,7 +101,7 @@ export async function printHistory() {
     const history: HistoryRecord[] = await this.account.getAllHistory();
     this.resume();
     for (const tx of history) {
-        this.echo(`${humanReadable(tx, 1000000000, "TOKEN")}`);
+        this.echo(`${humanReadable(tx, 1000000000, "TOKEN")} [[!;;;;${this.account.getTransactionUrl(tx.txHash)}]${tx.txHash}]`);
     }
 }
 
@@ -127,7 +127,7 @@ function humanReadable(record: HistoryRecord, denominator: number, tokenname: st
       mainPart += `(fee = ${record.fee})`;
     }
 
-    return `${dt.toLocaleString()} : ${mainPart} [txHash ${record.txHash}]`;
+    return `${dt.toLocaleString()} : ${mainPart}`;
 }
 
 export function clear() {

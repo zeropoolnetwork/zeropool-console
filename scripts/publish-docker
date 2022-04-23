@@ -2,7 +2,7 @@
 
 #!/usr/bin/env bash
 
-USERNAME=voidxnull
+USERNAME=evgenkor
 IMAGE=zeropool-console
 
 yarn build:prod && \
