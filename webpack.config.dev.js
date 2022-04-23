@@ -31,6 +31,7 @@ module.exports = merge(common, {
             TOKEN_ADDRESS: null,
             RELAYER_URL: null,
             RPC_URL: null,
+            TRANSACTION_URL: null,
         }),
     ]
 });
