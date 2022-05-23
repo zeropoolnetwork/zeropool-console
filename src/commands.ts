@@ -80,6 +80,14 @@ export async function depositShielded(amount: string) {
     this.echo(`Done: [[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`);
 }
 
+export async function depositShieldedPermittable(amount: string) {
+    this.echo('Performing shielded deposit (permittable token)...');
+    this.pause();
+    const txHash = await this.account.depositShieldedPermittable(amount);
+    this.resume();
+    this.echo(`Done: [[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`);
+}
+
 export async function withdrawShielded(amount: string, address: string) {
     this.echo('Performing shielded withdraw...');
     this.pause();
@@ -129,6 +137,13 @@ function humanReadable(record: HistoryRecord, denominator: number, tokenname: st
 
     return `${dt.toLocaleString()} : ${mainPart}`;
 }
+
+export function cleanState() {
+    this.pause();
+    this.account.cleanInternalState();
+    this.resume();
+}
+
 
 export function clear() {
     this.clear();

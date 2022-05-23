@@ -38,9 +38,11 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   'transfer': [c.transfer, ' <to> <amount>', 'transfer unshielded tokens, <amount> in base units (e.g.: yoctoNEAR, Wei)'],
   'transfer-shielded': [c.transferShielded, '<shielded address> <amount>', 'move shielded tokens to the another zkBob address (inside a pool)'],
   'deposit-shielded': [c.depositShielded, '<amount>', 'shield some tokens'],
+  'deposit-shielded-permittable': [c.depositShieldedPermittable, '<amount>', 'shield some tokens'],
   'withdraw-shielded': [c.withdrawShielded, '<amount> [address]', 'withdraw shielded tokens to the native address (to the your account if addres is ommited)'],
   'history': [c.printHistory, '', 'print all transactions related to your account'],
   'internal-state': [c.getInternalState, '', 'print your account and incoming notes'],
+  'clean-state': [c.cleanState, '', 'wipe internal state and history'],
   'clear': [c.clear, '', 'clear terminal'],
   'reset': [c.reset, '', 'log out from the current account'],
   'version': [

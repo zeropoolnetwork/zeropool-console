@@ -10,10 +10,10 @@ import { EvmNetwork } from 'zeropool-client-js/lib/networks/evm';
 import { PolkadotNetwork } from 'zeropool-client-js/lib/networks/polkadot';
 
 // @ts-ignore
-import wasmPath from 'libzeropool-rs-wasm-web/libzeropool_rs_wasm_bg.wasm';
+import wasmPath from 'libzkbob-rs-wasm-web/libzkbob_rs_wasm_bg.wasm';
 // @ts-ignore
 import workerPath from 'zeropool-client-js/lib/worker.js?asset';
-// const wasmPath = new URL('npm:libzeropool-rs-wasm-web/libzeropool_rs_wasm_bg.wasm', import.meta.url);
+// const wasmPath = new URL('npm:libzeropool-rs-wasm-web/libzeropool_rs_wasm_bg.wasm', import.meta.url));
 // const workerPath = new URL('npm:zeropool-client-js/lib/worker.js', import.meta.url);
 
 function isEvmBased(network: string): boolean {
@@ -151,6 +151,9 @@ export default class Account {
         return this.zpClient.getAllHistory(TOKEN_ADDRESS);
     }
 
+    public async cleanInternalState(): Promise<void> {
+        return this.zpClient.cleanState(TOKEN_ADDRESS);
+    }
 
     // TODO: Support multiple tokens
     public async getTokenBalance(): Promise<string> {
@@ -189,7 +192,54 @@ export default class Account {
         }
 
         console.log('Making deposit...');
-        const jobId = await this.zpClient.deposit(TOKEN_ADDRESS, amount, (data) => this.client.sign(data), fromAddress);
+        const jobId = await this.zpClient.deposit(TOKEN_ADDRESS, amount, (data) => this.client.sign(data), fromAddress, '0');
+        console.log('Please wait relayer complete the job %s...', jobId);
+
+        return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
+    }
+
+    private async createPermittableDepositData(tokenAddress: string, version: string, owner: string, spender: string, value: bigint, deadline: bigint) {
+        const tokenName = await this.client.getTokenName(tokenAddress);
+        const chainId = await this.client.getChainId();
+        const nonce = await this.client.getTokenNonce(tokenAddress);
+
+        const domain = {
+            name: tokenName,
+            version: version,
+            chainId: chainId,
+            verifyingContract: tokenAddress,
+        };
+
+        const types = {
+          "Permit": [
+              { name: "owner", type: "address" },
+              { name: "spender", type: "address" },
+              { name: "value", type: "uint256" },
+              { name: "nonce", type: "uint256" },
+              { name: "deadline", type: "uint256" }
+            ],
+        };
+
+        const data = { owner, spender, value, nonce, deadline, };
+
+        return data;
+    }
+
+    public async depositShieldedPermittable(amount: string): Promise<string> {
+        let myAddress = null;
+        if (isEvmBased(NETWORK)) {
+            myAddress = await this.client.getAddress();
+        } else {
+            throw Error('Permittable token deposit is supported on the EVM networks only');
+        }
+        
+
+        console.log('Making deposit...');
+        const jobId = await this.zpClient.depositPermittable(TOKEN_ADDRESS, amount, async (deadline, value) => {
+            const dataToSign = await this.createPermittableDepositData(TOKEN_ADDRESS, '1', myAddress, CONTRACT_ADDRESS, value, deadline);
+            return this.client.signTypedData(dataToSign)
+        }, myAddress, '0');
+
         console.log('Please wait relayer complete the job %s...', jobId);
 
         return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
