@@ -211,7 +211,13 @@ export default class Account {
         };
 
         const types = {
-          "Permit": [
+          EIP712Domain: [
+            { name: 'name', type: 'string' },
+            { name: 'version', type: 'string' },
+            { name: 'chainId', type: 'uint256' },
+            { name: 'verifyingContract', type: 'address' },
+          ],
+          Permit: [
               { name: "owner", type: "address" },
               { name: "spender", type: "address" },
               { name: "value", type: "uint256" },
@@ -220,7 +226,9 @@ export default class Account {
             ],
         };
 
-        const data = { owner, spender, value, nonce, deadline, };
+        const message = { owner, spender, value: value.toString(), nonce, deadline: deadline.toString() };
+
+        const data = { types, primaryType: "Permit", domain, message };
 
         return data;
     }
