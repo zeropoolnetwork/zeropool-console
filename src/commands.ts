@@ -2,7 +2,7 @@ import Account from './account';
 import bip39 from 'bip39-light';
 import { HistoryRecord, HistoryTransactionType } from 'zeropool-client-js';
 import { NetworkType } from 'zeropool-client-js/lib/network-type';
-import { deriveSpendingKey, bufToHex } from 'zeropool-client-js/lib/utils';
+import { deriveSpendingKey, verifyShieldedAddress, bufToHex } from 'zeropool-client-js/lib/utils';
 
 export async function setSeed(seed: string, password: string) {
     await this.account.login(seed, password);
@@ -65,17 +65,29 @@ export async function transfer(to: string, amount: string) {
 }
 
 export async function transferShielded(to: string, amount: string) {
-    this.echo('Performing shielded transfer...');
-    this.pause();
-    const txHash = await this.account.transferShielded(to, amount);
-    this.resume();
-    this.echo(`Done: [[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`);
+    if (verifyShieldedAddress(to) === false) {
+        this.error(`Shielded address ${to} is invalid. Please check it!`);
+    } else {
+        this.echo('Performing shielded transfer...');
+        this.pause();
+        const txHash = await this.account.transferShielded(to, amount);
+        this.resume();
+        this.echo(`Done: [[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`);
+    };
 }
 
 export async function depositShielded(amount: string) {
     this.echo('Performing shielded deposit...');
     this.pause();
     const txHash = await this.account.depositShielded(amount);
+    this.resume();
+    this.echo(`Done: [[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`);
+}
+
+export async function depositShieldedPermittable(amount: string) {
+    this.echo('Performing shielded deposit (permittable token)...');
+    this.pause();
+    const txHash = await this.account.depositShieldedPermittable(amount);
     this.resume();
     this.echo(`Done: [[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`);
 }
@@ -129,6 +141,13 @@ function humanReadable(record: HistoryRecord, denominator: number, tokenname: st
 
     return `${dt.toLocaleString()} : ${mainPart}`;
 }
+
+export function cleanState() {
+    this.pause();
+    this.account.cleanInternalState();
+    this.resume();
+}
+
 
 export function clear() {
     this.clear();

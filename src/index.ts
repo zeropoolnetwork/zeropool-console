@@ -37,10 +37,12 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   'testnet-mint': [c.mint, ' <amount>', 'mint some unshielded tokens'],
   'transfer': [c.transfer, ' <to> <amount>', 'transfer unshielded tokens, <amount> in base units (e.g.: yoctoNEAR, Wei)'],
   'transfer-shielded': [c.transferShielded, '<shielded address> <amount>', 'move shielded tokens to the another zkBob address (inside a pool)'],
-  'deposit-shielded': [c.depositShielded, '<amount>', 'shield some tokens'],
+  'deposit-shielded': [c.depositShielded, '<amount>', 'shield some tokens [via approving allowance]'],
+  'deposit-shielded-permittable': [c.depositShieldedPermittable, '<amount>', 'shield some tokens [via permit]'],
   'withdraw-shielded': [c.withdrawShielded, '<amount> [address]', 'withdraw shielded tokens to the native address (to the your account if addres is ommited)'],
   'history': [c.printHistory, '', 'print all transactions related to your account'],
   'internal-state': [c.getInternalState, '', 'print your account and incoming notes'],
+  //'clean-state': [c.cleanState, '', 'wipe internal state and history'],
   'clear': [c.clear, '', 'clear terminal'],
   'reset': [c.reset, '', 'log out from the current account'],
   'version': [
@@ -112,7 +114,7 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   <div class="comment">// Mint 5 * 10^18 tokens for the account with index 0.</div>
   <div class="command-example">testnet-mint 5000000000000000000</div>
   <div class="comment">// Deposit 2 * 10^18 of those tokens to the pool.</div>
-  <div class="command-example">deposit-shielded 2000000000000000000</div>
+  <div class="command-example">deposit-shielded-permittable 2000000000000000000</div>
   <div class="comment">// Generate a new shielded address.</div>
   <div class="command-example">gen-shielded-address</div>
   <div class="comment">// Transfer 1 * 10^18 of deposited tokens the specified address.</div>

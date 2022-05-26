@@ -1,6 +1,6 @@
 {
   "name": "zeropool-console",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "license": "MIT",
   "author": "Dmitry Vdovin <voidxnull@gmail.com>",
   "homepage": "https://github.com/zeropoolnetwork/zeropool-console",
@@ -34,8 +34,8 @@
     "stream-http": "^3.1.1",
     "tslib": "^2.3.1",
     "web3": "^1.7.1",
-    "zeropool-client-js": "https://github.com/zkBob/zeropool-client-js#0.3.1",
-    "zeropool-support-js": "https://github.com/zkBob/zeropool-support-js#0.5.2"
+    "zeropool-client-js": "https://github.com/zkBob/zeropool-client-js#0.3.2",
+    "zeropool-support-js": "https://github.com/zkBob/zeropool-support-js#0.5.3"
   },
   "devDependencies": {
     "@parcel/compressor-gzip": "^2.0.1",
