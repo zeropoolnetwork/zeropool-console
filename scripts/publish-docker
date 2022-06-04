@@ -2,7 +2,7 @@
 
 USERNAME=evgenkor
 IMAGE=zeropool-console
-VERSION=0.3.3
+VERSION=0.3.4
 
 yarn build:prod && \
 docker build -f Dockerfile.prod -t $USERNAME/$IMAGE:latest . && \
