@@ -136,6 +136,12 @@ export default class Account {
         return balances;
     }
 
+    public async getOptimisticTotalBalance(): Promise<string> {
+        const pendingBalance = this.zpClient.getOptimisticTotalBalance(TOKEN_ADDRESS);
+
+        return pendingBalance;
+    }
+
     public async getBalance(): Promise<[string, string]> {
         const balance = await this.client.getBalance();
         const readable = this.client.fromBaseUnit(balance);
