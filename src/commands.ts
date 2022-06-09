@@ -43,12 +43,20 @@ export async function getBalance() {
 export async function getShieldedBalance() {
     this.pause();
     const [total, acc, note] = await this.account.getShieldedBalances();
+    const optimisticBalance = await this.account.getOptimisticTotalBalance();
+
     this.echo(`[[;gray;]
 Private balance:
     total: ${total} (account + note)
     account: ${acc}
     note: ${note}
 ]`);
+
+    if (total != optimisticBalance) {
+        this.echo(`[[;green;]Optimistic private balance: ${optimisticBalance}
+]`);
+    }
+
     this.resume();
 }
 
@@ -121,18 +129,22 @@ function humanReadable(record: HistoryRecord, denominator: number, tokenname: st
     let dt = new Date(record.timestamp * 1000);
 
     let mainPart: string;
+    let pendingMark = ``;
+    if (record.pending) {
+        pendingMark = `⌛ `;
+    }
     if (record.type == HistoryTransactionType.Deposit) {
-      mainPart = `DEPOSITED  ${Number(record.amount) / denominator} ${tokenname} FROM ${record.from}`;      
+      mainPart = `${pendingMark}DEPOSITED  ${Number(record.amount) / denominator} ${tokenname} FROM ${record.from}`;      
     } else if (record.type == HistoryTransactionType.TransferIn) {
-      mainPart = `RECEIVED   ${Number(record.amount) / denominator} sh${tokenname} ON ${record.to}`;
+      mainPart = `${pendingMark}RECEIVED   ${Number(record.amount) / denominator} sh${tokenname} ON ${record.to}`;
     } else if (record.type == HistoryTransactionType.TransferOut) {
-      mainPart = `SENDED     ${Number(record.amount) / denominator} sh${tokenname} TO ${record.to}`;
+      mainPart = `${pendingMark}SENDED     ${Number(record.amount) / denominator} sh${tokenname} TO ${record.to}`;
     } else if (record.type == HistoryTransactionType.Withdrawal) {
-      mainPart = `WITHDRAWED ${Number(record.amount) / denominator} sh${tokenname} TO ${record.to}`;
+      mainPart = `${pendingMark}WITHDRAWED ${Number(record.amount) / denominator} sh${tokenname} TO ${record.to}`;
     } else if (record.type == HistoryTransactionType.TransferLoopback) {
-      mainPart = `SENDED     ${Number(record.amount) / denominator} sh${tokenname} TO MYSELF`;
+      mainPart = `${pendingMark}SENDED     ${Number(record.amount) / denominator} sh${tokenname} TO MYSELF`;
     } else {
-      mainPart = `UNKNOWN TRANSACTION TYPE (${record.type})`
+      mainPart = `${pendingMark}UNKNOWN TRANSACTION TYPE (${record.type})`
     }
 
     if (record.fee > 0) {
