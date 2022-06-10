@@ -9,10 +9,16 @@ import { NetworkType } from 'zeropool-client-js/lib/network-type';
 import { EvmNetwork } from 'zeropool-client-js/lib/networks/evm';
 import { PolkadotNetwork } from 'zeropool-client-js/lib/networks/polkadot';
 
+// TODO: Simplify library init
 // @ts-ignore
-import wasmPath from 'libzeropool-rs-wasm-web/libzeropool_rs_wasm_bg.wasm';
+import wasmStPath from 'libzeropool-rs-wasm-web/libzeropool_rs_wasm_bg.wasm';
 // @ts-ignore
-import workerPath from 'zeropool-client-js/lib/worker.js?asset';
+import wasmMtPath from 'libzeropool-rs-wasm-web-mt/libzeropool_rs_wasm_bg.wasm';
+// @ts-ignore
+import workerStPath from 'zeropool-client-js/lib/workerSt.js?asset';
+// @ts-ignore
+import workerMtPath from 'zeropool-client-js/lib/workerMt.js?asset';
+
 // const wasmPath = new URL('npm:libzeropool-rs-wasm-web/libzeropool_rs_wasm_bg.wasm', import.meta.url);
 // const workerPath = new URL('npm:zeropool-client-js/lib/worker.js', import.meta.url);
 
@@ -68,7 +74,7 @@ export default class Account {
             treeVkUrl: './assets/tree_verification_key.json',
         };
 
-        const { worker, snarkParams } = await init(wasmPath, workerPath, snarkParamsConfig);
+        const { worker, snarkParams } = await init({ wasmStPath, wasmMtPath, workerStPath, workerMtPath }, snarkParamsConfig);
 
         let client, network;
         if (isEvmBased(NETWORK)) {

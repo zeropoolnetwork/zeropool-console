@@ -13,6 +13,13 @@ module.exports = merge(common, {
         port: 3000,
         hot: true,
         writeToDisk: true,
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': '*',
+            'Access-Control-Allow-Methods': '*',
+            'Cross-Origin-Opener-Policy': 'same-origin',
+            'Cross-Origin-Embedder-Policy': 'require-corp',
+        },
     },
     devtool: 'eval-source-map',
     module: {
