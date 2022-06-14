@@ -179,11 +179,19 @@ export default class Account {
     }
 
     public async transferShielded(to: string, amount: string): Promise<string> {
-        console.log('Making transfer...');
-        const jobId = await this.zpClient.transfer(TOKEN_ADDRESS, [{ to, amount }]);
-        console.log('Please wait relayer complete the job %s...', jobId);
+        console.log('Waiting while state become ready...');
+        const ready = await this.zpClient.waitReadyToTransact(TOKEN_ADDRESS);
+        if (ready) {
+            console.log('Making transfer...');
+            const jobId = await this.zpClient.transfer(TOKEN_ADDRESS, [{ to, amount }]);
+            console.log('Please wait relayer complete the job %s...', jobId);
 
-        return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
+            return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
+        } else {
+            console.log('Sorry, I cannot wait anymore. Please ask for relayer 😂');
+
+            return 'FAILED';
+        }
     }
 
     public async depositShielded(amount: string): Promise<string> {
@@ -197,11 +205,19 @@ export default class Account {
             await this.client.approve(TOKEN_ADDRESS, CONTRACT_ADDRESS, amount);
         }
 
-        console.log('Making deposit...');
-        const jobId = await this.zpClient.deposit(TOKEN_ADDRESS, amount, (data) => this.client.sign(data), fromAddress, '0');
-        console.log('Please wait relayer complete the job %s...', jobId);
+        console.log('Waiting while state become ready...');
+        const ready = await this.zpClient.waitReadyToTransact(TOKEN_ADDRESS);
+        if (ready) {
+            console.log('Making deposit...');
+            const jobId = await this.zpClient.deposit(TOKEN_ADDRESS, amount, (data) => this.client.sign(data), fromAddress, '0');
+            console.log('Please wait relayer complete the job %s...', jobId);
 
-        return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
+            return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
+        } else {
+            console.log('Sorry, I cannot wait anymore. Please ask for relayer 😂');
+
+            return 'FAILED';
+        }
     }
 
     private async createPermittableDepositData(tokenAddress: string, version: string, owner: string, spender: string, value: bigint, deadline: bigint) {
@@ -247,16 +263,23 @@ export default class Account {
             throw Error('Permittable token deposit is supported on the EVM networks only');
         }
         
+        console.log('Waiting while state become ready...');
+        const ready = await this.zpClient.waitReadyToTransact(TOKEN_ADDRESS);
+        if (ready) {
+            console.log('Making deposit...');
+            const jobId = await this.zpClient.depositPermittable(TOKEN_ADDRESS, amount, async (deadline, value) => {
+                const dataToSign = await this.createPermittableDepositData(TOKEN_ADDRESS, '1', myAddress, CONTRACT_ADDRESS, value, deadline);
+                return this.client.signTypedData(dataToSign)
+            }, myAddress, '0');
 
-        console.log('Making deposit...');
-        const jobId = await this.zpClient.depositPermittable(TOKEN_ADDRESS, amount, async (deadline, value) => {
-            const dataToSign = await this.createPermittableDepositData(TOKEN_ADDRESS, '1', myAddress, CONTRACT_ADDRESS, value, deadline);
-            return this.client.signTypedData(dataToSign)
-        }, myAddress, '0');
+            console.log('Please wait relayer complete the job %s...', jobId);
 
-        console.log('Please wait relayer complete the job %s...', jobId);
+            return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
+        } else {
+            console.log('Sorry, I cannot wait anymore. Please ask for relayer 😂');
 
-        return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
+            return 'FAILED';
+        }
     }
 
     public async withdrawShielded(amount: string, external_addr: string): Promise<string> {
@@ -274,11 +297,19 @@ export default class Account {
             address = external_addr;
         }
 
-        console.log('Making withdraw...');
-        const jobId = await this.zpClient.withdraw(TOKEN_ADDRESS, address, amount);
-        console.log('Please wait relayer complete the job %s...', jobId);
+        console.log('Waiting while state become ready...');
+        const ready = await this.zpClient.waitReadyToTransact(TOKEN_ADDRESS);
+        if (ready) {
+            console.log('Making withdraw...');
+            const jobId = await this.zpClient.withdraw(TOKEN_ADDRESS, address, amount);
+            console.log('Please wait relayer complete the job %s...', jobId);
 
-        return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
+            return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
+        } else {
+            console.log('Sorry, I cannot wait anymore. Please ask for relayer 😂');
+
+            return 'FAILED';
+        }
     }
 
     private decryptSeed(password: string): string {
