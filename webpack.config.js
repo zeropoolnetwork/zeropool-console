@@ -60,6 +60,7 @@ module.exports = {
         new CopyPlugin({
             patterns: [
                 { from: 'src/env.js' },
+                { from: 'node_modules/zeropool-client-js/lib/*.worker.js', to: "[name][ext]" }
             ],
         }),
         new HtmlWebpackPlugin({
