@@ -1,8 +1,8 @@
 import Account from './account';
 import bip39 from 'bip39-light';
-import { HistoryRecord, HistoryTransactionType } from 'zeropool-client-js';
-import { NetworkType } from 'zeropool-client-js/lib/network-type';
-import { deriveSpendingKey, verifyShieldedAddress, bufToHex } from 'zeropool-client-js/lib/utils';
+import { HistoryRecord, HistoryTransactionType } from 'zkbob-client-js';
+import { NetworkType } from 'zkbob-client-js/lib/network-type';
+import { deriveSpendingKey, verifyShieldedAddress, bufToHex } from 'zkbob-client-js/lib/utils';
 
 export async function setSeed(seed: string, password: string) {
     await this.account.login(seed, password);

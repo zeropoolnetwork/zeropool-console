@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 USERNAME=evgenkor
-IMAGE=zeropool-console
-VERSION=0.4.0beta6
+IMAGE=zkbob-console
+VERSION=0.4.0
 
 yarn build:prod && \
 docker build -f Dockerfile.prod -t $USERNAME/$IMAGE:latest . && \

@@ -92,7 +92,7 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
     function () {
       const message = String.raw`
 <h3>
-  Welcome to the ZeroPool console for ${NETWORK}.
+  Welcome to the zkBob console for ${NETWORK}.
 </h3>
 
 <p>
@@ -139,12 +139,13 @@ Enter 'help' for more info on available commands.
 };
 
 const GREETING = String.raw`
- _____              ____             _
-|__  /___ _ __ ___ |  _ \ ___   ___ | |
-  / // _ \ '__/ _ \| |_) / _ \ / _ \| |
- / /|  __/ | | (_) |  __/ (_) | (_) | |
-/____\___|_|  \___/|_|   \___/ \___/|_|
-                                 v${pjson.version}
+     _   ______       _     
+    | |  | ___ \     | |    
+ ___| | _| |_/ / ___ | |__  
+|_  / |/ / ___ \/ _ \| '_ \ 
+ / /|   <| |_/ / (_) | |_) |
+/___|_|\_\____/ \___/|_.__/ 
+                      v${pjson.version}
     `;
 
 jQuery(async function ($) {

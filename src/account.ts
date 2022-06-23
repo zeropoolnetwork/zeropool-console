@@ -1,18 +1,18 @@
 import AES from 'crypto-js/aes';
 import Utf8 from 'crypto-js/enc-utf8';
 import { EthereumClient, PolkadotClient, Client as NetworkClient } from 'zeropool-support-js';
-import { init, ZeropoolClient, HistoryRecord } from 'zeropool-client-js';
+import { init, ZkBobClient, HistoryRecord } from 'zkbob-client-js';
 import bip39 from 'bip39-light';
 import HDWalletProvider from '@truffle/hdwallet-provider';
-import { deriveSpendingKey } from 'zeropool-client-js/lib/utils';
-import { NetworkType } from 'zeropool-client-js/lib/network-type';
-import { EvmNetwork } from 'zeropool-client-js/lib/networks/evm';
-import { PolkadotNetwork } from 'zeropool-client-js/lib/networks/polkadot';
+import { deriveSpendingKey } from 'zkbob-client-js/lib/utils';
+import { NetworkType } from 'zkbob-client-js/lib/network-type';
+import { EvmNetwork } from 'zkbob-client-js/lib/networks/evm';
+import { PolkadotNetwork } from 'zkbob-client-js/lib/networks/polkadot';
 
 // @ts-ignore
 import wasmPath from 'libzkbob-rs-wasm-web/libzkbob_rs_wasm_bg.wasm';
 // @ts-ignore
-import workerPath from 'zeropool-client-js/lib/worker.js?asset';
+import workerPath from 'zkbob-client-js/lib/worker.js?asset';
 // const wasmPath = new URL('npm:libzeropool-rs-wasm-web/libzeropool_rs_wasm_bg.wasm', import.meta.url));
 // const workerPath = new URL('npm:zeropool-client-js/lib/worker.js', import.meta.url);
 
@@ -43,7 +43,7 @@ export default class Account {
     readonly accountName: string;
     private storage: AccountStorage;
     public client: NetworkClient;
-    private zpClient: ZeropoolClient;
+    private zpClient: ZkBobClient;
 
     constructor(accountName: string) {
         this.accountName = accountName;
@@ -88,7 +88,7 @@ export default class Account {
         const networkType = NETWORK as NetworkType;
         const sk = deriveSpendingKey(mnemonic, networkType);
         this.client = client;
-        this.zpClient = await ZeropoolClient.create({
+        this.zpClient = await ZkBobClient.create({
             sk,
             worker,
             snarkParams,

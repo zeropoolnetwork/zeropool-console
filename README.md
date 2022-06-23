@@ -1,4 +1,4 @@
-# ZeroPool Web Console
+# zkBob Web Console
 
 The simple tool to test and demonstrate zkBob solution possibilities 
 
@@ -9,8 +9,8 @@ Make sure you are using node js version higher or equal than `14.0.0`. The repo 
 1. Clone repository and install dependencies
 
 ```bash
-git clone https://github.com/zkBob/zeropool-console.git
-cd zeropool-console
+git clone https://github.com/zkBob/zkbob-console.git
+cd zkbob-console
 yarn install
 ```
 
@@ -30,7 +30,7 @@ It's recommended to clear your browser's history and cookies in case of you was 
 
 Suppose you already done local running and set appropriated parameters and settings
 
-1. Fix your docker ID in [this line](https://github.com/zkBob/zeropool-console/blob/0053ca2a63d00fd4be4e9bd646c05ffbdc2ecf3e/scripts/publish-docker#L4)
+1. Fix your docker ID in [this line](https://github.com/zkBob/zkbob-console/blob/0053ca2a63d00fd4be4e9bd646c05ffbdc2ecf3e/scripts/publish-docker#L4)
 
 2. Build the prouction pack and push your container to the Docker Hub: `./scripts/publish-docker`
 

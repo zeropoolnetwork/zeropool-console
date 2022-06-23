@@ -1,12 +1,12 @@
 version: '3'
 
 services:
-  zeropool-console:
+  zkbob-console:
     build:
       context: .
       dockerfile: Dockerfile
       target: base
-    container_name: zeropool-console
+    container_name: zkbob-console
     restart: always
     ports:
       - "1234:1234"

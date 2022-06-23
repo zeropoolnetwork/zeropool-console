@@ -1,9 +1,9 @@
 {
-  "name": "zeropool-console",
+  "name": "zkbob-console",
   "version": "0.4.0",
   "license": "MIT",
   "author": "Dmitry Vdovin <voidxnull@gmail.com>",
-  "homepage": "https://github.com/zeropoolnetwork/zeropool-console",
+  "homepage": "https://github.com/zkBob/zkbob-console",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
     "dev": "webpack serve --config webpack.config.dev.js --mode=development --progress",
@@ -34,7 +34,7 @@
     "stream-http": "^3.1.1",
     "tslib": "^2.3.1",
     "web3": "^1.7.1",
-    "zeropool-client-js": "https://github.com/zkBob/zeropool-client-js#0.3.6",
+    "zkbob-client-js": "0.4.0",
     "zeropool-support-js": "https://github.com/zkBob/zeropool-support-js#0.5.3"
   },
   "devDependencies": {
