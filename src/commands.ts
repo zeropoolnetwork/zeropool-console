@@ -4,6 +4,8 @@ import { HistoryRecord, HistoryTransactionType } from 'zkbob-client-js';
 import { NetworkType } from 'zkbob-client-js/lib/network-type';
 import { deriveSpendingKey, verifyShieldedAddress, bufToHex } from 'zkbob-client-js/lib/utils';
 
+const DENOMINATOR = 1000000000000000000;
+
 export async function setSeed(seed: string, password: string) {
     await this.account.login(seed, password);
 }
@@ -47,13 +49,13 @@ export async function getShieldedBalance() {
 
     this.echo(`[[;gray;]
 Private balance:
-    total: ${total} (account + note)
-    account: ${acc}
-    note: ${note}
+    total:   ${total / DENOMINATOR} ${SHIELDED_TOKEN_SYMBOL} (${total} wei) (account + note)
+    account: ${acc / DENOMINATOR} ${SHIELDED_TOKEN_SYMBOL} (${acc} wei)
+    note:    ${note / DENOMINATOR} ${SHIELDED_TOKEN_SYMBOL} (${note} wei)
 ]`);
 
     if (total != optimisticBalance) {
-        this.echo(`[[;green;]Optimistic private balance: ${optimisticBalance}
+        this.echo(`[[;green;]Optimistic private balance: ${optimisticBalance / DENOMINATOR} ${SHIELDED_TOKEN_SYMBOL} (${optimisticBalance} wei)
 ]`);
     }
 
@@ -61,7 +63,8 @@ Private balance:
 }
 
 export async function getTokenBalance() {
-    return this.account.getTokenBalance();
+    const balance = await this.account.getTokenBalance();
+    this.echo(`[[;gray;]Token balance: ${balance / DENOMINATOR} ${TOKEN_SYMBOL} (${balance} wei)]`);
 }
 
 export async function mint(amount: string) {
@@ -134,15 +137,15 @@ function humanReadable(record: HistoryRecord, denominator: number, tokenname: st
         pendingMark = `⌛ `;
     }
     if (record.type == HistoryTransactionType.Deposit) {
-      mainPart = `${pendingMark}DEPOSITED  ${Number(record.amount) / denominator} ${tokenname} FROM ${record.from}`;      
+      mainPart = `${pendingMark}DEPOSITED  ${Number(record.amount) / denominator} ${TOKEN_SYMBOL} FROM ${record.from}`;      
     } else if (record.type == HistoryTransactionType.TransferIn) {
-      mainPart = `${pendingMark}RECEIVED   ${Number(record.amount) / denominator} sh${tokenname} ON ${record.to}`;
+      mainPart = `${pendingMark}RECEIVED   ${Number(record.amount) / denominator} ${SHIELDED_TOKEN_SYMBOL} ON ${record.to}`;
     } else if (record.type == HistoryTransactionType.TransferOut) {
-      mainPart = `${pendingMark}SENDED     ${Number(record.amount) / denominator} sh${tokenname} TO ${record.to}`;
+      mainPart = `${pendingMark}SENDED     ${Number(record.amount) / denominator} ${SHIELDED_TOKEN_SYMBOL} TO ${record.to}`;
     } else if (record.type == HistoryTransactionType.Withdrawal) {
-      mainPart = `${pendingMark}WITHDRAWED ${Number(record.amount) / denominator} sh${tokenname} TO ${record.to}`;
+      mainPart = `${pendingMark}WITHDRAWED ${Number(record.amount) / denominator} ${SHIELDED_TOKEN_SYMBOL} TO ${record.to}`;
     } else if (record.type == HistoryTransactionType.TransferLoopback) {
-      mainPart = `${pendingMark}SENDED     ${Number(record.amount) / denominator} sh${tokenname} TO MYSELF`;
+      mainPart = `${pendingMark}SENDED     ${Number(record.amount) / denominator} ${SHIELDED_TOKEN_SYMBOL} TO MYSELF`;
     } else {
       mainPart = `${pendingMark}UNKNOWN TRANSACTION TYPE (${record.type})`
     }

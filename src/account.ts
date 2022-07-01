@@ -57,6 +57,8 @@ export default class Account {
             RELAYER_URL = process.env.RELAYER_URL;
             RPC_URL = process.env.RPC_URL;
             TRANSACTION_URL = process.env.TRANSACTION_URL;
+            TOKEN_SYMBOL = process.env.TOKEN_SYMBOL;
+            SHIELDED_TOKEN_SYMBOL = process.env.SHIELDED_TOKEN_SYMBOL;
         }
     }
 
