@@ -128,6 +128,12 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
 </p>
 
 <p>
+  Amounts are interpreted as Wei by default<br>
+  If you want to specify human-readable decimal value pls add ^ prefix<br>
+  e.g.: ^1.234 = 1234000000000000000, ^5 = 5000000000000000000
+</p>
+
+<p>
 Enter 'help' for more info on available commands.
 </p>
 `;

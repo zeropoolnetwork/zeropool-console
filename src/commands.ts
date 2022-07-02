@@ -4,8 +4,6 @@ import { HistoryRecord, HistoryTransactionType } from 'zkbob-client-js';
 import { NetworkType } from 'zkbob-client-js/lib/network-type';
 import { deriveSpendingKey, verifyShieldedAddress, bufToHex } from 'zkbob-client-js/lib/utils';
 
-const DENOMINATOR = 1000000000000000000;
-
 export async function setSeed(seed: string, password: string) {
     await this.account.login(seed, password);
 }
@@ -39,7 +37,7 @@ export function genShieldedAddress() {
 
 export async function getBalance() {
     const [balance, readable] = await this.account.getBalance();
-    this.echo(`[[;gray;]Balance: ${readable} (${balance})]`);
+    this.echo(`[[;gray;]Balance: ${readable} ${this.account.nativeSymbol()} (${balance} wei)]`);
 }
 
 export async function getShieldedBalance() {
@@ -48,14 +46,13 @@ export async function getShieldedBalance() {
     const optimisticBalance = await this.account.getOptimisticTotalBalance();
 
     this.echo(`[[;gray;]
-Private balance:
-    total:   ${total / DENOMINATOR} ${SHIELDED_TOKEN_SYMBOL} (${total} wei) (account + note)
-    account: ${acc / DENOMINATOR} ${SHIELDED_TOKEN_SYMBOL} (${acc} wei)
-    note:    ${note / DENOMINATOR} ${SHIELDED_TOKEN_SYMBOL} (${note} wei)
+Private balance: ${this.account.fromWei(total)} ${SHIELDED_TOKEN_SYMBOL} (${total} wei)
+      - account: ${this.account.fromWei(acc)} ${SHIELDED_TOKEN_SYMBOL} (${acc} wei)
+      - note:    ${this.account.fromWei(note)} ${SHIELDED_TOKEN_SYMBOL} (${note} wei)
 ]`);
 
     if (total != optimisticBalance) {
-        this.echo(`[[;green;]Optimistic private balance: ${optimisticBalance / DENOMINATOR} ${SHIELDED_TOKEN_SYMBOL} (${optimisticBalance} wei)
+        this.echo(`[[;green;]Optimistic private balance: ${this.account.fromWei(optimisticBalance)} ${SHIELDED_TOKEN_SYMBOL} (${optimisticBalance} wei)
 ]`);
     }
 
@@ -64,15 +61,15 @@ Private balance:
 
 export async function getTokenBalance() {
     const balance = await this.account.getTokenBalance();
-    this.echo(`[[;gray;]Token balance: ${balance / DENOMINATOR} ${TOKEN_SYMBOL} (${balance} wei)]`);
+    this.echo(`[[;gray;]Token balance: ${this.account.fromWei(balance)} ${TOKEN_SYMBOL} (${balance} wei)]`);
 }
 
 export async function mint(amount: string) {
-    return this.account.mint(amount);
+    return this.account.mint(this.account.amountToWei(amount));
 }
 
 export async function transfer(to: string, amount: string) {
-    await this.account.transfer(to, amount);
+    await this.account.transfer(to, this.account.amountToWei(amount));
 }
 
 export async function transferShielded(to: string, amount: string) {
@@ -81,7 +78,7 @@ export async function transferShielded(to: string, amount: string) {
     } else {
         this.echo('Performing shielded transfer...');
         this.pause();
-        const txHash = await this.account.transferShielded(to, amount);
+        const txHash = await this.account.transferShielded(to, this.account.amountToWei(amount));
         this.resume();
         this.echo(`Done: [[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`);
     };
@@ -90,7 +87,7 @@ export async function transferShielded(to: string, amount: string) {
 export async function depositShielded(amount: string) {
     this.echo('Performing shielded deposit...');
     this.pause();
-    const txHash = await this.account.depositShielded(amount);
+    const txHash = await this.account.depositShielded(this.account.amountToWei(amount));
     this.resume();
     this.echo(`Done: [[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`);
 }
@@ -98,7 +95,7 @@ export async function depositShielded(amount: string) {
 export async function depositShieldedPermittable(amount: string) {
     this.echo('Performing shielded deposit (permittable token)...');
     this.pause();
-    const txHash = await this.account.depositShieldedPermittable(amount);
+    const txHash = await this.account.depositShieldedPermittable(this.account.amountToWei(amount));
     this.resume();
     this.echo(`Done: [[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`);
 }
@@ -106,7 +103,7 @@ export async function depositShieldedPermittable(amount: string) {
 export async function withdrawShielded(amount: string, address: string) {
     this.echo('Performing shielded withdraw...');
     this.pause();
-    const txHash = await this.account.withdrawShielded(amount, address);
+    const txHash = await this.account.withdrawShielded(this.account.amountToWei(amount), address);
     this.resume();
     this.echo(`Done: [[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`);
 }
@@ -124,11 +121,11 @@ export async function printHistory() {
     const history: HistoryRecord[] = await this.account.getAllHistory();
     this.resume();
     for (const tx of history) {
-        this.echo(`${humanReadable(tx, 1000000000, "TOKEN")} [[!;;;;${this.account.getTransactionUrl(tx.txHash)}]${tx.txHash}]`);
+        this.echo(`${humanReadable(tx, 1000000000)} [[!;;;;${this.account.getTransactionUrl(tx.txHash)}]${tx.txHash}]`);
     }
 }
 
-function humanReadable(record: HistoryRecord, denominator: number, tokenname: string): string {
+function humanReadable(record: HistoryRecord, denominator: number): string {
     let dt = new Date(record.timestamp * 1000);
 
     let mainPart: string;
@@ -172,15 +169,3 @@ export function reset() {
     this.account = null;
     this.reset();
 }
-
-// export async function showState() {
-//     const account: Account = this.account;
-//     const coin = account.hdWallet.getNetwork(chainId())!;
-//     await coin.updateState();
-//     const data = coin.zpState.account.getWholeState();
-//     console.log(data);
-
-//     for (const [index, tx] of data.txs) {
-//         this.echo(`${index}: ${JSON.stringify(tx)}`);
-//     }
-// }
