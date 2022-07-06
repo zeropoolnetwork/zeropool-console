@@ -75,6 +75,16 @@ export async function transfer(to: string, amount: string) {
     await this.account.transfer(to, amount);
 }
 
+export async function getTxParts(amount: string, fee: string) {
+    this.pause();
+    const result = await this.account.getTxParts(amount, fee);
+    this.resume();
+
+    for (const part of result) {
+        this.echo(`${part.amount.toString()} [fee: ${part.fee.toString()}], limit = ${part.accountLimit.toString()}`);
+    }
+}
+
 export async function transferShielded(to: string, amount: string) {
     if (verifyShieldedAddress(to) === false) {
         this.error(`Shielded address ${to} is invalid. Please check it!`);

@@ -1,7 +1,7 @@
 import AES from 'crypto-js/aes';
 import Utf8 from 'crypto-js/enc-utf8';
 import { EthereumClient, PolkadotClient, Client as NetworkClient } from 'zeropool-support-js';
-import { init, ZkBobClient, HistoryRecord } from 'zkbob-client-js';
+import { init, ZkBobClient, HistoryRecord, TxAmount } from 'zkbob-client-js';
 import bip39 from 'bip39-light';
 import HDWalletProvider from '@truffle/hdwallet-provider';
 import { deriveSpendingKey } from 'zkbob-client-js/lib/utils';
@@ -174,6 +174,10 @@ export default class Account {
 
     public async transfer(to: string, amount: string): Promise<void> {
         await this.client.transfer(to, amount);
+    }
+
+    public async getTxParts(amount: string, fee: string): Promise<Array<TxAmount>> {
+        return await this.zpClient.getTransactionParts(TOKEN_ADDRESS, amount, fee);
     }
 
     public getTransactionUrl(txHash: string): string {

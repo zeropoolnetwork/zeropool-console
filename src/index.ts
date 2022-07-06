@@ -41,6 +41,7 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   'deposit-shielded-permittable': [c.depositShieldedPermittable, '<amount>', 'shield some tokens [via permit]'],
   'withdraw-shielded': [c.withdrawShielded, '<amount> [address]', 'withdraw shielded tokens to the native address (to the your account if addres is ommited)'],
   'history': [c.printHistory, '', 'print all transactions related to your account'],
+  'tx-amounts': [c.getTxParts, '<amount> <fee>', 'get transfer component transactions'],
   'internal-state': [c.getInternalState, '', 'print your account and incoming notes'],
   //'clean-state': [c.cleanState, '', 'wipe internal state and history'],
   'clear': [c.clear, '', 'clear terminal'],
