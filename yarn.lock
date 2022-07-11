@@ -446,17 +446,6 @@
   resolved "https://registry.yarnpkg.com/@lmdb/lmdb-win32-x64/-/lmdb-win32-x64-2.5.2.tgz#28f643fbc0bec30b07fbe95b137879b6b4d1c9c5"
   integrity sha512-zrBczSbXKxEyK2ijtbRdICDygRqWSRPpZMN5dD1T8VMEW5RIhIbwFWw2phDRXuBQdVDpSjalCIUMWMV2h3JaZA==
 
-"@metamask/eth-sig-util@4.0.1":
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/@metamask/eth-sig-util/-/eth-sig-util-4.0.1.tgz#3ad61f6ea9ad73ba5b19db780d40d9aae5157088"
-  integrity sha512-tghyZKLHZjcdlDqCA3gNZmLeR0XvOE9U1qoQO9ohyAZT6Pya+H9vkBPcsyXytmYLNgVoin7CKCmweo/R43V+tQ==
-  dependencies:
-    ethereumjs-abi "^0.6.8"
-    ethereumjs-util "^6.2.1"
-    ethjs-util "^0.1.6"
-    tweetnacl "^1.0.3"
-    tweetnacl-util "^0.15.1"
-
 "@metamask/safe-event-emitter@^2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@metamask/safe-event-emitter/-/safe-event-emitter-2.0.0.tgz#af577b477c683fad17c619a78208cede06f9605c"
@@ -1572,14 +1561,14 @@
   dependencies:
     defer-to-connect "^1.0.1"
 
-"@truffle/hdwallet-provider@^2.0.3":
-  version "2.0.10"
-  resolved "https://registry.yarnpkg.com/@truffle/hdwallet-provider/-/hdwallet-provider-2.0.10.tgz#2b02baa580bc284c0f3691c7a400de0fff0dce52"
-  integrity sha512-0wOdWYciTEKy3doZCzkhcKbYN4QnwtLx/ihRelIsZZyklNe++fppOqjKKa4t+8t2g5r0Ji3i5xPFOc2CAdS+fQ==
+"@truffle/hdwallet-provider@2.0.9":
+  version "2.0.9"
+  resolved "https://registry.yarnpkg.com/@truffle/hdwallet-provider/-/hdwallet-provider-2.0.9.tgz#90a259481554aed74aa0015dfe5c03c87ff5c11a"
+  integrity sha512-eDii/9/CmlXVtTq4iCouIgoLRzu3CB3XnxVHCZz0OTCBxwQ+sZZVJ99oQJJ8g8xb7aycd87YeMm5tXLhhH3XdA==
   dependencies:
     "@ethereumjs/common" "^2.4.0"
     "@ethereumjs/tx" "^3.3.0"
-    "@metamask/eth-sig-util" "4.0.1"
+    eth-sig-util "^3.0.1"
     ethereum-cryptography "1.0.3"
     ethereum-protocol "^1.0.1"
     ethereumjs-util "^6.1.0"
@@ -3649,9 +3638,9 @@ dotenv@^7.0.0:
   integrity sha512-M3NhsLbV1i6HuGzBUH8vXrtxOk+tWmzWKDMbAVSUp3Zsjm7ywFeuwrUXhmhQyRK1q5B5GGy7hcXPbj3bnfZg2g==
 
 duplexer3@^0.1.4:
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/duplexer3/-/duplexer3-0.1.4.tgz#ee01dd1cac0ed3cbc7fdbea37dc0a8f1ce002ce2"
-  integrity sha512-CEj8FwwNA4cVH2uFCoHUrmojhYh1vmCdOaneKJXwkeY1i9jnlslVo9dx+hQ5Hl9GnH/Bwy/IjxAyOePyPKYnzA==
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/duplexer3/-/duplexer3-0.1.5.tgz#0b5e4d7bad5de8901ea4440624c8e1d20099217e"
+  integrity sha512-1A8za6ws41LQgv9HrE/66jyC5yuSjQ3L/KOpFtoBilsAK2iA2wuS5rTt1OCzIvtS2V7nVmedsUU+DGRcjBmOYA==
 
 ecc-jsbn@~0.1.1:
   version "0.1.2"
@@ -3674,9 +3663,9 @@ ee-first@1.1.1:
   integrity sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==
 
 electron-to-chromium@^1.4.172:
-  version "1.4.180"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.180.tgz#380b06037836055d12c7de181ee90b8ed911c3e7"
-  integrity sha512-7at5ash3FD9U5gPa3/wPr6OdiZd/zBjvDZaaHBpcqFOFUhZiWnb7stkqk8xUFL9H9nk7Yok5vCCNK8wyC/+f8A==
+  version "1.4.182"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.182.tgz#5d59214ebfe90b36f23e81cd226a42732cd8c677"
+  integrity sha512-OpEjTADzGoXABjqobGhpy0D2YsTncAax7IkER68ycc4adaq0dqEG9//9aenKPy7BGA90bqQdLac0dPp6uMkcSg==
 
 elliptic@6.5.4, elliptic@^6.4.0, elliptic@^6.5.2, elliptic@^6.5.3, elliptic@^6.5.4:
   version "6.5.4"
@@ -4090,6 +4079,16 @@ eth-sig-util@^1.4.2:
     ethereumjs-abi "git+https://github.com/ethereumjs/ethereumjs-abi.git"
     ethereumjs-util "^5.1.1"
 
+eth-sig-util@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/eth-sig-util/-/eth-sig-util-3.0.1.tgz#8753297c83a3f58346bd13547b59c4b2cd110c96"
+  integrity sha512-0Us50HiGGvZgjtWTyAI/+qTzYPMLy5Q451D0Xy68bxq1QMWdoOddDwGvsqcFT27uohKgalM9z/yxplyt+mY2iQ==
+  dependencies:
+    ethereumjs-abi "^0.6.8"
+    ethereumjs-util "^5.1.1"
+    tweetnacl "^1.0.3"
+    tweetnacl-util "^0.15.0"
+
 ethereum-bloom-filters@^1.0.6:
   version "1.0.10"
   resolved "https://registry.yarnpkg.com/ethereum-bloom-filters/-/ethereum-bloom-filters-1.0.10.tgz#3ca07f4aed698e75bd134584850260246a5fed8a"
@@ -4143,15 +4142,7 @@ ethereum-protocol@^1.0.1:
   resolved "https://registry.yarnpkg.com/ethereum-protocol/-/ethereum-protocol-1.0.1.tgz#b7d68142f4105e0ae7b5e178cf42f8d4dc4b93cf"
   integrity sha512-3KLX1mHuEsBW0dKG+c6EOJS1NBNqdCICvZW9sInmZTt5aY0oxmHVggYRE0lJu1tcnMD1K+AKHdLi6U43Awm1Vg==
 
-ethereumjs-abi@^0.6.8:
-  version "0.6.8"
-  resolved "https://registry.yarnpkg.com/ethereumjs-abi/-/ethereumjs-abi-0.6.8.tgz#71bc152db099f70e62f108b7cdfca1b362c6fcae"
-  integrity sha512-Tx0r/iXI6r+lRsdvkFDlut0N08jWMnKRZ6Gkq+Nmw75lZe4e6o3EkSnkaBP5NF6+m5PTGAr9JP43N3LyeoglsA==
-  dependencies:
-    bn.js "^4.11.8"
-    ethereumjs-util "^6.0.0"
-
-"ethereumjs-abi@git+https://github.com/ethereumjs/ethereumjs-abi.git":
+ethereumjs-abi@^0.6.8, "ethereumjs-abi@git+https://github.com/ethereumjs/ethereumjs-abi.git":
   version "0.6.8"
   resolved "git+https://github.com/ethereumjs/ethereumjs-abi.git#ee3994657fa7a427238e6ba92a84d0b529bbcde0"
   dependencies:
@@ -4223,7 +4214,7 @@ ethereumjs-util@^5.0.0, ethereumjs-util@^5.1.1, ethereumjs-util@^5.1.2, ethereum
     rlp "^2.0.0"
     safe-buffer "^5.1.1"
 
-ethereumjs-util@^6.0.0, ethereumjs-util@^6.1.0, ethereumjs-util@^6.2.1:
+ethereumjs-util@^6.0.0, ethereumjs-util@^6.1.0:
   version "6.2.1"
   resolved "https://registry.yarnpkg.com/ethereumjs-util/-/ethereumjs-util-6.2.1.tgz#fcb4e4dd5ceacb9d2305426ab1a5cd93e3163b69"
   integrity sha512-W2Ktez4L01Vexijrm5EB6w7dg4n/TgpoYU4avuT5T3Vmnw/eCRtiBrJfQYS/DCSvDIOLn2k57GcHdeBcgVxAqw==
@@ -4286,7 +4277,7 @@ ethjs-unit@0.1.6:
     bn.js "4.11.6"
     number-to-bn "1.7.0"
 
-ethjs-util@0.1.6, ethjs-util@^0.1.3, ethjs-util@^0.1.6:
+ethjs-util@0.1.6, ethjs-util@^0.1.3:
   version "0.1.6"
   resolved "https://registry.yarnpkg.com/ethjs-util/-/ethjs-util-0.1.6.tgz#f308b62f185f9fe6237132fb2a9818866a5cd536"
   integrity sha512-CUnVOQq7gSpDHZVVrQW8ExxUETWrnrvXYvYz55wOU8Uj4VCgw56XC2B/fVqQN+f7gmrnRHSLVnFAwsCuNwji8w==
@@ -8679,7 +8670,7 @@ tunnel-agent@^0.6.0:
   dependencies:
     safe-buffer "^5.0.1"
 
-tweetnacl-util@^0.15.1:
+tweetnacl-util@^0.15.0:
   version "0.15.1"
   resolved "https://registry.yarnpkg.com/tweetnacl-util/-/tweetnacl-util-0.15.1.tgz#b80fcdb5c97bcc508be18c44a4be50f022eea00b"
   integrity sha512-RKJBIj8lySrShN4w6i/BonWp2Z/uxwC3h4y7xsRrpP59ZboCd0GpEVsOnMDYLMmKBpYhb5TgHzZXy7wTfYFBRw==
@@ -9626,9 +9617,8 @@ yargs@^13.3.2:
     y18n "^4.0.0"
     yargs-parser "^13.1.2"
 
-"zeropool-support-js@https://github.com/zkBob/zeropool-support-js#0.5.3":
+"zeropool-support-js@file:../zeropool-support-js":
   version "0.5.3"
-  resolved "https://github.com/zkBob/zeropool-support-js#563592c3918096fc5ddeedbded1bd7bcfd77f6a8"
   dependencies:
     "@ethereumjs/tx" "^3.2.1"
     "@polkadot/api" "^7.11.1"
@@ -9654,7 +9644,7 @@ yargs@^13.3.2:
     comlink "^4.3.1"
     hdwallet-babyjub "^0.0.1"
     idb "^7.0.0"
-    libzkbob-rs-wasm-web "file:../../Library/Caches/Yarn/v6/npm-zkbob-client-js-0.4.1-1933db30-5647-4d3f-87f8-1c1b35d371c1-1657146878563/node_modules/zkbob-client-js/libzkbob-rs-wasm-web"
+    libzkbob-rs-wasm-web "file:../../Library/Caches/Yarn/v6/npm-zkbob-client-js-0.4.1-d6134ba2-ccd4-4bef-9e06-66e3ebc85b72-1657533962111/node_modules/zkbob-client-js/libzkbob-rs-wasm-web"
     regenerator-runtime "^0.13.9"
     web3 "^1.7.0"
     web3-eth-personal "^1.7.0"

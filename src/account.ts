@@ -184,19 +184,25 @@ export default class Account {
         return this.client.getTransactionUrl(txHash);
     }
 
-    public async transferShielded(to: string, amount: string): Promise<string> {
+    public async transferShielded(to: string, amount: string): Promise<string[]> {
         console.log('Waiting while state become ready...');
         const ready = await this.zpClient.waitReadyToTransact(TOKEN_ADDRESS);
         if (ready) {
             console.log('Making transfer...');
-            const jobId = await this.zpClient.transfer(TOKEN_ADDRESS, [{ to, amount }]);
-            console.log('Please wait relayer complete the job %s...', jobId);
+            //const jobId = await this.zpClient.transfer(TOKEN_ADDRESS, [{ to, amount }]);
+            const jobIds = await this.zpClient.transferMulti(TOKEN_ADDRESS, to, amount, "0");
+            console.log('Please wait relayer complete the jobs [%s]...', jobIds.join(", "));
 
-            return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
+            const waiters = jobIds.map(async (jobId) => {
+                return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
+            });
+
+            return await Promise.all(waiters);
+            
         } else {
             console.log('Sorry, I cannot wait anymore. Please ask for relayer 😂');
 
-            return 'FAILED';
+            throw Error('State is not ready for transact');
         }
     }
 

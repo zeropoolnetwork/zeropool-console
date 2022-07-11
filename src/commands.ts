@@ -91,9 +91,11 @@ export async function transferShielded(to: string, amount: string) {
     } else {
         this.echo('Performing shielded transfer...');
         this.pause();
-        const txHash = await this.account.transferShielded(to, amount);
+        const txHashes = await this.account.transferShielded(to, amount);
         this.resume();
-        this.echo(`Done: [[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`);
+        this.echo(`Done: ${txHashes.map((txHash: string) => {
+            return `[[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`;
+        }).join(`, `)}`);
     };
 }
 
