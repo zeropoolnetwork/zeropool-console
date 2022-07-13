@@ -122,9 +122,11 @@ export async function depositShieldedPermittable(amount: string) {
 export async function withdrawShielded(amount: string, address: string) {
     this.echo('Performing shielded withdraw...');
     this.pause();
-    const txHash = await this.account.withdrawShielded(toGwei(amount), address);
+    const txHashes = await this.account.withdrawShielded(toGwei(amount), address);
     this.resume();
-    this.echo(`Done: [[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`);
+    this.echo(`Done: ${txHashes.map((txHash: string) => {
+        return `[[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`;
+    }).join(`, `)}`);
 }
 
 export async function getInternalState() {

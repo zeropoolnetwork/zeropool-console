@@ -297,7 +297,7 @@ export default class Account {
         }
     }
 
-    public async withdrawShielded(amount: string, external_addr: string): Promise<string> {
+    public async withdrawShielded(amount: string, external_addr: string): Promise<string[]> {
 
         let address = null;
         if (external_addr == null) {
@@ -316,14 +316,19 @@ export default class Account {
         const ready = await this.zpClient.waitReadyToTransact(TOKEN_ADDRESS);
         if (ready) {
             console.log('Making withdraw...');
-            const jobId = await this.zpClient.withdraw(TOKEN_ADDRESS, address, amount, DEFAULT_FEE);
-            console.log('Please wait relayer complete the job %s...', jobId);
+            const jobIds = await this.zpClient.withdrawMulti(TOKEN_ADDRESS, address, amount, DEFAULT_FEE);
+            console.log('Please wait relayer complete the jobs [%s]...', jobIds.join(", "));
 
-            return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
+            const waiters = jobIds.map(async (jobId) => {
+                return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
+            });
+
+            return await Promise.all(waiters);
+
         } else {
             console.log('Sorry, I cannot wait anymore. Please ask for relayer 😂');
 
-            return 'FAILED';
+            throw Error('State is not ready for transact');
         }
     }
 
