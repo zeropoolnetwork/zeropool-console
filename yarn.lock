@@ -9644,7 +9644,7 @@ yargs@^13.3.2:
     comlink "^4.3.1"
     hdwallet-babyjub "^0.0.1"
     idb "^7.0.0"
-    libzkbob-rs-wasm-web "file:../../Library/Caches/Yarn/v6/npm-zkbob-client-js-0.4.1-d6134ba2-ccd4-4bef-9e06-66e3ebc85b72-1657533962111/node_modules/zkbob-client-js/libzkbob-rs-wasm-web"
+    libzkbob-rs-wasm-web "file:../../Library/Caches/Yarn/v6/npm-zkbob-client-js-0.4.1-568d4cf8-1db9-41a3-afcc-1d4511fe02af-1657719471767/node_modules/zkbob-client-js/libzkbob-rs-wasm-web"
     regenerator-runtime "^0.13.9"
     web3 "^1.7.0"
     web3-eth-personal "^1.7.0"

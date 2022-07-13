@@ -9,6 +9,8 @@ import { NetworkType } from 'zkbob-client-js/lib/network-type';
 import { EvmNetwork } from 'zkbob-client-js/lib/networks/evm';
 import { PolkadotNetwork } from 'zkbob-client-js/lib/networks/polkadot';
 
+const DEFAULT_FEE = "1000";
+
 // @ts-ignore
 import wasmPath from 'libzkbob-rs-wasm-web/libzkbob_rs_wasm_bg.wasm';
 // @ts-ignore
@@ -190,7 +192,7 @@ export default class Account {
         if (ready) {
             console.log('Making transfer...');
             //const jobId = await this.zpClient.transfer(TOKEN_ADDRESS, [{ to, amount }]);
-            const jobIds = await this.zpClient.transferMulti(TOKEN_ADDRESS, to, amount, "0");
+            const jobIds = await this.zpClient.transferMulti(TOKEN_ADDRESS, to, amount, DEFAULT_FEE);
             console.log('Please wait relayer complete the jobs [%s]...', jobIds.join(", "));
 
             const waiters = jobIds.map(async (jobId) => {
@@ -214,14 +216,15 @@ export default class Account {
 
         if (isEvmBased(NETWORK)) {
             console.log('Approving allowance the Pool (%s) to spend our tokens (%s)', CONTRACT_ADDRESS, amount);
-            await this.client.approve(TOKEN_ADDRESS, CONTRACT_ADDRESS, amount);
+            const totalApproveAmount = (BigInt(amount) + BigInt(DEFAULT_FEE)) * BigInt(1000000000);
+            await this.client.approve(TOKEN_ADDRESS, CONTRACT_ADDRESS, totalApproveAmount.toString());
         }
 
         console.log('Waiting while state become ready...');
         const ready = await this.zpClient.waitReadyToTransact(TOKEN_ADDRESS);
         if (ready) {
             console.log('Making deposit...');
-            const jobId = await this.zpClient.deposit(TOKEN_ADDRESS, amount, (data) => this.client.sign(data), fromAddress, '0');
+            const jobId = await this.zpClient.deposit(TOKEN_ADDRESS, amount, (data) => this.client.sign(data), fromAddress, DEFAULT_FEE);
             console.log('Please wait relayer complete the job %s...', jobId);
 
             return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
@@ -282,7 +285,7 @@ export default class Account {
             const jobId = await this.zpClient.depositPermittable(TOKEN_ADDRESS, amount, async (deadline, value) => {
                 const dataToSign = await this.createPermittableDepositData(TOKEN_ADDRESS, '1', myAddress, CONTRACT_ADDRESS, value, deadline);
                 return this.client.signTypedData(dataToSign)
-            }, myAddress, '0');
+            }, myAddress, DEFAULT_FEE);
 
             console.log('Please wait relayer complete the job %s...', jobId);
 
@@ -313,7 +316,7 @@ export default class Account {
         const ready = await this.zpClient.waitReadyToTransact(TOKEN_ADDRESS);
         if (ready) {
             console.log('Making withdraw...');
-            const jobId = await this.zpClient.withdraw(TOKEN_ADDRESS, address, amount);
+            const jobId = await this.zpClient.withdraw(TOKEN_ADDRESS, address, amount, DEFAULT_FEE);
             console.log('Please wait relayer complete the job %s...', jobId);
 
             return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);

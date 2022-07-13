@@ -6,6 +6,10 @@ import { deriveSpendingKey, verifyShieldedAddress, bufToHex } from 'zkbob-client
 
 const DENOMINATOR = 1000000000000000000;
 
+function toGwei(amountWei: string): string {
+    return (BigInt(amountWei) / BigInt(1000000000)).toString();
+}
+
 export async function setSeed(seed: string, password: string) {
     await this.account.login(seed, password);
 }
@@ -77,7 +81,7 @@ export async function transfer(to: string, amount: string) {
 
 export async function getTxParts(amount: string, fee: string) {
     this.pause();
-    const result = await this.account.getTxParts(amount, fee);
+    const result = await this.account.getTxParts(toGwei(amount), fee);
     this.resume();
 
     for (const part of result) {
@@ -91,7 +95,7 @@ export async function transferShielded(to: string, amount: string) {
     } else {
         this.echo('Performing shielded transfer...');
         this.pause();
-        const txHashes = await this.account.transferShielded(to, amount);
+        const txHashes = await this.account.transferShielded(to, toGwei(amount));
         this.resume();
         this.echo(`Done: ${txHashes.map((txHash: string) => {
             return `[[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`;
@@ -102,7 +106,7 @@ export async function transferShielded(to: string, amount: string) {
 export async function depositShielded(amount: string) {
     this.echo('Performing shielded deposit...');
     this.pause();
-    const txHash = await this.account.depositShielded(amount);
+    const txHash = await this.account.depositShielded(toGwei(amount));
     this.resume();
     this.echo(`Done: [[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`);
 }
@@ -110,7 +114,7 @@ export async function depositShielded(amount: string) {
 export async function depositShieldedPermittable(amount: string) {
     this.echo('Performing shielded deposit (permittable token)...');
     this.pause();
-    const txHash = await this.account.depositShieldedPermittable(amount);
+    const txHash = await this.account.depositShieldedPermittable(toGwei(amount));
     this.resume();
     this.echo(`Done: [[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`);
 }
@@ -118,7 +122,7 @@ export async function depositShieldedPermittable(amount: string) {
 export async function withdrawShielded(amount: string, address: string) {
     this.echo('Performing shielded withdraw...');
     this.pause();
-    const txHash = await this.account.withdrawShielded(amount, address);
+    const txHash = await this.account.withdrawShielded(toGwei(amount), address);
     this.resume();
     this.echo(`Done: [[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`);
 }
