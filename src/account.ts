@@ -9,7 +9,7 @@ import { NetworkType } from 'zkbob-client-js/lib/network-type';
 import { EvmNetwork } from 'zkbob-client-js/lib/networks/evm';
 import { PolkadotNetwork } from 'zkbob-client-js/lib/networks/polkadot';
 
-const DEFAULT_FEE = "1000";
+const DEFAULT_FEE = "0";
 
 // @ts-ignore
 import wasmPath from 'libzkbob-rs-wasm-web/libzkbob_rs_wasm_bg.wasm';
