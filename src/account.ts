@@ -167,6 +167,14 @@ export default class Account {
         return amount;
     }
 
+    public amountToGwei(amount: string): string {
+        if (amount.startsWith("^")) {
+            return (BigInt(this.toWei(amount.substr(1))) / BigInt(1000000000)).toString();
+        }
+
+        return (BigInt(amount) / BigInt(1000000000)).toString();
+    }
+
     public fromWei(wei: string): string {
         return this.client.fromBaseUnit(wei);
     }

@@ -6037,10 +6037,8 @@ levn@^0.3.0, levn@~0.3.0:
     prelude-ls "~1.1.2"
     type-check "~0.3.2"
 
-libzkbob-rs-wasm-web@0.5.0:
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/libzkbob-rs-wasm-web/-/libzkbob-rs-wasm-web-0.5.0.tgz#6924df5150646abb1f4a6d9c9a880ff74d660f9b"
-  integrity sha512-WQAH51s+4BC1wfegq9tJiignDSoXrJAS+JPoTdEdJOKWkXgnymOrRRgwU6VR4GitI+zbQfvzZA+zzP9XcYFliw==
+"libzkbob-rs-wasm-web@file:../zkbob-client-js/libzkbob-rs-wasm-web":
+  version "0.5.1"
 
 lines-and-columns@^1.1.6:
   version "1.2.4"
@@ -9650,7 +9648,7 @@ yargs@^13.3.2:
     comlink "^4.3.1"
     hdwallet-babyjub "^0.0.1"
     idb "^7.0.0"
-    libzkbob-rs-wasm-web "0.5.0"
+    libzkbob-rs-wasm-web "file:../../Library/Caches/Yarn/v6/npm-zkbob-client-js-0.5.0-75ab1f20-0fb0-4a5e-8856-bcc969fdc428-1657821790423/node_modules/zkbob-client-js/libzkbob-rs-wasm-web"
     regenerator-runtime "^0.13.9"
     web3 "^1.7.0"
     web3-eth-personal "^1.7.0"
