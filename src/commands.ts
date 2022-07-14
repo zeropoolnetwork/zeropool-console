@@ -4,6 +4,7 @@ import { HistoryRecord, HistoryTransactionType } from 'zkbob-client-js';
 import { NetworkType } from 'zkbob-client-js/lib/network-type';
 import { deriveSpendingKey, verifyShieldedAddress, bufToHex } from 'zkbob-client-js/lib/utils';
 
+
 export async function setSeed(seed: string, password: string) {
     await this.account.login(seed, password);
 }
@@ -72,22 +73,34 @@ export async function transfer(to: string, amount: string) {
     await this.account.transfer(to, this.account.amountToWei(amount));
 }
 
+export async function getTxParts(amount: string, fee: string) {
+    this.pause();
+    const result = await this.account.getTxParts(this.account.amountToGwei(amount), fee);
+    this.resume();
+
+    for (const part of result) {
+        this.echo(`${part.amount.toString()} [fee: ${part.fee.toString()}], limit = ${part.accountLimit.toString()}`);
+    }
+}
+
 export async function transferShielded(to: string, amount: string) {
     if (verifyShieldedAddress(to) === false) {
         this.error(`Shielded address ${to} is invalid. Please check it!`);
     } else {
         this.echo('Performing shielded transfer...');
         this.pause();
-        const txHash = await this.account.transferShielded(to, this.account.amountToWei(amount));
+        const txHashes = await this.account.transferShielded(to, this.account.amountToGwei(amount));
         this.resume();
-        this.echo(`Done: [[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`);
+        this.echo(`Done: ${txHashes.map((txHash: string) => {
+            return `[[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`;
+        }).join(`, `)}`);
     };
 }
 
 export async function depositShielded(amount: string) {
     this.echo('Performing shielded deposit...');
     this.pause();
-    const txHash = await this.account.depositShielded(this.account.amountToWei(amount));
+    const txHash = await this.account.depositShielded(this.account.amountToGwei(amount));
     this.resume();
     this.echo(`Done: [[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`);
 }
@@ -95,7 +108,7 @@ export async function depositShielded(amount: string) {
 export async function depositShieldedPermittable(amount: string) {
     this.echo('Performing shielded deposit (permittable token)...');
     this.pause();
-    const txHash = await this.account.depositShieldedPermittable(this.account.amountToWei(amount));
+    const txHash = await this.account.depositShieldedPermittable(this.account.amountToGwei(amount));
     this.resume();
     this.echo(`Done: [[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`);
 }
@@ -103,9 +116,11 @@ export async function depositShieldedPermittable(amount: string) {
 export async function withdrawShielded(amount: string, address: string) {
     this.echo('Performing shielded withdraw...');
     this.pause();
-    const txHash = await this.account.withdrawShielded(this.account.amountToWei(amount), address);
+    const txHashes = await this.account.withdrawShielded(this.account.amountToGwei(amount), address);
     this.resume();
-    this.echo(`Done: [[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`);
+    this.echo(`Done: ${txHashes.map((txHash: string) => {
+        return `[[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`;
+    }).join(`, `)}`);
 }
 
 export async function getInternalState() {
