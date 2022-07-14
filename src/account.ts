@@ -124,6 +124,17 @@ export default class Account {
         return !!this.storage.get(this.accountName, 'seed');
     }
 
+    public nativeSymbol(): string {
+        switch(NETWORK) {
+            case 'ethereum': return 'ETH';
+            case 'aurora': return 'AURORA';
+            case 'xdai': return 'XDAI';
+            case 'polkadot': return 'DOT';
+            case 'kusama': return 'KSM';
+            default: return '';
+        }
+    }
+
     public async getRegularAddress(): Promise<string> {
         return await this.client.getAddress();
     }
@@ -143,6 +154,25 @@ export default class Account {
 
         return pendingBalance;
     }
+
+    // Check input amount and cconvert it in wei if needed
+    // Regular number - wei, number started with '#' - *10^18
+    public amountToWei(amount: string): string {
+        if (amount.startsWith("^")) {
+            return this.toWei(amount.substr(1));
+        }
+
+        return amount;
+    }
+
+    public fromWei(wei: string): string {
+        return this.client.fromBaseUnit(wei);
+    }
+
+    public toWei(amount: string): string {
+        return this.client.toBaseUnit(amount);
+    }
+
 
     public async getBalance(): Promise<[string, string]> {
         const balance = await this.client.getBalance();
