@@ -75,7 +75,7 @@ export async function transfer(to: string, amount: string) {
 
 export async function getTxParts(amount: string, fee: string) {
     this.pause();
-    const result = await this.account.getTxParts(this.account.amountToGwei(amount), fee);
+    const result = await this.account.getTxParts(this.account.amountToGwei(amount), this.account.amountToGwei(fee));
     this.resume();
 
     for (const part of result) {
