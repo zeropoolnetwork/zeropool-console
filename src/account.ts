@@ -9,7 +9,7 @@ import { NetworkType } from 'zkbob-client-js/lib/network-type';
 import { EvmNetwork } from 'zkbob-client-js/lib/networks/evm';
 import { PolkadotNetwork } from 'zkbob-client-js/lib/networks/polkadot';
 
-const DEFAULT_FEE = "0";
+const DEFAULT_FEE = "1000";
 
 // @ts-ignore
 import wasmPath from 'libzkbob-rs-wasm-web/libzkbob_rs_wasm_bg.wasm';
@@ -230,15 +230,10 @@ export default class Account {
         if (ready) {
             console.log('Making transfer...');
             //const jobId = await this.zpClient.transfer(TOKEN_ADDRESS, [{ to, amount }]);
-            const jobIds = await this.zpClient.transferMulti(TOKEN_ADDRESS, to, amount, DEFAULT_FEE);
-            console.log('Please wait relayer complete the jobs [%s]...', jobIds.join(", "));
+            const jobId = await this.zpClient.transferMulti(TOKEN_ADDRESS, to, amount, DEFAULT_FEE);
+            console.log('Please wait relayer complete the job %s...', jobId);
 
-            const waiters = jobIds.map(async (jobId) => {
-                return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
-            });
-
-            return await Promise.all(waiters);
-            
+            return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
         } else {
             console.log('Sorry, I cannot wait anymore. Please ask for relayer 😂');
 
@@ -246,7 +241,7 @@ export default class Account {
         }
     }
 
-    public async depositShielded(amount: string): Promise<string> {
+    public async depositShielded(amount: string): Promise<string[]> {
         let fromAddress = null;
         if (isSubstrateBased(NETWORK)) {
             fromAddress = await this.client.getPublicKey();
@@ -269,7 +264,7 @@ export default class Account {
         } else {
             console.log('Sorry, I cannot wait anymore. Please ask for relayer 😂');
 
-            return 'FAILED';
+            throw Error('State is not ready for transact');
         }
     }
 
@@ -308,7 +303,7 @@ export default class Account {
         return data;
     }
 
-    public async depositShieldedPermittable(amount: string): Promise<string> {
+    public async depositShieldedPermittable(amount: string): Promise<string[]> {
         let myAddress = null;
         if (isEvmBased(NETWORK)) {
             myAddress = await this.client.getAddress();
@@ -331,7 +326,7 @@ export default class Account {
         } else {
             console.log('Sorry, I cannot wait anymore. Please ask for relayer 😂');
 
-            return 'FAILED';
+            throw Error('State is not ready for transact');
         }
     }
 
@@ -354,15 +349,10 @@ export default class Account {
         const ready = await this.zpClient.waitReadyToTransact(TOKEN_ADDRESS);
         if (ready) {
             console.log('Making withdraw...');
-            const jobIds = await this.zpClient.withdrawMulti(TOKEN_ADDRESS, address, amount, DEFAULT_FEE);
-            console.log('Please wait relayer complete the jobs [%s]...', jobIds.join(", "));
+            const jobId = await this.zpClient.withdrawMulti(TOKEN_ADDRESS, address, amount, DEFAULT_FEE);
+            console.log('Please wait relayer complete the jobs %s...', jobId);
 
-            const waiters = jobIds.map(async (jobId) => {
-                return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
-            });
-
-            return await Promise.all(waiters);
-
+            return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
         } else {
             console.log('Sorry, I cannot wait anymore. Please ask for relayer 😂');
 

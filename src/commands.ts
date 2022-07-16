@@ -100,17 +100,21 @@ export async function transferShielded(to: string, amount: string) {
 export async function depositShielded(amount: string) {
     this.echo('Performing shielded deposit...');
     this.pause();
-    const txHash = await this.account.depositShielded(this.account.amountToGwei(amount));
+    const txHashes = await this.account.depositShielded(this.account.amountToGwei(amount));
     this.resume();
-    this.echo(`Done: [[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`);
+    this.echo(`Done: ${txHashes.map((txHash: string) => {
+            return `[[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`;
+        }).join(`, `)}`);
 }
 
 export async function depositShieldedPermittable(amount: string) {
     this.echo('Performing shielded deposit (permittable token)...');
     this.pause();
-    const txHash = await this.account.depositShieldedPermittable(this.account.amountToGwei(amount));
+    const txHashes = await this.account.depositShieldedPermittable(this.account.amountToGwei(amount));
     this.resume();
-    this.echo(`Done: [[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`);
+    this.echo(`Done: ${txHashes.map((txHash: string) => {
+            return `[[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`;
+        }).join(`, `)}`);
 }
 
 export async function withdrawShielded(amount: string, address: string) {
