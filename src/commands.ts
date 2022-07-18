@@ -83,6 +83,14 @@ export async function getTxParts(amount: string, fee: string) {
     }
 }
 
+export async function getMaxAvailableTransfer() {
+    this.pause();
+    const result = await this.account.getMaxAvailableTransfer();
+    this.resume();
+
+    this.echo(`[[;gray;]Max available shielded balance for outcoming transaction: ${this.account.fromGwei(result)} ${this.account.nativeSymbol()} (${result} wei)]`);
+}
+
 export async function transferShielded(to: string, amount: string) {
     if (verifyShieldedAddress(to) === false) {
         this.error(`Shielded address ${to} is invalid. Please check it!`);

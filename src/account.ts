@@ -179,6 +179,10 @@ export default class Account {
         return this.client.fromBaseUnit(wei);
     }
 
+    public fromGwei(gwei: string): string {
+        return this.client.fromBaseUnit((BigInt(gwei) * BigInt(1000000000)).toString());
+    }
+
     public toWei(amount: string): string {
         return this.client.toBaseUnit(amount);
     }
@@ -218,6 +222,10 @@ export default class Account {
 
     public async getTxParts(amount: string, fee: string): Promise<Array<TxAmount>> {
         return await this.zpClient.getTransactionParts(TOKEN_ADDRESS, amount, fee);
+    }
+
+    public async getMaxAvailableTransfer(amount: string, fee: string): Promise<string> {
+        return await this.zpClient.calcMaxAvailableTransfer(TOKEN_ADDRESS, true);
     }
 
     public getTransactionUrl(txHash: string): string {
