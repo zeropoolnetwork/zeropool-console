@@ -1,6 +1,6 @@
 import Account from './account';
 import bip39 from 'bip39-light';
-import { HistoryRecord, HistoryTransactionType } from 'zkbob-client-js';
+import { HistoryRecord, HistoryTransactionType, TxType } from 'zkbob-client-js';
 import { NetworkType } from 'zkbob-client-js/lib/network-type';
 import { deriveSpendingKey, verifyShieldedAddress, bufToHex } from 'zkbob-client-js/lib/utils';
 
@@ -47,13 +47,13 @@ export async function getShieldedBalance() {
     const optimisticBalance = await this.account.getOptimisticTotalBalance();
 
     this.echo(`[[;gray;]
-Private balance: ${this.account.fromWei(total)} ${SHIELDED_TOKEN_SYMBOL} (${total} wei)
-      - account: ${this.account.fromWei(acc)} ${SHIELDED_TOKEN_SYMBOL} (${acc} wei)
-      - note:    ${this.account.fromWei(note)} ${SHIELDED_TOKEN_SYMBOL} (${note} wei)
+Private balance: ${this.account.shieldedToHuman(total)} ${SHIELDED_TOKEN_SYMBOL} (${this.account.shieldedToWei(total)} wei)
+      - account: ${this.account.shieldedToHuman(acc)} ${SHIELDED_TOKEN_SYMBOL} (${this.account.shieldedToWei(acc)} wei)
+      - note:    ${this.account.shieldedToHuman(note)} ${SHIELDED_TOKEN_SYMBOL} (${this.account.shieldedToWei(note)} wei)
 ]`);
 
     if (total != optimisticBalance) {
-        this.echo(`[[;green;]Optimistic private balance: ${this.account.fromWei(optimisticBalance)} ${SHIELDED_TOKEN_SYMBOL} (${optimisticBalance} wei)
+        this.echo(`[[;green;]Optimistic private balance: ${this.account.shieldedToHuman(optimisticBalance)} ${SHIELDED_TOKEN_SYMBOL} (${this.account.shieldedToWei(optimisticBalance)} wei)
 ]`);
     }
 
@@ -61,54 +61,71 @@ Private balance: ${this.account.fromWei(total)} ${SHIELDED_TOKEN_SYMBOL} (${tota
 }
 
 export async function getTokenBalance() {
-    const balance = await this.account.getTokenBalance();
-    this.echo(`[[;gray;]Token balance: ${this.account.fromWei(balance)} ${TOKEN_SYMBOL} (${balance} wei)]`);
+    const balanceWei = await this.account.getTokenBalance();
+    const human = this.account.weiToHuman(balanceWei);
+    this.echo(`[[;gray;]Token balance: ${human} ${TOKEN_SYMBOL} (${balanceWei} wei)]`);
 }
 
 export async function mint(amount: string) {
-    return this.account.mint(this.account.amountToWei(amount));
+    return this.account.mint(this.account.humanToWei(amount));
 }
 
 export async function transfer(to: string, amount: string) {
-    await this.account.transfer(to, this.account.amountToWei(amount));
+    await this.account.transfer(to, this.account.humanToWei(amount));
 }
 
 export async function getTxParts(amount: string, fee: string) {
     this.pause();
-    const result = await this.account.getTxParts(this.account.amountToGwei(amount), this.account.amountToGwei(fee));
+    let actualFee: bigint;
+    if (fee === undefined) {
+        actualFee = await this.account.minFee();
+    } else {
+        actualFee = this.account.humanToShielded(fee);
+    }
+    const result = await this.account.getTxParts(this.account.humanToShielded(amount), actualFee);
     this.resume();
 
+    if (result.length == 0) {
+        this.echo(`Cannot create such transaction (insufficient funds or amount too small)`);
+    } else {
+        let totalFee = BigInt(0);
+        for (const part of result) {
+            totalFee += part.fee;
+        }
+
+        if (result.length == 1) {
+            this.echo(`You can transfer or withdraw this amount within single transaction`);
+        } else {
+            this.echo(`Multitransfer detected. To transfer this amount will require ${result.length} txs`);
+        }
+        this.echo(`Fee required: ${this.account.shieldedToHuman(totalFee)} ${SHIELDED_TOKEN_SYMBOL}`);
+    }
+
     for (const part of result) {
-        this.echo(`${part.amount.toString()} [fee: ${part.fee.toString()}], limit = ${part.accountLimit.toString()}`);
+        const partAmount = this.account.shieldedToHuman(part.amount);
+        const partFee = this.account.shieldedToHuman(part.fee);
+        let partLimit = "";
+        if (part.accountLimit > 0) {
+            partLimit = `, accountLimit = ${this.account.shieldedToHuman(part.accountLimit)} ${SHIELDED_TOKEN_SYMBOL}`;
+        }
+        this.echo(`${partAmount} ${SHIELDED_TOKEN_SYMBOL} [fee: ${partFee}]${partLimit}`);
     }
 }
 
 export async function getMaxAvailableTransfer() {
     this.pause();
     const result = await this.account.getMaxAvailableTransfer();
+    const human = this.account.shieldedToHuman(result);
+    const wei = this.account.shieldedToWei(result)
     this.resume();
 
-    this.echo(`[[;gray;]Max available shielded balance for outcoming transaction: ${this.account.fromGwei(result)} ${this.account.nativeSymbol()} (${result} wei)]`);
-}
-
-export async function transferShielded(to: string, amount: string) {
-    if (verifyShieldedAddress(to) === false) {
-        this.error(`Shielded address ${to} is invalid. Please check it!`);
-    } else {
-        this.echo('Performing shielded transfer...');
-        this.pause();
-        const txHashes = await this.account.transferShielded(to, this.account.amountToGwei(amount));
-        this.resume();
-        this.echo(`Done: ${txHashes.map((txHash: string) => {
-            return `[[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`;
-        }).join(`, `)}`);
-    };
+    this.echo(`[[;gray;]Max available shielded balance for outcoming transactions: ${human} ${SHIELDED_TOKEN_SYMBOL} (${wei} wei)]`);
 }
 
 export async function depositShielded(amount: string) {
     this.echo('Performing shielded deposit...');
     this.pause();
-    const txHashes = await this.account.depositShielded(this.account.amountToGwei(amount));
+    const txHashes = await this.account.depositShielded(this.account.humanToShielded(amount));
     this.resume();
     this.echo(`Done: ${txHashes.map((txHash: string) => {
             return `[[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`;
@@ -118,17 +135,31 @@ export async function depositShielded(amount: string) {
 export async function depositShieldedPermittable(amount: string) {
     this.echo('Performing shielded deposit (permittable token)...');
     this.pause();
-    const txHashes = await this.account.depositShieldedPermittable(this.account.amountToGwei(amount));
+    const txHashes = await this.account.depositShieldedPermittable(this.account.humanToShielded(amount));
     this.resume();
     this.echo(`Done: ${txHashes.map((txHash: string) => {
             return `[[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`;
         }).join(`, `)}`);
 }
 
+export async function transferShielded(to: string, amount: string) {
+    if (verifyShieldedAddress(to) === false) {
+        this.error(`Shielded address ${to} is invalid. Please check it!`);
+    } else {
+        this.echo('Performing shielded transfer...');
+        this.pause();
+        const txHashes = await this.account.transferShielded(to, this.account.humanToShielded(amount));
+        this.resume();
+        this.echo(`Done: ${txHashes.map((txHash: string) => {
+            return `[[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`;
+        }).join(`, `)}`);
+    };
+}
+
 export async function withdrawShielded(amount: string, address: string) {
     this.echo('Performing shielded withdraw...');
     this.pause();
-    const txHashes = await this.account.withdrawShielded(this.account.amountToGwei(amount), address);
+    const txHashes = await this.account.withdrawShielded(this.account.humanToShielded(amount), address);
     this.resume();
     this.echo(`Done: ${txHashes.map((txHash: string) => {
         return `[[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`;
@@ -147,6 +178,7 @@ export async function printHistory() {
     this.pause();
     const history: HistoryRecord[] = await this.account.getAllHistory();
     this.resume();
+    
     for (const tx of history) {
         this.echo(`${humanReadable(tx, 1000000000)} [[!;;;;${this.account.getTransactionUrl(tx.txHash)}]${tx.txHash}]`);
     }
@@ -175,7 +207,7 @@ function humanReadable(record: HistoryRecord, denominator: number): string {
     }
 
     if (record.fee > 0) {
-      mainPart += `(fee = ${record.fee})`;
+      mainPart += `(fee = ${Number(record.fee) / denominator})`;
     }
 
     return `${dt.toLocaleString()} : ${mainPart}`;
