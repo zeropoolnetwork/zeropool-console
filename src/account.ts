@@ -1,15 +1,13 @@
 import AES from 'crypto-js/aes';
 import Utf8 from 'crypto-js/enc-utf8';
 import { EthereumClient, PolkadotClient, Client as NetworkClient } from 'zeropool-support-js';
-import { init, ZkBobClient, HistoryRecord, TxAmount } from 'zkbob-client-js';
+import { init, ZkBobClient, HistoryRecord, TxAmount, FeeAmount, TxType } from 'zkbob-client-js';
 import bip39 from 'bip39-light';
 import HDWalletProvider from '@truffle/hdwallet-provider';
 import { deriveSpendingKey } from 'zkbob-client-js/lib/utils';
 import { NetworkType } from 'zkbob-client-js/lib/network-type';
 import { EvmNetwork } from 'zkbob-client-js/lib/networks/evm';
 import { PolkadotNetwork } from 'zkbob-client-js/lib/networks/polkadot';
-
-const DEFAULT_FEE = "10000000";
 
 // @ts-ignore
 import wasmPath from 'libzkbob-rs-wasm-web/libzkbob_rs_wasm_bg.wasm';
@@ -145,42 +143,51 @@ export default class Account {
         return this.zpClient.generateAddress(TOKEN_ADDRESS);
     }
 
-    public async getShieldedBalances(): Promise<[string, string, string]> {
+    public async getShieldedBalances(): Promise<[bigint, bigint, bigint]> {
         const balances = this.zpClient.getBalances(TOKEN_ADDRESS);
 
         return balances;
     }
 
-    public async getOptimisticTotalBalance(): Promise<string> {
+    public async getOptimisticTotalBalance(): Promise<bigint> {
         const pendingBalance = this.zpClient.getOptimisticTotalBalance(TOKEN_ADDRESS);
 
         return pendingBalance;
     }
 
-    // Check input amount and cconvert it in wei if needed
-    // Regular number - wei, number started with '#' - *10^18
-    public amountToWei(amount: string): string {
+    // wei -> Gwei
+    public weiToShielded(amountWei: bigint): bigint {
+        return this.zpClient.weiToShieldedAmount(TOKEN_ADDRESS, amountWei);
+    }
+
+    // Gwei -> wei
+    public shieldedToWei(amountShielded: bigint): bigint {
+        return this.zpClient.shieldedAmountToWei(TOKEN_ADDRESS, amountShielded);
+    }
+
+    // ^tokens|wei -> wei
+    public humanToWei(amount: string): bigint {
         if (amount.startsWith("^")) {
-            return this.toWei(amount.substr(1));
+            return BigInt(this.client.toBaseUnit(amount.substr(1)));
         }
 
-        return amount;
+        return BigInt(amount);
     }
 
-    public amountToGwei(amount: string): string {
-        if (amount.startsWith("^")) {
-            return (BigInt(this.toWei(amount.substr(1))) / BigInt(1000000000)).toString();
-        }
-
-        return (BigInt(amount) / BigInt(1000000000)).toString();
+    // ^tokens|wei -> Gwei
+    public humanToShielded(amount: string): bigint {
+        return this.weiToShielded(this.humanToWei(amount));
     }
 
-    public fromWei(wei: string): string {
-        return this.client.fromBaseUnit(wei);
+    // Gwei -> tokens
+    public shieldedToHuman(amountShielded: bigint): string {
+        return this.weiToHuman(this.zpClient.shieldedAmountToWei(TOKEN_ADDRESS, amountShielded));
+
     }
 
-    public toWei(amount: string): string {
-        return this.client.toBaseUnit(amount);
+    // wei -> tokens
+    public weiToHuman(amountWei: bigint): string {
+        return this.client.fromBaseUnit(amountWei.toString());
     }
 
 
@@ -208,56 +215,53 @@ export default class Account {
         return await this.client.getTokenBalance(TOKEN_ADDRESS);
     }
 
-    public async mint(amount: string): Promise<void> {
-        await this.client.mint(TOKEN_ADDRESS, amount);
+    public async mint(amount: bigint): Promise<void> {
+        await this.client.mint(TOKEN_ADDRESS, amount.toString());
     }
 
-    public async transfer(to: string, amount: string): Promise<void> {
-        await this.client.transfer(to, amount);
+    public async transfer(to: string, amount: bigint): Promise<void> {
+        await this.client.transfer(to, amount.toString());
     }
 
-    public async getTxParts(amount: string, fee: string): Promise<Array<TxAmount>> {
+    public async getTxParts(amount: bigint, fee: bigint): Promise<Array<TxAmount>> {
         return await this.zpClient.getTransactionParts(TOKEN_ADDRESS, amount, fee);
+    }
+
+    public async getMaxAvailableTransfer(amount: bigint, fee: bigint): Promise<bigint> {
+        return await this.zpClient.calcMaxAvailableTransfer(TOKEN_ADDRESS, true);
+    }
+
+    public async minFee(amount: bigint, txType: TxType): Promise<bigint> {
+        return await this.zpClient.atomicTxFee(TOKEN_ADDRESS);
+    }
+
+    public async estimateFee(amount: bigint, txType: TxType): Promise<FeeAmount> {
+        return await this.zpClient.feeEstimate(TOKEN_ADDRESS, amount, txType);
     }
 
     public getTransactionUrl(txHash: string): string {
         return this.client.getTransactionUrl(txHash);
     }
 
-    public async transferShielded(to: string, amount: string): Promise<string[]> {
-        console.log('Waiting while state become ready...');
-        const ready = await this.zpClient.waitReadyToTransact(TOKEN_ADDRESS);
-        if (ready) {
-            console.log('Making transfer...');
-            //const jobId = await this.zpClient.transfer(TOKEN_ADDRESS, [{ to, amount }]);
-            const jobId = await this.zpClient.transferMulti(TOKEN_ADDRESS, to, amount, DEFAULT_FEE);
-            console.log('Please wait relayer complete the job %s...', jobId);
-
-            return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
-        } else {
-            console.log('Sorry, I cannot wait anymore. Please ask for relayer 😂');
-
-            throw Error('State is not ready for transact');
-        }
-    }
-
-    public async depositShielded(amount: string): Promise<string[]> {
+    public async depositShielded(amount: bigint): Promise<string[]> {
         let fromAddress = null;
         if (isSubstrateBased(NETWORK)) {
             fromAddress = await this.client.getPublicKey();
         }
 
-        if (isEvmBased(NETWORK)) {
-            console.log('Approving allowance the Pool (%s) to spend our tokens (%s)', CONTRACT_ADDRESS, amount);
-            const totalApproveAmount = (BigInt(amount) + BigInt(DEFAULT_FEE)) * BigInt(1000000000);
-            await this.client.approve(TOKEN_ADDRESS, CONTRACT_ADDRESS, totalApproveAmount.toString());
-        }
-
         console.log('Waiting while state become ready...');
         const ready = await this.zpClient.waitReadyToTransact(TOKEN_ADDRESS);
         if (ready) {
+            const txFee = (await this.zpClient.feeEstimate(TOKEN_ADDRESS, amount, TxType.Deposit, false));
+
+            if (isEvmBased(NETWORK)) {
+                const totalApproveAmount = this.zpClient.shieldedAmountToWei(TOKEN_ADDRESS, amount + txFee.totalPerTx);
+                console.log('Approving allowance the Pool (%s) to spend our tokens (%s)', CONTRACT_ADDRESS, totalApproveAmount.toString());
+                await this.client.approve(TOKEN_ADDRESS, CONTRACT_ADDRESS, totalApproveAmount.toString());
+            }
+
             console.log('Making deposit...');
-            const jobId = await this.zpClient.deposit(TOKEN_ADDRESS, amount, (data) => this.client.sign(data), fromAddress, DEFAULT_FEE);
+            const jobId = await this.zpClient.deposit(TOKEN_ADDRESS, amount, (data) => this.client.sign(data), fromAddress, txFee.totalPerTx);
             console.log('Please wait relayer complete the job %s...', jobId);
 
             return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
@@ -303,7 +307,7 @@ export default class Account {
         return data;
     }
 
-    public async depositShieldedPermittable(amount: string): Promise<string[]> {
+    public async depositShieldedPermittable(amount: bigint): Promise<string[]> {
         let myAddress = null;
         if (isEvmBased(NETWORK)) {
             myAddress = await this.client.getAddress();
@@ -314,11 +318,13 @@ export default class Account {
         console.log('Waiting while state become ready...');
         const ready = await this.zpClient.waitReadyToTransact(TOKEN_ADDRESS);
         if (ready) {
+            const txFee = (await this.zpClient.feeEstimate(TOKEN_ADDRESS, amount, TxType.BridgeDeposit, false));
+
             console.log('Making deposit...');
             const jobId = await this.zpClient.depositPermittable(TOKEN_ADDRESS, amount, async (deadline, value) => {
                 const dataToSign = await this.createPermittableDepositData(TOKEN_ADDRESS, '1', myAddress, CONTRACT_ADDRESS, value, deadline);
                 return this.client.signTypedData(dataToSign)
-            }, myAddress, DEFAULT_FEE);
+            }, myAddress, txFee.totalPerTx);
 
             console.log('Please wait relayer complete the job %s...', jobId);
 
@@ -330,7 +336,25 @@ export default class Account {
         }
     }
 
-    public async withdrawShielded(amount: string, external_addr: string): Promise<string[]> {
+    public async transferShielded(to: string, amount: bigint): Promise<string[]> {
+        console.log('Waiting while state become ready...');
+        const ready = await this.zpClient.waitReadyToTransact(TOKEN_ADDRESS);
+        if (ready) {
+            const txFee = (await this.zpClient.feeEstimate(TOKEN_ADDRESS, amount, TxType.Transfer, false));
+            
+            console.log('Making transfer...');
+            const jobId = await this.zpClient.transferMulti(TOKEN_ADDRESS, to, amount, txFee.totalPerTx);
+            console.log('Please wait relayer complete the job %s...', jobId);
+
+            return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
+        } else {
+            console.log('Sorry, I cannot wait anymore. Please ask for relayer 😂');
+
+            throw Error('State is not ready for transact');
+        }
+    }
+
+    public async withdrawShielded(amount: bigint, external_addr: string): Promise<string[]> {
 
         let address = null;
         if (external_addr == null) {
@@ -348,8 +372,10 @@ export default class Account {
         console.log('Waiting while state become ready...');
         const ready = await this.zpClient.waitReadyToTransact(TOKEN_ADDRESS);
         if (ready) {
+            const txFee = (await this.zpClient.feeEstimate(TOKEN_ADDRESS, amount, TxType.Transfer, false));
+
             console.log('Making withdraw...');
-            const jobId = await this.zpClient.withdrawMulti(TOKEN_ADDRESS, address, amount, DEFAULT_FEE);
+            const jobId = await this.zpClient.withdrawMulti(TOKEN_ADDRESS, address, amount, txFee.totalPerTx);
             console.log('Please wait relayer complete the jobs %s...', jobId);
 
             return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);

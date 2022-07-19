@@ -32,7 +32,7 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   // 'get-private-key': [c.getPrivateKey, ' <password>', 'print the private key'],
   'get-balance': [c.getBalance, '', 'fetch and print native account balance'],
   'get-shielded-balance': [c.getShieldedBalance, '', 'get calculated private balance'],
-  // 'get-balances': [c.getBalances, '', 'print balances for all'],
+  'max-transfer': [c.getMaxAvailableTransfer, '', 'get max available token mount for outcoming transaction'],
   'get-token-balance': [c.getTokenBalance, '', 'get token balance (unshielded)'],
   'testnet-mint': [c.mint, ' <amount>', 'mint some unshielded tokens'],
   'transfer': [c.transfer, ' <to> <amount>', 'transfer unshielded tokens, <amount> in base units (e.g.: yoctoNEAR, Wei)'],
