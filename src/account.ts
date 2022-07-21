@@ -13,6 +13,7 @@ import { PolkadotNetwork } from 'zkbob-client-js/lib/networks/polkadot';
 import wasmPath from 'libzkbob-rs-wasm-web/libzkbob_rs_wasm_bg.wasm';
 // @ts-ignore
 import workerPath from 'zkbob-client-js/lib/worker.js?asset';
+import { Output } from 'libzkbob-rs-wasm-web';
 // const wasmPath = new URL('npm:libzeropool-rs-wasm-web/libzeropool_rs_wasm_bg.wasm', import.meta.url));
 // const workerPath = new URL('npm:zeropool-client-js/lib/worker.js', import.meta.url);
 
@@ -344,6 +345,33 @@ export default class Account {
             
             console.log('Making transfer...');
             const jobId = await this.zpClient.transferMulti(TOKEN_ADDRESS, to, amount, txFee.totalPerTx);
+            console.log('Please wait relayer complete the job %s...', jobId);
+
+            return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
+        } else {
+            console.log('Sorry, I cannot wait anymore. Please ask for relayer 😂');
+
+            throw Error('State is not ready for transact');
+        }
+    }
+
+    public async transferShieldedRepeated(to: string, amount: bigint, times: number): Promise<string[]> {
+        const notesNum = Math.floor(times);
+        if (notesNum > 126) {
+            throw Error('Sorry, repeated transfer currently supports max 126 times');
+        }
+
+        console.log('Waiting while state become ready...');
+        const ready = await this.zpClient.waitReadyToTransact(TOKEN_ADDRESS);
+        if (ready) {
+            const txFee = (await this.zpClient.atomicTxFee(TOKEN_ADDRESS));
+            
+            let outputs: Output[] = [];
+            for (let i = 0; i < notesNum; i++) {
+                outputs.push({to, amount: amount.toString()})
+            }
+            console.log('Making transfer with ${notesNum} notes...');
+            const jobId = await this.zpClient.transferSingle(TOKEN_ADDRESS, outputs, txFee);
             console.log('Please wait relayer complete the job %s...', jobId);
 
             return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);

@@ -156,6 +156,20 @@ export async function transferShielded(to: string, amount: string) {
     };
 }
 
+export async function transferShieldedRepeated(to: string, amount: string, times: string) {
+    if (verifyShieldedAddress(to) === false) {
+        this.error(`Shielded address ${to} is invalid. Please check it!`);
+    } else {
+        this.echo('Performing set of shielded transfers...');
+        this.pause();
+        const txHashes = await this.account.transferShieldedRepeated(to, this.account.humanToShielded(amount), Number(times));
+        this.resume();
+        this.echo(`Done: ${txHashes.map((txHash: string) => {
+            return `[[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`;
+        }).join(`, `)}`);
+    };
+}
+
 export async function withdrawShielded(amount: string, address: string) {
     this.echo('Performing shielded withdraw...');
     this.pause();
