@@ -2,7 +2,7 @@
 
 USERNAME=evgenkor
 IMAGE=zkbob-console
-VERSION=0.5.0
+VERSION=0.5.2
 
 yarn build:prod && \
 docker build -f Dockerfile.prod -t $USERNAME/$IMAGE:latest . && \
