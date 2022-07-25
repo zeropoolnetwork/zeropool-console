@@ -13,6 +13,7 @@ import { PolkadotNetwork } from 'zkbob-client-js/lib/networks/polkadot';
 import wasmPath from 'libzkbob-rs-wasm-web/libzkbob_rs_wasm_bg.wasm';
 // @ts-ignore
 import workerPath from 'zkbob-client-js/lib/worker.js?asset';
+import { Output } from 'libzkbob-rs-wasm-web';
 // const wasmPath = new URL('npm:libzeropool-rs-wasm-web/libzeropool_rs_wasm_bg.wasm', import.meta.url));
 // const workerPath = new URL('npm:zeropool-client-js/lib/worker.js', import.meta.url);
 
@@ -243,7 +244,7 @@ export default class Account {
         return this.client.getTransactionUrl(txHash);
     }
 
-    public async depositShielded(amount: bigint): Promise<string[]> {
+    public async depositShielded(amount: bigint): Promise<{jobId: string, txHashes: string[]}> {
         let fromAddress = null;
         if (isSubstrateBased(NETWORK)) {
             fromAddress = await this.client.getPublicKey();
@@ -264,7 +265,7 @@ export default class Account {
             const jobId = await this.zpClient.deposit(TOKEN_ADDRESS, amount, (data) => this.client.sign(data), fromAddress, txFee.totalPerTx);
             console.log('Please wait relayer complete the job %s...', jobId);
 
-            return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
+            return {jobId, txHashes: (await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId))};
         } else {
             console.log('Sorry, I cannot wait anymore. Please ask for relayer 😂');
 
@@ -307,7 +308,7 @@ export default class Account {
         return data;
     }
 
-    public async depositShieldedPermittable(amount: bigint): Promise<string[]> {
+    public async depositShieldedPermittable(amount: bigint): Promise<{jobId: string, txHashes: string[]}> {
         let myAddress = null;
         if (isEvmBased(NETWORK)) {
             myAddress = await this.client.getAddress();
@@ -328,7 +329,7 @@ export default class Account {
 
             console.log('Please wait relayer complete the job %s...', jobId);
 
-            return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
+            return {jobId, txHashes: (await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId))};
         } else {
             console.log('Sorry, I cannot wait anymore. Please ask for relayer 😂');
 
@@ -336,7 +337,7 @@ export default class Account {
         }
     }
 
-    public async transferShielded(to: string, amount: bigint): Promise<string[]> {
+    public async transferShielded(to: string, amount: bigint): Promise<{jobId: string, txHashes: string[]}> {
         console.log('Waiting while state become ready...');
         const ready = await this.zpClient.waitReadyToTransact(TOKEN_ADDRESS);
         if (ready) {
@@ -346,7 +347,7 @@ export default class Account {
             const jobId = await this.zpClient.transferMulti(TOKEN_ADDRESS, to, amount, txFee.totalPerTx);
             console.log('Please wait relayer complete the job %s...', jobId);
 
-            return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
+            return {jobId, txHashes: (await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId))};
         } else {
             console.log('Sorry, I cannot wait anymore. Please ask for relayer 😂');
 
@@ -354,7 +355,34 @@ export default class Account {
         }
     }
 
-    public async withdrawShielded(amount: bigint, external_addr: string): Promise<string[]> {
+    public async transferShieldedMultinote(to: string, amount: bigint, count: number): Promise<{jobId: string, txHashes: string[]}> {
+        const notesNum = Math.floor(count);
+        if (notesNum > 126) {
+            throw Error('Sorry, repeated transfer currently supports max 126 times');
+        }
+
+        console.log('Waiting while state become ready...');
+        const ready = await this.zpClient.waitReadyToTransact(TOKEN_ADDRESS);
+        if (ready) {
+            const txFee = (await this.zpClient.atomicTxFee(TOKEN_ADDRESS));
+            
+            let outputs: Output[] = [];
+            for (let i = 0; i < notesNum; i++) {
+                outputs.push({to, amount: amount.toString()})
+            }
+            console.log('Making transfer with ${notesNum} notes...');
+            const jobId = await this.zpClient.transferSingle(TOKEN_ADDRESS, outputs, txFee);
+            console.log('Please wait relayer complete the job %s...', jobId);
+
+            return {jobId, txHashes: (await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId))};
+        } else {
+            console.log('Sorry, I cannot wait anymore. Please ask for relayer 😂');
+
+            throw Error('State is not ready for transact');
+        }
+    }
+
+    public async withdrawShielded(amount: bigint, external_addr: string): Promise<{jobId: string, txHashes: string[]}> {
 
         let address = null;
         if (external_addr == null) {
@@ -378,7 +406,7 @@ export default class Account {
             const jobId = await this.zpClient.withdrawMulti(TOKEN_ADDRESS, address, amount, txFee.totalPerTx);
             console.log('Please wait relayer complete the jobs %s...', jobId);
 
-            return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
+            return {jobId, txHashes: (await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId))};
         } else {
             console.log('Sorry, I cannot wait anymore. Please ask for relayer 😂');
 

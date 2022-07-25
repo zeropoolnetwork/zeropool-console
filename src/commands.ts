@@ -122,48 +122,87 @@ export async function getMaxAvailableTransfer() {
     this.echo(`[[;gray;]Max available shielded balance for outcoming transactions: ${human} ${SHIELDED_TOKEN_SYMBOL} (${wei} wei)]`);
 }
 
-export async function depositShielded(amount: string) {
-    this.echo('Performing shielded deposit...');
-    this.pause();
-    const txHashes = await this.account.depositShielded(this.account.humanToShielded(amount));
-    this.resume();
-    this.echo(`Done: ${txHashes.map((txHash: string) => {
-            return `[[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`;
-        }).join(`, `)}`);
+export async function depositShielded(amount: string, times: string) {
+    let txCnt = times !== undefined ? Number(times) : 1;
+
+    for (let i = 0; i < txCnt; i++) {
+        let cntStr = (txCnt > 1) ? ` (${i + 1}/${txCnt})` : ``;
+        this.echo(`Performing shielded deposit${cntStr}...`);
+        this.pause();
+        const result = await this.account.depositShielded(this.account.humanToShielded(amount));
+        this.resume();
+        this.echo(`Done [job #${result.jobId}]: ${result.txHashes.map((txHash: string) => {
+                return `[[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`;
+            }).join(`, `)}`);
+    }
 }
 
-export async function depositShieldedPermittable(amount: string) {
-    this.echo('Performing shielded deposit (permittable token)...');
-    this.pause();
-    const txHashes = await this.account.depositShieldedPermittable(this.account.humanToShielded(amount));
-    this.resume();
-    this.echo(`Done: ${txHashes.map((txHash: string) => {
-            return `[[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`;
-        }).join(`, `)}`);
+export async function depositShieldedPermittable(amount: string, times: string) {
+    let txCnt = times !== undefined ? Number(times) : 1;
+
+    for (let i = 0; i < txCnt; i++) {
+        let cntStr = (txCnt > 1) ? ` (${i + 1}/${txCnt})` : ``;
+        this.echo(`Performing shielded deposit with permittable token${cntStr}}...`);
+        this.pause();
+        const result = await this.account.depositShieldedPermittable(this.account.humanToShielded(amount));
+        this.resume();
+        this.echo(`Done [job #${result.jobId}]: ${result.txHashes.map((txHash: string) => {
+                return `[[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`;
+            }).join(`, `)}`);
+    }
 }
 
-export async function transferShielded(to: string, amount: string) {
+export async function transferShielded(to: string, amount: string, times: string) {
     if (verifyShieldedAddress(to) === false) {
         this.error(`Shielded address ${to} is invalid. Please check it!`);
     } else {
-        this.echo('Performing shielded transfer...');
-        this.pause();
-        const txHashes = await this.account.transferShielded(to, this.account.humanToShielded(amount));
-        this.resume();
-        this.echo(`Done: ${txHashes.map((txHash: string) => {
-            return `[[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`;
-        }).join(`, `)}`);
+        let txCnt = times !== undefined ? Number(times) : 1;
+
+        for (let i = 0; i < txCnt; i++) {
+            let cntStr = (txCnt > 1) ? ` (${i + 1}/${txCnt})` : ``;
+            this.echo(`Performing shielded transfer${cntStr}...`);
+            this.pause();
+            const result = await this.account.transferShielded(to, this.account.humanToShielded(amount));
+            this.resume();
+            this.echo(`Done [job #${result.jobId}]: ${result.txHashes.map((txHash: string) => {
+                return `[[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`;
+            }).join(`, `)}`);
+        }
     };
 }
 
-export async function withdrawShielded(amount: string, address: string) {
-    this.echo('Performing shielded withdraw...');
-    this.pause();
-    const txHashes = await this.account.withdrawShielded(this.account.humanToShielded(amount), address);
-    this.resume();
-    this.echo(`Done: ${txHashes.map((txHash: string) => {
-        return `[[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`;
-    }).join(`, `)}`);
+export async function transferShieldedMultinote(to: string, amount: string, count: string, times: string) {
+    if (verifyShieldedAddress(to) === false) {
+        this.error(`Shielded address ${to} is invalid. Please check it!`);
+    } else {
+        let txCnt = times !== undefined ? Number(times) : 1;
+
+        for (let i = 0; i < txCnt; i++) {
+            let cntStr = (txCnt > 1) ? ` (${i + 1}/${txCnt})` : ``;
+            this.echo(`Performing transfer with ${count} notes ${cntStr}...`);
+            this.pause();
+            const result = await this.account.transferShieldedMultinote(to, this.account.humanToShielded(amount), Number(count));
+            this.resume();
+            this.echo(`Done [job #${result.jobId}]: ${result.txHashes.map((txHash: string) => {
+                return `[[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`;
+            }).join(`, `)}`);
+        }
+    };
+}
+
+export async function withdrawShielded(amount: string, address: string, times: string) {
+    let txCnt = times !== undefined ? Number(times) : 1;
+
+    for (let i = 0; i < txCnt; i++) {
+        let cntStr = (txCnt > 1) ? ` (${i + 1}/${txCnt})` : ``;
+        this.echo(`Performing shielded withdraw${cntStr}...`);
+        this.pause();
+        const result = await this.account.withdrawShielded(this.account.humanToShielded(amount), address);
+        this.resume();
+        this.echo(`Done [job #${result.jobId}]: ${result.txHashes.map((txHash: string) => {
+            return `[[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`;
+        }).join(`, `)}`);
+    }
 }
 
 export async function getInternalState() {
