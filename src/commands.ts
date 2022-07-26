@@ -43,8 +43,8 @@ export async function getBalance() {
 
 export async function getShieldedBalance() {
     this.pause();
-    const [total, acc, note] = await this.account.getShieldedBalances();
-    const optimisticBalance = await this.account.getOptimisticTotalBalance();
+    const [total, acc, note] = await this.account.getShieldedBalances(true);    // update state only once
+    const optimisticBalance = await this.account.getOptimisticTotalBalance(false);
 
     this.echo(`[[;gray;]
 Private balance: ${this.account.shieldedToHuman(total)} ${SHIELDED_TOKEN_SYMBOL} (${this.account.shieldedToWei(total)} wei)
