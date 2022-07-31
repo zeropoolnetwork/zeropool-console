@@ -142,7 +142,7 @@ export async function depositShieldedPermittable(amount: string, times: string) 
 
     for (let i = 0; i < txCnt; i++) {
         let cntStr = (txCnt > 1) ? ` (${i + 1}/${txCnt})` : ``;
-        this.echo(`Performing shielded deposit with permittable token${cntStr}}...`);
+        this.echo(`Performing shielded deposit with permittable token${cntStr}...`);
         this.pause();
         const result = await this.account.depositShieldedPermittable(this.account.humanToShielded(amount));
         this.resume();
