@@ -144,14 +144,14 @@ export default class Account {
         return this.zpClient.generateAddress(TOKEN_ADDRESS);
     }
 
-    public async getShieldedBalances(): Promise<[bigint, bigint, bigint]> {
-        const balances = this.zpClient.getBalances(TOKEN_ADDRESS);
+    public async getShieldedBalances(updateState: boolean = true): Promise<[bigint, bigint, bigint]> {
+        const balances = this.zpClient.getBalances(TOKEN_ADDRESS, updateState);
 
         return balances;
     }
 
-    public async getOptimisticTotalBalance(): Promise<bigint> {
-        const pendingBalance = this.zpClient.getOptimisticTotalBalance(TOKEN_ADDRESS);
+    public async getOptimisticTotalBalance(updateState: boolean = true): Promise<bigint> {
+        const pendingBalance = this.zpClient.getOptimisticTotalBalance(TOKEN_ADDRESS, updateState);
 
         return pendingBalance;
     }
@@ -203,8 +203,8 @@ export default class Account {
         return this.zpClient.rawState(TOKEN_ADDRESS);
     }
 
-    public async getAllHistory(): Promise<HistoryRecord[]> {
-        return this.zpClient.getAllHistory(TOKEN_ADDRESS);
+    public async getAllHistory(updateState: boolean = true): Promise<HistoryRecord[]> {
+        return this.zpClient.getAllHistory(TOKEN_ADDRESS, updateState);
     }
 
     public async cleanInternalState(): Promise<void> {
