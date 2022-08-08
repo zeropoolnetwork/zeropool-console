@@ -11,6 +11,7 @@ cd -
 export EVM_RPC=''
 export RELAYER_URL=''
 export TOKEN_ADDRESS=''
+export MINTER_ADDRESS=''
 export CONTRACT_ADDRESS=''
 yarn upgrade zeropool-api-js && \
 yarn dev
