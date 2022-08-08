@@ -33,6 +33,7 @@ module.exports = merge(common, {
             NETWORK: null,
             CONTRACT_ADDRESS: null,
             TOKEN_ADDRESS: null,
+            MINTER_ADDRESS: null,
             RELAYER_URL: null,
             RPC_URL: null,
             TRANSACTION_URL: null,

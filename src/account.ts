@@ -55,6 +55,7 @@ export default class Account {
             NETWORK = process.env.NETWORK;
             CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
             TOKEN_ADDRESS = process.env.TOKEN_ADDRESS;
+            MINTER_ADDRESS = process.env.MINTER_ADDRESS;
             RELAYER_URL = process.env.RELAYER_URL;
             RPC_URL = process.env.RPC_URL;
             TRANSACTION_URL = process.env.TRANSACTION_URL;
@@ -217,7 +218,7 @@ export default class Account {
     }
 
     public async mint(amount: bigint): Promise<void> {
-        await this.client.mint(TOKEN_ADDRESS, amount.toString());
+        await this.client.mint(MINTER_ADDRESS, amount.toString());
     }
 
     public async transfer(to: string, amount: bigint): Promise<void> {
@@ -297,7 +298,7 @@ export default class Account {
               { name: "spender", type: "address" },
               { name: "value", type: "uint256" },
               { name: "nonce", type: "uint256" },
-              { name: "deadline", type: "uint256" }
+              { name: "deadline", type: "uint256" },
             ],
         };
 
@@ -308,7 +309,43 @@ export default class Account {
         return data;
     }
 
-    public async depositShieldedPermittable(amount: bigint): Promise<{jobId: string, txHashes: string[]}> {
+    private async createPermittableDepositDataV2(tokenAddress: string, version: string, owner: string, spender: string, value: bigint, deadline: bigint, salt: string) {
+        const tokenName = await this.client.getTokenName(tokenAddress);
+        const chainId = await this.client.getChainId();
+        const nonce = await this.client.getTokenNonce(tokenAddress);
+
+        const domain = {
+            name: tokenName,
+            version: version,
+            chainId: chainId,
+            verifyingContract: tokenAddress,
+        };
+
+        const types = {
+          EIP712Domain: [
+            { name: 'name', type: 'string' },
+            { name: 'version', type: 'string' },
+            { name: 'chainId', type: 'uint256' },
+            { name: 'verifyingContract', type: 'address' },
+          ],
+          Permit: [
+              { name: "owner", type: "address" },
+              { name: "spender", type: "address" },
+              { name: "value", type: "uint256" },
+              { name: "nonce", type: "uint256" },
+              { name: "deadline", type: "uint256" },
+              { name: "salt", type: "bytes32" }
+            ],
+        };
+
+        const message = { owner, spender, value: value.toString(), nonce, deadline: deadline.toString(), salt };
+
+        const data = { types, primaryType: "Permit", domain, message };
+
+        return data;
+    }
+
+    public async depositShieldedPermittable(amount: bigint, salted: boolean = true): Promise<{jobId: string, txHashes: string[]}> {
         let myAddress = null;
         if (isEvmBased(NETWORK)) {
             myAddress = await this.client.getAddress();
@@ -322,10 +359,18 @@ export default class Account {
             const txFee = (await this.zpClient.feeEstimate(TOKEN_ADDRESS, amount, TxType.BridgeDeposit, false));
 
             console.log('Making deposit...');
-            const jobId = await this.zpClient.depositPermittable(TOKEN_ADDRESS, amount, async (deadline, value) => {
-                const dataToSign = await this.createPermittableDepositData(TOKEN_ADDRESS, '1', myAddress, CONTRACT_ADDRESS, value, deadline);
-                return this.client.signTypedData(dataToSign)
-            }, myAddress, txFee.totalPerTx);
+            let jobId;
+            if (salted) {
+                jobId = await this.zpClient.depositPermittableV2(TOKEN_ADDRESS, amount, async (deadline, value, salt) => {
+                    const dataToSign = await this.createPermittableDepositDataV2(TOKEN_ADDRESS, '1', myAddress, CONTRACT_ADDRESS, value, deadline, salt);
+                    return this.client.signTypedData(dataToSign)
+                }, myAddress, txFee.totalPerTx);
+            } else {
+                jobId = await this.zpClient.depositPermittable(TOKEN_ADDRESS, amount, async (deadline, value) => {
+                    const dataToSign = await this.createPermittableDepositData(TOKEN_ADDRESS, '1', myAddress, CONTRACT_ADDRESS, value, deadline);
+                    return this.client.signTypedData(dataToSign)
+                }, myAddress, txFee.totalPerTx);
+            }
 
             console.log('Please wait relayer complete the job %s...', jobId);
 
