@@ -382,17 +382,22 @@ export default class Account {
         }
     }
 
-    public async transferShielded(to: string, amount: bigint): Promise<{jobId: string, txHashes: string[]}> {
+    public async transferShielded(to: string, amount: bigint): Promise<{jobId: string, txHash: string}[]> {
         console.log('Waiting while state become ready...');
         const ready = await this.zpClient.waitReadyToTransact(TOKEN_ADDRESS);
         if (ready) {
             const txFee = (await this.zpClient.feeEstimate(TOKEN_ADDRESS, amount, TxType.Transfer, false));
             
             console.log('Making transfer...');
-            const jobId = await this.zpClient.transferMulti(TOKEN_ADDRESS, to, amount, txFee.totalPerTx);
-            console.log('Please wait relayer complete the job %s...', jobId);
+            const jobIds: string[] = await this.zpClient.transferMulti(TOKEN_ADDRESS, to, amount, txFee.totalPerTx);
+            console.log('Please wait relayer complete the job%s %s...', jobIds.length > 0 ? 's' : '', jobIds.join(', '));
 
-            return {jobId, txHashes: (await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId))};
+            let promises = jobIds.map(async (jobId) => {
+                const txHashes: string[] = await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
+                return { jobId, txHash: txHashes[0] };
+            });
+
+            return Promise.all(promises);
         } else {
             console.log('Sorry, I cannot wait anymore. Please ask for relayer 😂');
 
@@ -427,7 +432,7 @@ export default class Account {
         }
     }
 
-    public async withdrawShielded(amount: bigint, external_addr: string): Promise<{jobId: string, txHashes: string[]}> {
+    public async withdrawShielded(amount: bigint, external_addr: string): Promise<{jobId: string, txHash: string}[]> {
 
         let address = null;
         if (external_addr == null) {
@@ -448,10 +453,15 @@ export default class Account {
             const txFee = (await this.zpClient.feeEstimate(TOKEN_ADDRESS, amount, TxType.Transfer, false));
 
             console.log('Making withdraw...');
-            const jobId = await this.zpClient.withdrawMulti(TOKEN_ADDRESS, address, amount, txFee.totalPerTx);
-            console.log('Please wait relayer complete the jobs %s...', jobId);
+            const jobIds: string[] = await this.zpClient.withdrawMulti(TOKEN_ADDRESS, address, amount, txFee.totalPerTx);
+            console.log('Please wait relayer complete the job%s %s...', jobIds.length > 0 ? 's' : '', jobIds.join(', '));
 
-            return {jobId, txHashes: (await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId))};
+            let promises = jobIds.map(async (jobId) => {
+                const txHashes: string[] = await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
+                return { jobId, txHash: txHashes[0] };
+            });
+
+            return Promise.all(promises);
         } else {
             console.log('Sorry, I cannot wait anymore. Please ask for relayer 😂');
 

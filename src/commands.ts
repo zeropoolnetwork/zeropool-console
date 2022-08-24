@@ -164,9 +164,10 @@ export async function transferShielded(to: string, amount: string, times: string
             this.pause();
             const result = await this.account.transferShielded(to, this.account.humanToShielded(amount));
             this.resume();
-            this.echo(`Done [job #${result.jobId}]: ${result.txHashes.map((txHash: string) => {
-                return `[[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`;
-            }).join(`, `)}`);
+            this.echo(`Done ${result.map((oneResult) => {
+                return `[job #${oneResult.jobId}] [[!;;;;${this.account.getTransactionUrl(oneResult.txHash)}]${oneResult.txHash}]`
+            }).join(`; `)}`);
+            
         }
     };
 }
@@ -199,9 +200,9 @@ export async function withdrawShielded(amount: string, address: string, times: s
         this.pause();
         const result = await this.account.withdrawShielded(this.account.humanToShielded(amount), address);
         this.resume();
-        this.echo(`Done [job #${result.jobId}]: ${result.txHashes.map((txHash: string) => {
-            return `[[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`;
-        }).join(`, `)}`);
+        this.echo(`Done ${result.map((oneResult) => {
+            return `[job #${oneResult.jobId}] [[!;;;;${this.account.getTransactionUrl(oneResult.txHash)}]${oneResult.txHash}]`
+        }).join(`; `)}`);
     }
 }
 
