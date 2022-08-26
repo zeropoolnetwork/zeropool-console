@@ -112,11 +112,31 @@ export async function getTxParts(amount: string, fee: string) {
     }
 }
 
+export async function depositLimit(fromAddress: string) {
+    this.pause();
+    const result = await this.account.getMaxDeposit(fromAddress);
+    const human = this.account.shieldedToHuman(result);
+    const wei = this.account.shieldedToWei(result);
+    this.resume();
+
+    this.echo(`[[;gray;]Max available deposit: ${human} ${SHIELDED_TOKEN_SYMBOL} (${wei} wei)]`);
+}
+
+export async function withdrawLimit(toAddress: string) {
+    this.pause();
+    const result = await this.account.getMaxWithdraw(toAddress);
+    const human = this.account.shieldedToHuman(result);
+    const wei = this.account.shieldedToWei(result);
+    this.resume();
+
+    this.echo(`[[;gray;]Max available withdraw: ${human} ${SHIELDED_TOKEN_SYMBOL} (${wei} wei)]`);
+}
+
 export async function getMaxAvailableTransfer() {
     this.pause();
     const result = await this.account.getMaxAvailableTransfer();
     const human = this.account.shieldedToHuman(result);
-    const wei = this.account.shieldedToWei(result)
+    const wei = this.account.shieldedToWei(result);
     this.resume();
 
     this.echo(`[[;gray;]Max available shielded balance for outcoming transactions: ${human} ${SHIELDED_TOKEN_SYMBOL} (${wei} wei)]`);

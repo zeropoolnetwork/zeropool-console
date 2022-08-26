@@ -229,6 +229,32 @@ export default class Account {
         return await this.zpClient.getTransactionParts(TOKEN_ADDRESS, amount, fee);
     }
 
+    public async getMaxDeposit(from: string): Promise<bigint> {
+        let address = null;
+        if (from == null) {
+            if (isEvmBased(NETWORK)) {
+                address = await this.client.getAddress();
+            }
+        } else {
+            address = from;
+        }
+
+        return await this.zpClient.getMaxAvailableDeposit(TOKEN_ADDRESS, address);
+    }
+
+    public async getMaxWithdraw(to: string): Promise<bigint> {
+        let address = null;
+        if (to == null) {
+            if (isEvmBased(NETWORK)) {
+                address = await this.client.getAddress();
+            }
+        } else {
+            address = to;
+        }
+
+        return await this.zpClient.getMaxAvailableWithdraw(TOKEN_ADDRESS, address);
+    }
+
     public async getMaxAvailableTransfer(amount: bigint, fee: bigint): Promise<bigint> {
         return await this.zpClient.calcMaxAvailableTransfer(TOKEN_ADDRESS, true);
     }
