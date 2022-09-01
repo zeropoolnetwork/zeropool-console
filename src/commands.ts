@@ -1,6 +1,6 @@
 import Account from './account';
 import bip39 from 'bip39-light';
-import { HistoryRecord, HistoryTransactionType, TxType } from 'zkbob-client-js';
+import { HistoryRecord, HistoryTransactionType, PoolLimits } from 'zkbob-client-js';
 import { NetworkType } from 'zkbob-client-js/lib/network-type';
 import { deriveSpendingKey, verifyShieldedAddress, bufToHex } from 'zkbob-client-js/lib/utils';
 
@@ -112,14 +112,19 @@ export async function getTxParts(amount: string, fee: string) {
     }
 }
 
-export async function depositLimit(fromAddress: string) {
+export async function getLimits(address: string | undefined) {
     this.pause();
-    const result = await this.account.getMaxDeposit(fromAddress);
-    const human = this.account.shieldedToHuman(result);
-    const wei = this.account.shieldedToWei(result);
+    const result: PoolLimits = await this.account.getLimits(address);
     this.resume();
 
-    this.echo(`[[;gray;]Max available deposit: ${human} ${SHIELDED_TOKEN_SYMBOL} (${wei} wei)]`);
+    this.echo(`[[;white;]Max available deposit:  ${this.account.shieldedToHuman(result.deposit.total)} ${SHIELDED_TOKEN_SYMBOL}]`);
+    this.echo(`[[;gray;]...single operation:    ${this.account.shieldedToHuman(result.deposit.components.singleOperation)} ${SHIELDED_TOKEN_SYMBOL}]`);
+    this.echo(`[[;gray;]...address day limit:   ${this.account.shieldedToHuman(result.deposit.components.daylyForAddress.available)} / ${this.account.shieldedToHuman(result.deposit.components.daylyForAddress.total)} ${SHIELDED_TOKEN_SYMBOL}]`);
+    this.echo(`[[;gray;]...total day limit:     ${this.account.shieldedToHuman(result.deposit.components.daylyForAll.available)} / ${this.account.shieldedToHuman(result.deposit.components.daylyForAll.total)} ${SHIELDED_TOKEN_SYMBOL}]`);
+    this.echo(`[[;gray;]...pool limit:          ${this.account.shieldedToHuman(result.deposit.components.poolLimit.available)} / ${this.account.shieldedToHuman(result.deposit.components.poolLimit.total)} ${SHIELDED_TOKEN_SYMBOL}]`);
+    this.echo(`[[;white;]Max available withdraw: ${this.account.shieldedToHuman(result.withdraw.total)} ${SHIELDED_TOKEN_SYMBOL}]`);
+    this.echo(`[[;gray;]...total day limit:     ${this.account.shieldedToHuman(result.withdraw.components.daylyForAll.available)} / ${this.account.shieldedToHuman(result.withdraw.components.daylyForAll.total)} ${SHIELDED_TOKEN_SYMBOL}]`);
+    
 }
 
 export async function withdrawLimit(toAddress: string) {
