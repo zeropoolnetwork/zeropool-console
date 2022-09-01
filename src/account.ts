@@ -1,7 +1,7 @@
 import AES from 'crypto-js/aes';
 import Utf8 from 'crypto-js/enc-utf8';
 import { EthereumClient, PolkadotClient, Client as NetworkClient } from 'zeropool-support-js';
-import { init, ZkBobClient, HistoryRecord, TxAmount, FeeAmount, TxType } from 'zkbob-client-js';
+import { init, ZkBobClient, HistoryRecord, TxAmount, FeeAmount, TxType, PoolLimits } from 'zkbob-client-js';
 import bip39 from 'bip39-light';
 import HDWalletProvider from '@truffle/hdwallet-provider';
 import { deriveSpendingKey } from 'zkbob-client-js/lib/utils';
@@ -14,6 +14,7 @@ import wasmPath from 'libzkbob-rs-wasm-web/libzkbob_rs_wasm_bg.wasm';
 // @ts-ignore
 import workerPath from 'zkbob-client-js/lib/worker.js?asset';
 import { Output } from 'libzkbob-rs-wasm-web';
+//import { PoolLimits } from 'zkbob-client-js/lib/client';
 // const wasmPath = new URL('npm:libzeropool-rs-wasm-web/libzeropool_rs_wasm_bg.wasm', import.meta.url));
 // const workerPath = new URL('npm:zeropool-client-js/lib/worker.js', import.meta.url);
 
@@ -229,30 +230,13 @@ export default class Account {
         return await this.zpClient.getTransactionParts(TOKEN_ADDRESS, amount, fee);
     }
 
-    public async getMaxDeposit(from: string): Promise<bigint> {
-        let address = null;
-        if (from == null) {
-            if (isEvmBased(NETWORK)) {
-                address = await this.client.getAddress();
-            }
-        } else {
-            address = from;
+    public async getLimits(address: string | undefined): Promise<PoolLimits> {
+        let addr = address;
+        if (address === undefined) {
+            addr = await this.client.getAddress();
         }
 
-        return await this.zpClient.getMaxAvailableDeposit(TOKEN_ADDRESS, address);
-    }
-
-    public async getMaxWithdraw(to: string): Promise<bigint> {
-        let address = null;
-        if (to == null) {
-            if (isEvmBased(NETWORK)) {
-                address = await this.client.getAddress();
-            }
-        } else {
-            address = to;
-        }
-
-        return await this.zpClient.getMaxAvailableWithdraw(TOKEN_ADDRESS, address);
+        return await this.zpClient.getLimits(TOKEN_ADDRESS, addr);
     }
 
     public async getMaxAvailableTransfer(amount: bigint, fee: bigint): Promise<bigint> {
@@ -418,12 +402,7 @@ export default class Account {
             const jobIds: string[] = await this.zpClient.transferMulti(TOKEN_ADDRESS, to, amount, txFee.totalPerTx);
             console.log('Please wait relayer complete the job%s %s...', jobIds.length > 0 ? 's' : '', jobIds.join(', '));
 
-            let promises = jobIds.map(async (jobId) => {
-                const txHashes: string[] = await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
-                return { jobId, txHash: txHashes[0] };
-            });
-
-            return Promise.all(promises);
+            return await this.zpClient.waitJobsCompleted(TOKEN_ADDRESS, jobIds);
         } else {
             console.log('Sorry, I cannot wait anymore. Please ask for relayer 😂');
 
@@ -482,12 +461,7 @@ export default class Account {
             const jobIds: string[] = await this.zpClient.withdrawMulti(TOKEN_ADDRESS, address, amount, txFee.totalPerTx);
             console.log('Please wait relayer complete the job%s %s...', jobIds.length > 0 ? 's' : '', jobIds.join(', '));
 
-            let promises = jobIds.map(async (jobId) => {
-                const txHashes: string[] = await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
-                return { jobId, txHash: txHashes[0] };
-            });
-
-            return Promise.all(promises);
+            return await this.zpClient.waitJobsCompleted(TOKEN_ADDRESS, jobIds);
         } else {
             console.log('Sorry, I cannot wait anymore. Please ask for relayer 😂');
 
