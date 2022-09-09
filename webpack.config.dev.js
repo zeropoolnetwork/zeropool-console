@@ -9,10 +9,13 @@ module.exports = merge(common, {
     mode: 'production',
     devServer: {
         contentBase: [path.join(__dirname, 'dist'), __dirname],
-        compress: true,
         port: 3000,
         hot: true,
         writeToDisk: true,
+        mimeTypes: {
+            typeMap: { 'application/wasm': ['wasm'] },
+            force: true
+        },
         headers: {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Headers': '*',

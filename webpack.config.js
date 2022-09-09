@@ -37,21 +37,9 @@ module.exports = {
                 use: ['style-loader', 'css-loader'],
             },
             {
-                test: /\.wasm$/,
-                type: 'asset/resource',
-            },
-            {
                 test: /\.js$/,
                 enforce: 'pre',
                 use: ['source-map-loader'],
-            },
-            {
-                test: /\.bin/,
-                type: 'asset/resource'
-            },
-            {
-                resourceQuery: /asset/,
-                type: 'asset/resource',
             },
         ],
     },
