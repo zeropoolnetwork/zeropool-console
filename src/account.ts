@@ -44,12 +44,12 @@ export default class Account {
 
         if (process.env.NODE_ENV === 'development') {
             console.log('Dev environment, using local env variables.');
-            NETWORK = process.env.NETWORK;
-            CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
-            TOKEN_ADDRESS = process.env.TOKEN_ADDRESS;
-            RELAYER_URL = process.env.RELAYER_URL;
-            RPC_URL = process.env.RPC_URL;
-            TRANSACTION_URL = process.env.TRANSACTION_URL;
+            window.NETWORK = process.env.NETWORK;
+            window.CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
+            window.TOKEN_ADDRESS = process.env.TOKEN_ADDRESS;
+            window.RELAYER_URL = process.env.RELAYER_URL;
+            window.RPC_URL = process.env.RPC_URL;
+            window.TRANSACTION_URL = process.env.TRANSACTION_URL;
         }
     }
 
@@ -123,10 +123,8 @@ export default class Account {
         return this.zpClient.generateAddress(TOKEN_ADDRESS);
     }
 
-    public async getShieldedBalances(): Promise<[string, string, string]> {
-        const balances = this.zpClient.getBalances(TOKEN_ADDRESS);
-
-        return balances;
+    public async getShieldedBalance(): Promise<bigint> {
+        return this.zpClient.getOptimisticTotalBalance(TOKEN_ADDRESS);;
     }
 
     public async getBalance(): Promise<[string, string]> {
@@ -157,15 +155,16 @@ export default class Account {
         return this.client.getTransactionUrl(txHash);
     }
 
-    public async transferShielded(to: string, amount: string): Promise<string> {
+    public async transferShielded(to: string, amount: string): Promise<void> {
         console.log('Making transfer...');
         const jobId = await this.zpClient.transfer(TOKEN_ADDRESS, [{ to, amount }]);
-        console.log('Please wait relayer complete the job %s...', jobId);
 
-        return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
+        this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId).then(() => {
+            console.log('Job %s completed', jobId);
+        });;
     }
 
-    public async depositShielded(amount: string): Promise<string> {
+    public async depositShielded(amount: string): Promise<void> {
         let fromAddress = null;
         if (isSubstrateBased(NETWORK)) {
             fromAddress = await this.client.getPublicKey();
@@ -177,14 +176,14 @@ export default class Account {
         }
 
         console.log('Making deposit...');
-        const jobId = await this.zpClient.deposit(TOKEN_ADDRESS, amount, (data) => this.client.sign(data), fromAddress);
-        console.log('Please wait relayer complete the job %s...', jobId);
+        const jobId = await this.zpClient.deposit(TOKEN_ADDRESS, BigInt(amount), (data) => this.client.sign(data), fromAddress, BigInt(0), []);
 
-        return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
+        this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId).then(() => {
+            console.log('Job %s completed', jobId);
+        });
     }
 
-    public async withdrawShielded(amount: string): Promise<string> {
-
+    public async withdrawShielded(amount: string): Promise<void> {
         let address = null;
         if (isEvmBased(NETWORK)) {
             address = await this.client.getAddress();
@@ -195,10 +194,11 @@ export default class Account {
         }
 
         console.log('Making withdraw...');
-        const jobId = await this.zpClient.withdraw(TOKEN_ADDRESS, address, amount);
-        console.log('Please wait relayer complete the job %s...', jobId);
+        const jobId = await this.zpClient.withdraw(TOKEN_ADDRESS, address, BigInt(amount));
 
-        return await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId);
+        this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId).then(() => {
+            console.log('Job %s completed', jobId);
+        });;
     }
 
     private decryptSeed(password: string): string {

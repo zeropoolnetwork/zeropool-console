@@ -32,13 +32,8 @@ export async function getBalance() {
 
 export async function getShieldedBalance() {
     this.pause();
-    const [total, acc, note] = await this.account.getShieldedBalances();
-    this.echo(`[[;gray;]
-Private balance:
-    total: ${total} (account + note)
-    account: ${acc}
-    note: ${note}
-]`);
+    const balance = await this.account.getShieldedBalance();
+    this.echo(balance);
     this.resume();
 }
 
@@ -57,30 +52,27 @@ export async function transfer(to: string, amount: string) {
 export async function transferShielded(to: string, amount: string) {
     this.echo('Performing shielded transfer...');
     this.pause();
-    const txHash = await this.account.transferShielded(to, amount);
+    await this.account.transferShielded(to, amount);
     this.resume();
-    this.echo(`Done: ${this.account.getTransactionUrl(txHash)}`);
 }
 
 export async function depositShielded(amount: string) {
     this.echo('Performing shielded deposit...');
     this.pause();
-    const txHash = await this.account.depositShielded(amount);
+    await this.account.depositShielded(amount);
     this.resume();
-    this.echo(`Done: ${this.account.getTransactionUrl(txHash)}`);
 }
 
 export async function withdrawShielded(amount: string) {
     this.echo('Performing shielded withdraw...');
     this.pause();
-    const txHash = await this.account.withdrawShielded(amount);
+    await this.account.withdrawShielded(amount);
     this.resume();
-    this.echo(`Done: ${this.account.getTransactionUrl(txHash)}`);
 }
 
 export async function getInternalState() {
     const state = await this.account.getInternalState();
-    
+
     for (const [index, tx] of state.txs) {
         this.echo(`${index}: ${JSON.stringify(tx)}`);
     }
