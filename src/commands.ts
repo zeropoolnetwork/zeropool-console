@@ -1,6 +1,6 @@
 import Account from './account';
 import bip39 from 'bip39-light';
-import { HistoryRecord, HistoryTransactionType, PoolLimits } from 'zkbob-client-js';
+import { HistoryRecord, HistoryTransactionType, PoolLimits, TxType } from 'zkbob-client-js';
 import { NetworkType } from 'zkbob-client-js/lib/network-type';
 import { deriveSpendingKey, verifyShieldedAddress, bufToHex } from 'zkbob-client-js/lib/utils';
 
@@ -110,6 +110,39 @@ export async function getTxParts(amount: string, fee: string) {
         }
         this.echo(`${partAmount} ${SHIELDED_TOKEN_SYMBOL} [fee: ${partFee}]${partLimit}`);
     }
+}
+
+export async function estimateFeeDeposit(amount: string) {
+    this.pause();
+    const result = await this.account.estimateFee(this.account.humanToShielded(amount), TxType.Deposit, false);
+    this.resume();
+
+    this.echo(`Total fee est.:    ${this.account.shieldedToHuman(result.total)} ${TOKEN_SYMBOL}`);
+    this.echo(`Atomic fee:        ${this.account.shieldedToHuman(result.totalPerTx)} (${this.account.shieldedToHuman(result.relayer)} + ${this.account.shieldedToHuman(result.l1)}) ${TOKEN_SYMBOL}`);
+    this.echo(`Transaction count: ${result.txCnt}`);
+    this.echo(`Insuffic. balance: ${result.insufficientFunds == true ? 'true' : 'false'}`);
+}
+
+export async function estimateFeeTransfer(amount: string) {
+    this.pause();
+    const result = await this.account.estimateFee(this.account.humanToShielded(amount), TxType.Transfer, false);
+    this.resume();
+
+    this.echo(`Total fee est.:    ${this.account.shieldedToHuman(result.total)} ${SHIELDED_TOKEN_SYMBOL}`);
+    this.echo(`Atomic fee:        ${this.account.shieldedToHuman(result.totalPerTx)} (${this.account.shieldedToHuman(result.relayer)} + ${this.account.shieldedToHuman(result.l1)}) ${SHIELDED_TOKEN_SYMBOL}`);
+    this.echo(`Transaction count: ${result.txCnt}`);
+    this.echo(`Insuffic. balance: ${result.insufficientFunds == true ? 'true' : 'false'}`);
+}
+
+export async function estimateFeeWithdraw(amount: string) {
+    this.pause();
+    const result = await this.account.estimateFee(this.account.humanToShielded(amount), TxType.Withdraw, false);
+    this.resume();
+
+    this.echo(`Total fee est.:    ${this.account.shieldedToHuman(result.total)} ${SHIELDED_TOKEN_SYMBOL}`);
+    this.echo(`Atomic fee:        ${this.account.shieldedToHuman(result.totalPerTx)} (${this.account.shieldedToHuman(result.relayer)} + ${this.account.shieldedToHuman(result.l1)}) ${SHIELDED_TOKEN_SYMBOL}`);
+    this.echo(`Transaction count: ${result.txCnt}`);
+    this.echo(`Insuffic. balance: ${result.insufficientFunds == true ? 'true' : 'false'}`);
 }
 
 export async function getLimits(address: string | undefined) {

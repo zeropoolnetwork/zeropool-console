@@ -248,8 +248,8 @@ export default class Account {
         return await this.zpClient.atomicTxFee(TOKEN_ADDRESS);
     }
 
-    public async estimateFee(amount: bigint, txType: TxType): Promise<FeeAmount> {
-        return await this.zpClient.feeEstimate(TOKEN_ADDRESS, amount, txType);
+    public async estimateFee(amount: bigint, txType: TxType, updateState: boolean = true): Promise<FeeAmount> {
+        return await this.zpClient.feeEstimate(TOKEN_ADDRESS, amount, txType, updateState);
     }
 
     public getTransactionUrl(txHash: string): string {
