@@ -19,7 +19,7 @@ import { Output } from 'libzkbob-rs-wasm-web';
 // const workerPath = new URL('npm:zeropool-client-js/lib/worker.js', import.meta.url);
 
 function isEvmBased(network: string): boolean {
-    return ['ethereum', 'aurora', 'xdai'].includes(network);
+    return ['ethereum', 'aurora', 'xdai', 'polygon'].includes(network);
 }
 
 function isSubstrateBased(network: string): boolean {
@@ -134,6 +134,7 @@ export default class Account {
             case 'xdai': return 'XDAI';
             case 'polkadot': return 'DOT';
             case 'kusama': return 'KSM';
+            case 'polygon': return 'MATIC';
             default: return '';
         }
     }
