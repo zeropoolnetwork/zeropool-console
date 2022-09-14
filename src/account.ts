@@ -228,7 +228,7 @@ export default class Account {
     }
 
     public async getTxParts(amount: bigint, fee: bigint): Promise<Array<TxAmount>> {
-        return await this.zpClient.getTransactionParts(TOKEN_ADDRESS, amount, fee);
+        return await this.zpClient.getTransactionParts(TOKEN_ADDRESS, amount, fee, false);
     }
 
     public async getLimits(address: string | undefined): Promise<PoolLimits> {
@@ -241,7 +241,7 @@ export default class Account {
     }
 
     public async getMaxAvailableTransfer(amount: bigint, fee: bigint): Promise<bigint> {
-        return await this.zpClient.calcMaxAvailableTransfer(TOKEN_ADDRESS, true);
+        return await this.zpClient.calcMaxAvailableTransfer(TOKEN_ADDRESS, false);
     }
 
     public async minFee(amount: bigint, txType: TxType): Promise<bigint> {
