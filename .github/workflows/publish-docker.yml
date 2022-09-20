@@ -23,7 +23,7 @@ jobs:
       uses: martinbeentjes/npm-get-version-action@main
         
     - name: Show node version number
-      run: echo "Version is ${{ steps.package-version.outputs.version }}"
+      run: echo "Version is ${{ steps.package-version.outputs.current-version }}"
         
     - name: Installing dependecies
       uses: borales/actions-yarn@v3.0.0
@@ -46,11 +46,11 @@ jobs:
       with:
         context: .
         file: ./Dockerfile.prod
-        push: true
-        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/$IMAGE:${{ steps.package-version.outputs.version }}, ${{ secrets.DOCKER_HUB_USERNAME }}/$IMAGE:latest
+        push: false
+        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{ IMAGE }}:${{ steps.package-version.outputs.current-version }}, ${{ secrets.DOCKER_HUB_USERNAME }}/${{ IMAGE }}:latest
     
     - name: Create tag
       uses: rickstaa/action-create-tag@v1
       with:
-        tag: ${{ steps.package-version.outputs.version }}
+        tag: ${{ steps.package-version.outputs.current-version }}
         message: ""
