@@ -224,8 +224,8 @@ export async function transferShielded(to: string, amount: string, times: string
             const result = await this.account.transferShielded(to, this.account.humanToShielded(amount));
             this.resume();
             this.echo(`Done ${result.map((oneResult) => {
-                return `[job #${oneResult.jobId}] [[!;;;;${this.account.getTransactionUrl(oneResult.txHash)}]${oneResult.txHash}]`
-            }).join(`\n     `)}`);
+                return `[job #${oneResult.jobId}]: [[!;;;;${this.account.getTransactionUrl(oneResult.txHash)}]${oneResult.txHash}]`
+            }).join(`\n      `)}`);
             
         }
     };
@@ -260,8 +260,8 @@ export async function withdrawShielded(amount: string, address: string, times: s
         const result = await this.account.withdrawShielded(this.account.humanToShielded(amount), address);
         this.resume();
         this.echo(`Done ${result.map((oneResult) => {
-            return `[job #${oneResult.jobId}] [[!;;;;${this.account.getTransactionUrl(oneResult.txHash)}]${oneResult.txHash}]`
-        }).join(`\n     `)}`);
+            return `[job #${oneResult.jobId}]: [[!;;;;${this.account.getTransactionUrl(oneResult.txHash)}]${oneResult.txHash}]`
+        }).join(`\n      `)}`);
     }
 }
 
