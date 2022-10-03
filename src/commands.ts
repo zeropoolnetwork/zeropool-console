@@ -82,7 +82,7 @@ export async function getTxParts(amount: string, fee: string) {
     } else {
         actualFee = this.account.humanToShielded(fee);
     }
-    const result = await this.account.getTxParts(this.account.humanToShielded(amount), actualFee);
+    const result = await this.account.getTxParts([this.account.humanToShielded(amount)], actualFee);
     this.resume();
 
     if (result.length == 0) {
