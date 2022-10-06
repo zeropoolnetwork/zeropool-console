@@ -379,33 +379,6 @@ export default class Account {
         }
     }
 
-    public async transferShieldedMultinote(to: string, amount: bigint, count: number): Promise<{jobId: string, txHashes: string[]}> {
-        const notesNum = Math.floor(count);
-        if (notesNum > 126) {
-            throw Error('Sorry, repeated transfer currently supports max 126 times');
-        }
-
-        console.log('Waiting while state become ready...');
-        const ready = await this.zpClient.waitReadyToTransact(TOKEN_ADDRESS);
-        if (ready) {
-            const txFee = (await this.zpClient.atomicTxFee(TOKEN_ADDRESS));
-            
-            let outputs: Output[] = [];
-            for (let i = 0; i < notesNum; i++) {
-                outputs.push({to, amount: amount.toString()})
-            }
-            console.log('Making transfer with ${notesNum} notes...');
-            const jobId = await this.zpClient.transferSingle(TOKEN_ADDRESS, outputs, txFee);
-            console.log('Please wait relayer complete the job %s...', jobId);
-
-            return {jobId, txHashes: (await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId))};
-        } else {
-            console.log('Sorry, I cannot wait anymore. Please ask for relayer 😂');
-
-            throw Error('State is not ready for transact');
-        }
-    }
-
     public async withdrawShielded(amount: bigint, external_addr: string): Promise<{jobId: string, txHash: string}[]> {
 
         let address = null;

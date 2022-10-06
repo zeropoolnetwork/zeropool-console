@@ -81,7 +81,7 @@ export async function getTxParts(amount: string, fee: string, requestAdditional:
     amounts.push(this.account.humanToShielded(amount));
     if (requestAdditional == '+' || fee == '+') {
         const additionalAmounts: string = await this.read('Enter additional space separated amounts (e.g. \'^1 ^2.34 ^50\'): ');
-        let convertedAmounts: bigint[] = additionalAmounts.split(' ').map(add => this.account.humanToShielded(add));
+        let convertedAmounts: bigint[] = additionalAmounts.trim().split(/\s+/).map(add => this.account.humanToShielded(add));
         amounts = amounts.concat(convertedAmounts);
     }
 
@@ -162,7 +162,7 @@ export async function estimateFeeTransfer(amount: string, requestAdditional: str
     amounts.push(this.account.humanToShielded(amount));
     if (requestAdditional == '+') {
         const additionalAmounts: string = await this.read('Enter additional space separated amounts (e.g. \'^1 ^2.34 ^50\'): ');
-        let convertedAmounts: bigint[] = additionalAmounts.split(' ').map(add => this.account.humanToShielded(add));
+        let convertedAmounts: bigint[] = additionalAmounts.trim().split(/\s+/).map(add => this.account.humanToShielded(add));
         amounts = amounts.concat(convertedAmounts);
     }
 
@@ -260,7 +260,7 @@ export async function transferShielded(to: string, amount: string, times: string
             do {
                 newRequest = await this.read('[[;gray;]Enter additional request:] ');
                 if (newRequest == '') break;
-                const components = newRequest.split(' ');
+                const components = newRequest.trim().split(/\s+/);
                 if (components.length != 2) {
                     this.error('Please use the following format: \'shielded_address amount\'');
                     continue;
@@ -303,17 +303,27 @@ export async function transferShieldedMultinote(to: string, amount: string, coun
     if (verifyShieldedAddress(to) === false) {
         this.error(`Shielded address ${to} is invalid. Please check it!`);
     } else {
+        let notesCnt = Number(count);
         let txCnt = times !== undefined ? Number(times) : 1;
+        if (notesCnt < 0) {
+            this.error(`Please provide a positive notes count value (provided: ${notesCnt})`);
+            return;
+        }
+
+        let requests: TransferRequest[] = [];
+        for(let reqIdx = 0; reqIdx < notesCnt; reqIdx++) {
+            requests.push({ destination: to, amountGwei: this.account.humanToShielded(amount)});
+        }
 
         for (let i = 0; i < txCnt; i++) {
             let cntStr = (txCnt > 1) ? ` (${i + 1}/${txCnt})` : ``;
-            this.echo(`Performing transfer with ${count} notes ${cntStr}...`);
+            this.echo(`Performing transfer with ${notesCnt} notes ${cntStr}...`);
             this.pause();
-            const result = await this.account.transferShieldedMultinote(to, this.account.humanToShielded(amount), Number(count));
+            const result = await this.account.transferShielded(requests);
             this.resume();
-            this.echo(`Done [job #${result.jobId}]: ${result.txHashes.map((txHash: string) => {
-                return `[[!;;;;${this.account.getTransactionUrl(txHash)}]${txHash}]`;
-            }).join(`, `)}`);
+            this.echo(`Done ${result.map((oneResult) => {
+                return `[job #${oneResult.jobId}]: [[!;;;;${this.account.getTransactionUrl(oneResult.txHash)}]${oneResult.txHash}]`
+            }).join(`\n     `)}`);
         }
     };
 }
