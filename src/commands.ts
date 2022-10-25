@@ -3,6 +3,7 @@ import bip39 from 'bip39-light';
 import { HistoryRecord, HistoryTransactionType, PoolLimits, TxType } from 'zkbob-client-js';
 import { NetworkType } from 'zkbob-client-js/lib/network-type';
 import { deriveSpendingKey, verifyShieldedAddress, bufToHex } from 'zkbob-client-js/lib/utils';
+import { HistoryRecordState } from 'zkbob-client-js/lib/history';
 import { TransferConfig } from 'zkbob-client-js';
 import { TransferRequest } from 'zkbob-client-js/lib/client';
 
@@ -351,13 +352,60 @@ export async function getInternalState() {
     }
 }
 
+export async function getRoot() {
+    const localState = this.account.getLocalTreeState();
+    this.echo(`Local Merkle Tree:  [[;white;]${localState.root.toString()} @${localState.index.toString()}]`)
+
+    this.echo(`Requesting additional info...`);
+    this.pause();
+    const relayerState = this.account.getRelayerTreeState();
+    const relayerOptimisticState = this.account.getRelayerOptimisticTreeState();
+    const poolState = this.account.getPoolTreeState();
+
+    let promises = [relayerState, relayerOptimisticState, poolState]
+    Promise.all(promises).then((states) => {
+        this.update(-1, `Relayer:            [[;white;]${states[0].root.toString()} @${states[0].index.toString()}]`);
+        this.echo(`Relayer optimistic: [[;white;]${states[1].root.toString()} @${states[1].index.toString()}]`);
+        this.echo(`Pool  contract:     [[;white;]${states[2].root.toString()} @${states[2].index.toString()}]`);
+    }).catch((reason) => {
+        this.error(`Cannot fetch additional info: ${reason}`);
+    }).finally(() => {
+        this.resume();
+    });    
+}
+
 export async function printHistory() {
     this.pause();
     const history: HistoryRecord[] = await this.account.getAllHistory();
     this.resume();
+
+    const denominator = 1000000000;
     
     for (const tx of history) {
-        this.echo(`${humanReadable(tx, 1000000000)} [[!;;;;${this.account.getTransactionUrl(tx.txHash)}]${tx.txHash}]`);
+        this.echo(`${humanReadable(tx, denominator)} [[!;;;;${this.account.getTransactionUrl(tx.txHash)}]${tx.txHash}]`);
+
+        if (tx.actions.length > 1) {
+            let directions = new Map<string, {amount: bigint, notesCnt: number}>();
+            for (const moving of tx.actions) {
+                let existingDirection = directions.get(moving.to);
+                if (existingDirection === undefined) {
+                    existingDirection = {amount: BigInt(0), notesCnt: 0};
+                }
+                existingDirection.amount += moving.amount;
+                existingDirection.notesCnt++;
+                directions.set(moving.to, existingDirection);
+            }
+
+
+            for (let [key, value] of directions) {
+                let notesCntDescription = '';
+                if (value.notesCnt > 1) {
+                    notesCntDescription = ` [${value.notesCnt} notes were used]`;
+                }
+                this.echo(`                                  ${Number(value.amount) / denominator} ${SHIELDED_TOKEN_SYMBOL} TO ${key}${notesCntDescription}`);
+            }
+        }
+        //this.echo(`RECORD ${tx.type} [[!;;;;${this.account.getTransactionUrl(tx.txHash)}]${tx.txHash}]`);
     }
 }
 
@@ -365,26 +413,41 @@ function humanReadable(record: HistoryRecord, denominator: number): string {
     let dt = new Date(record.timestamp * 1000);
 
     let mainPart: string;
-    let pendingMark = ``;
-    if (record.pending) {
-        pendingMark = `⌛ `;
-    }
-    if (record.type == HistoryTransactionType.Deposit) {
-      mainPart = `${pendingMark}DEPOSITED  [[;white;]${Number(record.amount) / denominator}] ${TOKEN_SYMBOL} FROM ${record.from}`;      
-    } else if (record.type == HistoryTransactionType.TransferIn) {
-      mainPart = `${pendingMark}RECEIVED   [[;white;]${Number(record.amount) / denominator}] ${SHIELDED_TOKEN_SYMBOL} ON ${record.to}`;
-    } else if (record.type == HistoryTransactionType.TransferOut) {
-      mainPart = `${pendingMark}SENDED     [[;white;]${Number(record.amount) / denominator}] ${SHIELDED_TOKEN_SYMBOL} TO ${record.to}`;
-    } else if (record.type == HistoryTransactionType.Withdrawal) {
-      mainPart = `${pendingMark}WITHDRAWED [[;white;]${Number(record.amount) / denominator}] ${SHIELDED_TOKEN_SYMBOL} TO ${record.to}`;
-    } else if (record.type == HistoryTransactionType.TransferLoopback) {
-      mainPart = `${pendingMark}SENDED     [[;white;]${Number(record.amount) / denominator}] ${SHIELDED_TOKEN_SYMBOL} TO MYSELF`;
-    } else {
-      mainPart = `${pendingMark}UNKNOWN TRANSACTION TYPE (${record.type})`
+    let statusMark = ``;
+    if (record.state == HistoryRecordState.Pending) {
+        statusMark = `⌛ `;
+    } else if (record.state == HistoryRecordState.RejectedByPool || record.state == HistoryRecordState.RejectedByRelayer) {
+        statusMark = `❌ `;
     }
 
-    if (record.fee > 0) {
-      mainPart += `(fee = ${Number(record.fee) / denominator})`;
+    if (record.actions.length > 0) {
+        const totalAmount = record.actions.map(({ amount }) => amount).reduce((acc, cur) => acc + cur);
+        let toAddress = record.actions[0].to;
+        if (record.actions.length > 1) {
+            toAddress = `${record.actions.length} notes`;
+        }
+
+        if (record.type == HistoryTransactionType.Deposit) {
+            mainPart = `${statusMark}DEPOSITED  ${Number(totalAmount) / denominator} ${TOKEN_SYMBOL} FROM ${record.actions[0].from}`;      
+        } else if (record.type == HistoryTransactionType.TransferIn) {
+            mainPart = `${statusMark}RECEIVED   ${Number(totalAmount) / denominator} ${SHIELDED_TOKEN_SYMBOL} ${record.actions.length > 1 ? 'IN' : 'ON'} ${toAddress}`;
+        } else if (record.type == HistoryTransactionType.TransferOut) {
+            mainPart = `${statusMark}SENT       ${Number(totalAmount) / denominator} ${SHIELDED_TOKEN_SYMBOL} ${record.actions.length > 1 ? 'IN' : 'TO'} ${toAddress}`;
+        } else if (record.type == HistoryTransactionType.Withdrawal) {
+            mainPart = `${statusMark}WITHDRAWED ${Number(totalAmount) / denominator} ${SHIELDED_TOKEN_SYMBOL} TO ${toAddress}`;
+        } else if (record.type == HistoryTransactionType.TransferLoopback) {
+            mainPart = `${statusMark}SENT       ${Number(totalAmount) / denominator} ${SHIELDED_TOKEN_SYMBOL} TO MYSELF`;
+        } else {
+            mainPart = `${statusMark}UNKNOWN TRANSACTION TYPE (${record.type})`
+        }
+
+        if (record.fee > 0) {
+        mainPart += `(fee = ${Number(record.fee) / denominator})`;
+        }
+    } else if (record.type == HistoryTransactionType.TransferOut) {
+        mainPart = `${statusMark}VOID TRANSFER (NOTES BURNING)`;
+    } else {
+        mainPart = `incorrect history record`;
     }
 
     return `${dt.toLocaleString()} : ${mainPart}`;
