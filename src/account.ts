@@ -153,6 +153,10 @@ export default class Account {
         return this.zpClient.generateAddress(TOKEN_ADDRESS);
     }
 
+    public isMyAddress(shieldedAddress: string): boolean {
+        return this.zpClient.isMyAddress(TOKEN_ADDRESS, shieldedAddress);
+    }
+
     public async getShieldedBalances(updateState: boolean = true): Promise<[bigint, bigint, bigint]> {
         const balances = this.zpClient.getBalances(TOKEN_ADDRESS, updateState);
 
