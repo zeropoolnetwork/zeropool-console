@@ -1,90 +1,90 @@
 import Account from './account';
 import bip39 from 'bip39-light';
 
-export async function setSeed(seed: string, password: string) {
-    await this.account.login(seed, password);
+export async function setSeed(account: Account, seed: string, password: string) {
+  await account.init(seed, password);
 }
 
-export function getSeed(password: string) {
-    const seed = this.account.getSeed(password);
-    this.echo(`[[;gray;]Seed phrase: ${seed}]`);
+export function getSeed(account: Account, password: string) {
+  const seed = account.getSeed(password);
+  this.echo(`[[;gray;]Seed phrase: ${seed}]`);
 }
 
 export function genSeed() {
-    const seed = bip39.generateMnemonic();
-    this.echo(`[[;gray;]Generated mnemonic: ${seed}]`);
+  const seed = bip39.generateMnemonic();
+  this.echo(`[[;gray;]Generated mnemonic: ${seed}]`);
 }
 
-export async function getAddress() {
-    const address = await this.account.getRegularAddress();
-    this.echo(`[[;gray;]Address: ${address}]`);
+export async function getAddress(account: Account) {
+  const address = await account.getRegularAddress();
+  this.echo(`[[;gray;]Address: ${address}]`);
 }
 
-export function genShieldedAddress() {
-    const address = this.account.genShieldedAddress();
-    this.echo(`[[;gray;]${address}]`);
+export function genShieldedAddress(account: Account) {
+  const address = account.genShieldedAddress();
+  this.echo(`[[;gray;]${address}]`);
 }
 
-export async function getBalance() {
-    const [balance, readable] = await this.account.getBalance();
-    this.echo(`[[;gray;]Balance: ${readable} (${balance})]`);
+export async function getBalance(account: Account) {
+  const [balance, readable] = await account.getBalance();
+  this.echo(`[[;gray;]Balance: ${readable} (${balance})]`);
 }
 
-export async function getShieldedBalance() {
-    this.pause();
-    const balance = await this.account.getShieldedBalance();
-    this.echo(balance);
-    this.resume();
+export async function getShieldedBalance(account: Account) {
+  this.pause();
+  const balance = await account.getShieldedBalance();
+  this.echo(balance);
+  this.resume();
 }
 
-export async function getTokenBalance() {
-    return this.account.getTokenBalance();
+export async function getTokenBalance(account: Account) {
+  return account.getTokenBalance();
 }
 
-export async function mint(amount: string) {
-    return this.account.mint(amount);
+export async function mint(account: Account, amount: string) {
+  return account.mint(amount);
 }
 
-export async function transfer(to: string, amount: string) {
-    await this.account.transfer(to, amount);
+export async function transfer(account: Account, to: string, amount: string) {
+  await account.transfer(to, amount);
 }
 
-export async function transferShielded(to: string, amount: string) {
-    this.echo('Performing shielded transfer...');
-    this.pause();
-    await this.account.transferShielded(to, amount);
-    this.resume();
+export async function transferShielded(account: Account, to: string, amount: string) {
+  this.echo('Performing shielded transfer...');
+  this.pause();
+  await account.transferShielded(to, amount);
+  this.resume();
 }
 
-export async function depositShielded(amount: string) {
-    this.echo('Performing shielded deposit...');
-    this.pause();
-    await this.account.depositShielded(amount);
-    this.resume();
+export async function depositShielded(account: Account, amount: string) {
+  this.echo('Performing shielded deposit...');
+  this.pause();
+  await account.depositShielded(amount);
+  this.resume();
 }
 
-export async function withdrawShielded(amount: string) {
-    this.echo('Performing shielded withdraw...');
-    this.pause();
-    await this.account.withdrawShielded(amount);
-    this.resume();
+export async function withdrawShielded(account: Account, amount: string) {
+  this.echo('Performing shielded withdraw...');
+  this.pause();
+  await account.withdrawShielded(amount);
+  this.resume();
 }
 
-export async function getInternalState() {
-    const state = await this.account.getInternalState();
+export async function getInternalState(account: Account) {
+  const state = await account.getInternalState();
 
-    for (const [index, tx] of state.txs) {
-        this.echo(`${index}: ${JSON.stringify(tx)}`);
-    }
+  for (const [index, tx] of state.txs) {
+    this.echo(`${index}: ${JSON.stringify(tx)}`);
+  }
 }
 
 export function clear() {
-    this.clear();
+  this.clear();
 }
 
 export function reset() {
-    this.account = null;
-    this.reset();
+  this.account = null;
+  this.reset();
 }
 
 // export async function showState() {

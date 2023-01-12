@@ -1,6 +1,6 @@
 declare module '*.bin' {
-    const url: string;
-    export default url;
+  const url: string;
+  export default url;
 }
 
 // env.js
