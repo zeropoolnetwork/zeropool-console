@@ -9,7 +9,7 @@ import { NetworkType } from 'zeropool-client-js/lib/network-type';
 import { EvmNetwork } from 'zeropool-client-js/lib/networks/evm';
 import { PolkadotNetwork } from 'zeropool-client-js/lib/networks/polkadot';
 import { ChainId } from 'zeropool-support-js/lib/networks/waves/config';
-import { WavesNetwork } from 'zeropool-client-js/lib/networks/polkadot';
+import { WavesNetwork } from 'zeropool-client-js/lib/networks/waves';
 
 function isEvmBased(network: string): boolean {
   return ['ethereum', 'aurora', 'xdai'].includes(network);
@@ -89,7 +89,7 @@ export default class Account {
     } else if (NETWORK === 'waves') {
       // TODO: Make it configurable
       client = new WavesClient(CONTRACT_ADDRESS, mnemonic, { nodeUrl: RPC_URL, chainId: ChainId.Testnet });
-      network = new WavesNetwork(CONTRACT_ADDRESS);
+      network = new WavesNetwork(RPC_URL, CONTRACT_ADDRESS);
     } else {
       throw new Error(`Unknown network ${NETWORK}`);
     }

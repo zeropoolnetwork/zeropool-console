@@ -1175,6 +1175,14 @@
     js-sha3 "^0.8.0"
     node-forge "^0.8.5"
 
+"@waves/ts-lib-crypto@^1.4.4-beta.1":
+  version "1.4.4-beta.1"
+  resolved "https://registry.yarnpkg.com/@waves/ts-lib-crypto/-/ts-lib-crypto-1.4.4-beta.1.tgz#5a494f5ff3128b2f80c1890b1fb13d8ba2cb8c53"
+  integrity sha512-tlvThkMCoCDicOznW82wDZWQqfAWcm6ulQnuNzR++X9o0EOHM3Cj8LlS2pkgF0YjZrqEYHTp/4e0RXXYVY+dpw==
+  dependencies:
+    js-sha3 "^0.8.0"
+    node-forge "^0.10.0"
+
 "@waves/ts-types@1.1.0", "@waves/ts-types@^1.0.12":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@waves/ts-types/-/ts-types-1.1.0.tgz#717783919ec6d8e8ab33a38fc06e4da30e449c29"
@@ -9081,11 +9089,12 @@ yargs@^13.3.2:
     y18n "^4.0.0"
     yargs-parser "^13.1.2"
 
-zeropool-client-js@0.7.2:
-  version "0.7.2"
-  resolved "https://registry.yarnpkg.com/zeropool-client-js/-/zeropool-client-js-0.7.2.tgz#a6074ea5072df0f0349390341378f8bfab67aa31"
-  integrity sha512-kTJt6x/cpewuUgIK8PQlB6qIEmoMPWvblytC8ATCCGVSnN0ALSjFhgy5Yzc7URqWeCH1MpNG1pLrt0gExqPMLQ==
+zeropool-client-js@0.7.3:
+  version "0.7.3"
+  resolved "https://registry.yarnpkg.com/zeropool-client-js/-/zeropool-client-js-0.7.3.tgz#be121e4f7292c2f64ea31a2c61bab8f203a6e067"
+  integrity sha512-g6O0/+PfxtfjLH/fiGU259IHn/PaL0jxMKKD0e/RBuqlcX4/sq9PCLHV4YEduSpXEQQ/7djVhOTwfPpt2GPZVQ==
   dependencies:
+    "@waves/ts-lib-crypto" "^1.4.4-beta.1"
     borsh "^0.7.0"
     comlink "^4.3.1"
     ethereum-block-by-date "^1.4.5"

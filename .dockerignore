@@ -4,3 +4,4 @@ deps
 .parcel-cache
 .idea
 test
+.git
