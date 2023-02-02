@@ -2,6 +2,7 @@ import AES from 'crypto-js/aes';
 import Utf8 from 'crypto-js/enc-utf8';
 import { EthereumClient, PolkadotClient, Client as NetworkClient, NearClient, WavesClient } from 'zeropool-support-js';
 import { init, NearNetwork, ZeropoolClient } from 'zeropool-client-js';
+import { zp } from 'zeropool-client-js/lib/zp';
 import bip39 from 'bip39-light';
 import HDWalletProvider from '@truffle/hdwallet-provider';
 import { deriveSpendingKey } from 'zeropool-client-js/lib/utils';
@@ -71,7 +72,7 @@ export default class Account {
         mnemonic,
         providerOrUrl: RPC_URL,
       });
-      client = new EthereumClient(provider, { transactionUrl: TRANSACTION_URL });
+      client = new EthereumClient(provider, { transactionUrl: TRANSACTION_URL, ddStorageAddress: DD_STORAGE_ADDRESS });
       network = new EvmNetwork(RPC_URL);
     } else if (isSubstrateBased(NETWORK)) {
       client = await PolkadotClient.create(mnemonic, { rpcUrl: RPC_URL, transactionUrl: TRANSACTION_URL });
@@ -178,6 +179,15 @@ export default class Account {
     this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId).then(() => {
       console.log('Job %s completed', jobId);
     });;
+  }
+
+  public async depositDelegated(amount: string, to: string): Promise<void> {
+    const { d, p_d } = zp.parseAddress(to);
+
+    const receiverD = zp.Helpers.strToNum(d);
+    const receiverP = zp.Helpers.strToNum(p_d);
+
+    await this.client.depositDelegated(TOKEN_ADDRESS, receiverD, receiverP, amount);
   }
 
   public async depositShielded(amount: string): Promise<void> {

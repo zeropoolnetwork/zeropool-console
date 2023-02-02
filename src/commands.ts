@@ -63,6 +63,13 @@ export async function depositShielded(account: Account, amount: string) {
   this.resume();
 }
 
+export async function depositDelegated(account: Account, to: string, amount: string) {
+  this.echo('Performing shielded deposit...');
+  this.pause();
+  await account.depositDelegated(to, amount);
+  this.resume();
+}
+
 export async function withdrawShielded(account: Account, amount: string) {
   this.echo('Performing shielded withdraw...');
   this.pause();
