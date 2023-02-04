@@ -72,7 +72,7 @@ export default class Account {
         mnemonic,
         providerOrUrl: RPC_URL,
       });
-      client = new EthereumClient(provider, { transactionUrl: TRANSACTION_URL, ddStorageAddress: DD_STORAGE_ADDRESS });
+      client = new EthereumClient(provider, { transactionUrl: TRANSACTION_URL, ddStorageAddress: DELEGATED_DEPOSITS_ADDRESS });
       network = new EvmNetwork(RPC_URL);
     } else if (isSubstrateBased(NETWORK)) {
       client = await PolkadotClient.create(mnemonic, { rpcUrl: RPC_URL, transactionUrl: TRANSACTION_URL });
@@ -187,6 +187,7 @@ export default class Account {
     const receiverD = zp.Helpers.strToNum(d);
     const receiverP = zp.Helpers.strToNum(p_d);
 
+    await this.client.approve(TOKEN_ADDRESS, DELEGATED_DEPOSITS_ADDRESS, amount);
     await this.client.depositDelegated(TOKEN_ADDRESS, receiverD, receiverP, amount);
   }
 
