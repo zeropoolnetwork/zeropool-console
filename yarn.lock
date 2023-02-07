@@ -5410,15 +5410,15 @@ levn@^0.3.0, levn@~0.3.0:
     prelude-ls "~1.1.2"
     type-check "~0.3.2"
 
-libzeropool-rs-wasm-web-mt@0.8.2:
-  version "0.8.2"
-  resolved "https://registry.yarnpkg.com/libzeropool-rs-wasm-web-mt/-/libzeropool-rs-wasm-web-mt-0.8.2.tgz#4959fbdfcea955ec100022da3e00937c54d994f7"
-  integrity sha512-loh61/YnA1Ezj0DlfYk0zsoAgYOosp7podDMUsaAYunYeA3tOzDCOi1EZkcMhzQVzf9+qxAr78CfebN4FX0Vsw==
+libzeropool-rs-wasm-web-mt@0.8.3-dd:
+  version "0.8.3-dd"
+  resolved "https://registry.yarnpkg.com/libzeropool-rs-wasm-web-mt/-/libzeropool-rs-wasm-web-mt-0.8.3-dd.tgz#91cabe404a7dbbaca4098bd6094c78357a9a4bc6"
+  integrity sha512-V52bGP9ANSokX1fyfzVoY5rbbm6bfWm3fjw7dWUPdjUPc6JCTkBAyAZZYzD8C9mwWkpE/Dpaxc/OgE4VMllO4Q==
 
-libzeropool-rs-wasm-web@0.8.2:
-  version "0.8.2"
-  resolved "https://registry.yarnpkg.com/libzeropool-rs-wasm-web/-/libzeropool-rs-wasm-web-0.8.2.tgz#0875a106bc2298cae73bf6089d26a31dfd542957"
-  integrity sha512-W3mwlkrzAoCGzL/uzFHTSazY0EBlZKW5UJw1yN4NYffsN4v83oM1H+OVFyzQ9lcOUDsr5PAEJASXKqfZ5S8JwQ==
+libzeropool-rs-wasm-web@0.8.3-dd:
+  version "0.8.3-dd"
+  resolved "https://registry.yarnpkg.com/libzeropool-rs-wasm-web/-/libzeropool-rs-wasm-web-0.8.3-dd.tgz#7c006424da6ad600d1b2f06ec2841be71096c73e"
+  integrity sha512-yR8WKIAUBoAwrM+1nrJABPWtUirMdGYYNlFgG6i6jusUvAM7c83WwSR7ptFqP6toGBVo8z6OflN7AeaHfv1YXQ==
 
 loader-runner@^4.2.0:
   version "4.3.0"
@@ -9089,10 +9089,10 @@ yargs@^13.3.2:
     y18n "^4.0.0"
     yargs-parser "^13.1.2"
 
-zeropool-client-js@0.7.5:
-  version "0.7.5"
-  resolved "https://registry.yarnpkg.com/zeropool-client-js/-/zeropool-client-js-0.7.5.tgz#de566947accbc3ce1ff82d02cce07ddf91e16450"
-  integrity sha512-MAIdBo649Y6LBtcU6b7mkYfZMdz7RCdGB8/KqZ8+MsfhbwieyNIEMsWoEQNa/43G1ZroXH89BOwuiuamqrMvRg==
+zeropool-client-js@^0.8.0-dd:
+  version "0.8.0-dd"
+  resolved "https://registry.yarnpkg.com/zeropool-client-js/-/zeropool-client-js-0.8.0-dd.tgz#0677f5dd0bfeae9f164fe4efc37bf03e238c7abd"
+  integrity sha512-+7tngVbnnz88aFpXUcZrIS70Oxt85WEDMPtPEnsWTxWMrBEFdjt526YpzWSln7/i039nBeBL8rFHu8teRDjakA==
   dependencies:
     "@waves/ts-lib-crypto" "^1.4.4-beta.1"
     borsh "^0.7.0"
@@ -9101,8 +9101,8 @@ zeropool-client-js@0.7.5:
     ethereumjs-util "^7.1.5"
     hdwallet-babyjub "0.0.2"
     idb "^7.0.0"
-    libzeropool-rs-wasm-web "0.8.2"
-    libzeropool-rs-wasm-web-mt "0.8.2"
+    libzeropool-rs-wasm-web "0.8.3-dd"
+    libzeropool-rs-wasm-web-mt "0.8.3-dd"
     near-api-js "^1.0.0"
     promise-throttle "^1.1.2"
     regenerator-runtime "^0.13.9"
@@ -9110,8 +9110,10 @@ zeropool-client-js@0.7.5:
     web3 "^1.7.0"
     web3-utils "^1.7.0"
 
-"zeropool-support-js@file:../zeropool-support-js":
-  version "0.6.10"
+zeropool-support-js@^0.6.11-dd:
+  version "0.6.11-dd"
+  resolved "https://registry.yarnpkg.com/zeropool-support-js/-/zeropool-support-js-0.6.11-dd.tgz#6e53a7fe0e22cccef09d4805cf124409a200a1eb"
+  integrity sha512-i4nOOOTcyik3Ljaia+BqDJ+4J7qU/NHPd187CFZQoJUbBRmsaXN4HPfS2ajcBDAnJjneJX4GCBX9yD1lURCdNw==
   dependencies:
     "@ethereumjs/tx" "^3.2.1"
     "@polkadot/api" "^7.11.1"
