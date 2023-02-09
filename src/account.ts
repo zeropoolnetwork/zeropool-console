@@ -12,6 +12,9 @@ import { PolkadotNetwork } from 'zeropool-client-js/lib/networks/polkadot';
 import { ChainId } from 'zeropool-support-js/lib/networks/waves/config';
 import { WavesNetwork } from 'zeropool-client-js/lib/networks/waves';
 
+const WORKER_ST_PATH = '/workerSt.js?' + process.env.CACHE_BUST
+const WORKER_MT_PATH = '/workerMt.js?' + process.env.CACHE_BUST
+
 function isEvmBased(network: string): boolean {
   return ['ethereum', 'aurora', 'xdai'].includes(network);
 }
@@ -53,6 +56,7 @@ export default class Account {
       window.RELAYER_URL = process.env.RELAYER_URL;
       window.RPC_URL = process.env.RPC_URL;
       window.TRANSACTION_URL = process.env.TRANSACTION_URL;
+      window.DELEGATED_DEPOSITS_ADDRESS = process.env.DELEGATED_DEPOSITS_ADDRESS;
     }
   }
 
@@ -64,7 +68,10 @@ export default class Account {
       treeVkUrl: './assets/tree_verification_key.json',
     };
 
-    const { worker, snarkParams } = await init(snarkParamsConfig);
+    const { worker, snarkParams } = await init(snarkParamsConfig, {
+      workerSt: WORKER_ST_PATH,
+      workerMt: WORKER_MT_PATH,
+    });
 
     let client, network;
     if (isEvmBased(NETWORK)) {
@@ -181,7 +188,7 @@ export default class Account {
     });;
   }
 
-  public async depositDelegated(amount: string, to: string): Promise<void> {
+  public async depositDelegated(to: string, amount: string): Promise<void> {
     const { d, p_d } = zp.parseAddress(to);
 
     const receiverD = zp.Helpers.strToNum(d);

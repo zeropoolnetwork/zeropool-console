@@ -42,6 +42,7 @@ module.exports = merge(common, {
             RELAYER_URL: null,
             RPC_URL: null,
             TRANSACTION_URL: null,
+            DELEGATED_DEPOSITS_ADDRESS: null,
         }),
     ]
 });

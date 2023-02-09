@@ -48,6 +48,7 @@ module.exports = {
         new CopyPlugin({
             patterns: [
                 { from: 'src/env.js' },
+                { from: '*', context: 'build-workers' }
             ],
         }),
         new HtmlWebpackPlugin({
@@ -63,6 +64,9 @@ module.exports = {
         new webpack.ProvidePlugin({
             Buffer: ['buffer', 'Buffer'],
             process: 'process'
+        }),
+        new webpack.DefinePlugin({
+            'process.env.CACHE_BUST': JSON.stringify(new Date().getTime()),
         }),
     ],
     ignoreWarnings: [/Failed to parse source map/],
