@@ -11,6 +11,7 @@ import { EvmNetwork } from 'zeropool-client-js/lib/networks/evm';
 import { PolkadotNetwork } from 'zeropool-client-js/lib/networks/polkadot';
 import { ChainId } from 'zeropool-support-js/lib/networks/waves/config';
 import { WavesNetwork } from 'zeropool-client-js/lib/networks/waves';
+import BN from 'bn.js';
 
 const WORKER_ST_PATH = '/workerSt.js?' + process.env.CACHE_BUST
 const WORKER_MT_PATH = '/workerMt.js?' + process.env.CACHE_BUST
@@ -191,8 +192,8 @@ export default class Account {
   public async depositDelegated(to: string, amount: string): Promise<void> {
     const { d, p_d } = zp.parseAddress(to);
 
-    const receiverD = zp.Helpers.strToNum(d);
-    const receiverP = zp.Helpers.strToNum(p_d);
+    const receiverD = new BN(d).toArrayLike(Buffer, 'be', 10);
+    const receiverP = new BN(p_d).toArrayLike(Buffer, 'be', 32);
 
     await this.client.approve(TOKEN_ADDRESS, DELEGATED_DEPOSITS_ADDRESS, amount);
     await this.client.depositDelegated(TOKEN_ADDRESS, receiverD, receiverP, amount);
