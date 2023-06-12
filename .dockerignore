@@ -5,3 +5,5 @@ deps
 .idea
 test
 .git
+params
+workers

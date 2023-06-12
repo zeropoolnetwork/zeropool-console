@@ -11,6 +11,8 @@ import { PolkadotNetwork } from 'zeropool-client-js/lib/networks/polkadot';
 import { ChainId } from 'zeropool-support-js/lib/networks/waves/config';
 import { WavesNetwork } from 'zeropool-client-js/lib/networks/waves';
 
+import workersManifest from './manifest.json';
+
 function isEvmBased(network: string): boolean {
   return ['ethereum', 'aurora', 'xdai'].includes(network);
 }
@@ -58,12 +60,15 @@ export default class Account {
   public async init(mnemonic: string, password: string): Promise<void> {
     const snarkParamsConfig = {
       transferParamsUrl: './assets/transfer_params.bin',
-      treeParamsUrl: './assets/tree_params.bin',
       transferVkUrl: './assets/transfer_verification_key.json',
-      treeVkUrl: './assets/tree_verification_key.json',
     };
 
-    const { worker, snarkParams } = await init(snarkParamsConfig);
+    const { worker, snarkParams } = await init(snarkParamsConfig, {
+      workerSt: workersManifest['workerSt.js'],
+      workerMt: workersManifest['workerMt.js'],
+      wasmSt: workersManifest['libzeropool_rs_wasm_bg.wasm'],
+      wasmMt: workersManifest['libzeropool_rs_wasm_mt_bg.wasm'],
+    });
 
     let client, network;
     if (isEvmBased(NETWORK)) {
@@ -140,7 +145,7 @@ export default class Account {
   }
 
   public async getShieldedBalance(): Promise<bigint> {
-    return this.zpClient.getOptimisticTotalBalance(TOKEN_ADDRESS);;
+    return BigInt((await this.zpClient.getOptimisticTotalBalance(TOKEN_ADDRESS)).toString());
   }
 
   public async getBalance(): Promise<[string, string]> {
@@ -186,13 +191,14 @@ export default class Account {
       fromAddress = await this.client.getPublicKey();
     }
 
-    if (isEvmBased(NETWORK)) {
+    let depositId: number | undefined;
+    if (isEvmBased(NETWORK) || NETWORK === 'near') {
       console.log('Approving allowance the Pool (%s) to spend our tokens (%s)', CONTRACT_ADDRESS, amount);
-      await this.client.approve(TOKEN_ADDRESS, CONTRACT_ADDRESS, amount);
+      depositId = await this.client.approve(TOKEN_ADDRESS, CONTRACT_ADDRESS, amount);
     }
 
     console.log('Making deposit...');
-    const jobId = await this.zpClient.deposit(TOKEN_ADDRESS, BigInt(amount), (data) => this.client.sign(data), fromAddress, BigInt(0), []);
+    const jobId = await this.zpClient.deposit(TOKEN_ADDRESS, BigInt(amount), (data) => this.client.sign(data), fromAddress, BigInt(0), [], depositId);
 
     this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId).then(() => {
       console.log('Job %s completed', jobId);
@@ -201,12 +207,12 @@ export default class Account {
 
   public async withdrawShielded(amount: string): Promise<void> {
     let address = null;
-    if (isEvmBased(NETWORK)) {
-      address = await this.client.getAddress();
-    }
 
     if (isSubstrateBased(NETWORK)) {
+      // TODO: What?
       address = await this.client.getPublicKey();
+    } else {
+      address = await this.client.getAddress();
     }
 
     console.log('Making withdraw...');
@@ -219,14 +225,12 @@ export default class Account {
 
   private decryptSeed(password: string): string {
     const cipherText = this.storage.get(this.accountName, 'seed');
-    let seed;
     try {
-      seed = AES.decrypt(cipherText, password).toString(Utf8);
+      const seed = AES.decrypt(cipherText, password).toString(Utf8);
       if (!bip39.validateMnemonic(seed)) throw new Error('invalid mnemonic');
+      return seed;
     } catch (_) {
       throw new Error('Incorrect password');
     }
-
-    return seed;
   }
 }
