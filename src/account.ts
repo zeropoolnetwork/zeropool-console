@@ -190,9 +190,15 @@ export default class Account {
     }
   }
 
-  public async transfer(to: string, amount: string): Promise<void> {
-    const amt = await this.client.toBaseUnit(amount, TOKEN_ADDRESS);
+  public async transferNative(to: string, amount: string): Promise<void> {
+    const amt = await this.client.toBaseUnit(amount);
     await this.client.transfer(to, amt);
+  }
+
+
+  public async transferToken(to: string, amount: string): Promise<void> {
+    const amt = await this.client.toBaseUnit(amount, TOKEN_ADDRESS);
+    await this.client.transferToken(TOKEN_ADDRESS, to, amt);
   }
 
   public getTransactionUrl(txHash: string): string {
@@ -227,7 +233,7 @@ export default class Account {
     console.log('Making deposit...');
     const jobId = await this.zpClient.deposit(TOKEN_ADDRESS, BigInt(amt), (data) => this.client.sign(data), fromAddress, BigInt(0), [], depositId);
 
-    await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId).then(() => {
+    this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId).then(() => {
       console.log('Job %s completed', jobId);
     });
   }
@@ -246,7 +252,7 @@ export default class Account {
     console.log('Making withdraw...');
     const jobId = await this.zpClient.withdraw(TOKEN_ADDRESS, address, BigInt(amt));
 
-    await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId).then(() => {
+    this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId).then(() => {
       console.log('Job %s completed', jobId);
     });
   }

@@ -35,7 +35,7 @@ export async function getBalance() {
 export async function getShieldedBalance() {
   this.pause();
   const balance = await this.account.getShieldedBalance();
-  this.echo(balance);
+  this.echo(`[[;gray;]Shielded balance: ${balance}]`);
   this.resume();
 }
 
@@ -52,9 +52,15 @@ export async function mint(amount: string) {
   this.resume();
 }
 
-export async function transfer(to: string, amount: string) {
+export async function transferNative(to: string, amount: string) {
   this.pause();
-  await this.account.transfer(to, amount);
+  await this.account.transferNative(to, amount);
+  this.resume();
+}
+
+export async function transferToken(to: string, amount: string) {
+  this.pause();
+  await this.account.transferToken(to, amount);
   this.resume();
 }
 
@@ -107,15 +113,3 @@ export async function resetState() {
   this.account = null;
   location.reload();
 }
-
-// export async function showState() {
-//     const  = this.account;
-//     const coin = account.hdWallet.getNetwork(chainId())!;
-//     await coin.updateState();
-//     const data = coin.zpState.account.getWholeState();
-//     console.log(data);
-
-//     for (const [index, tx] of data.txs) {
-//         this.echo(`${index}: ${JSON.stringify(tx)}`);
-//     }
-// }
