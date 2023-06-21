@@ -21,12 +21,7 @@ function isSubstrateBased(network: string): boolean {
   return ['polkadot', 'kusama'].includes(network);
 }
 
-interface AccountStorage {
-  get(accountName: string, field: string): string | null;
-  set(accountName: string, field: string, value: string);
-}
-
-class LocalAccountStorage implements AccountStorage {
+class AccountDataStorage {
   get(accountName: string, field: string): string | null {
     return localStorage.getItem(`zconsole.${accountName}.${field}`);
   }
@@ -38,26 +33,28 @@ class LocalAccountStorage implements AccountStorage {
 // TODO: Extract timeout management code
 export default class Account {
   readonly accountName: string;
-  private storage: AccountStorage;
+  private storage: AccountDataStorage;
   public client: NetworkClient;
   private zpClient: ZeropoolClient;
 
   constructor(accountName: string) {
     this.accountName = accountName;
-    this.storage = new LocalAccountStorage();
+    this.storage = new AccountDataStorage();
 
     if (process.env.NODE_ENV === 'development') {
       console.log('Dev environment, using local env variables.');
       window.NETWORK = process.env.NETWORK;
       window.CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
       window.TOKEN_ADDRESS = process.env.TOKEN_ADDRESS;
+      window.RELAYER_ADDRESS = process.env.RELAYER_ADDRESS;
       window.RELAYER_URL = process.env.RELAYER_URL;
       window.RPC_URL = process.env.RPC_URL;
       window.TRANSACTION_URL = process.env.TRANSACTION_URL;
+      window.ZP_FAUCET_URL = process.env.ZP_FAUCET_URL;
     }
   }
 
-  public async init(mnemonic: string, password: string): Promise<void> {
+  public async init(mnemonic: string, password: string, address?: string): Promise<void> {
     const snarkParamsConfig = {
       transferParamsUrl: './assets/transfer_params.bin',
       transferVkUrl: './assets/transfer_verification_key.json',
@@ -89,8 +86,11 @@ export default class Account {
         },
         CONTRACT_ADDRESS,
         mnemonic,
+        address,
       );
-      network = new NearNetwork(RELAYER_URL);
+      network = new NearNetwork(RELAYER_URL, RPC_URL, RELAYER_ADDRESS);
+
+      this.storage.set(this.accountName, 'accountId', address);
     } else if (NETWORK === 'waves') {
       // TODO: Make it configurable
       client = new WavesClient(CONTRACT_ADDRESS, mnemonic, { nodeUrl: RPC_URL, chainId: ChainId.Testnet });
@@ -120,8 +120,9 @@ export default class Account {
   }
 
   public async unlockAccount(password: string) {
+    const accountId = this.storage.get(this.accountName, 'accountId');
     let seed = this.decryptSeed(password);
-    await this.init(seed, password);
+    await this.init(seed, password, accountId);
   }
 
   public getSeed(password: string): string {
@@ -144,13 +145,14 @@ export default class Account {
     return this.zpClient.generateAddress(TOKEN_ADDRESS);
   }
 
-  public async getShieldedBalance(): Promise<bigint> {
-    return BigInt((await this.zpClient.getOptimisticTotalBalance(TOKEN_ADDRESS)).toString());
+  public async getShieldedBalance(): Promise<string> {
+    const balance = (await this.zpClient.getOptimisticTotalBalance(TOKEN_ADDRESS)).toString();
+    return await this.client.fromBaseUnit(balance, TOKEN_ADDRESS);
   }
 
   public async getBalance(): Promise<[string, string]> {
     const balance = await this.client.getBalance();
-    const readable = this.client.fromBaseUnit(balance);
+    const readable = await this.client.fromBaseUnit(balance);
 
     return [balance, readable];
   }
@@ -161,15 +163,36 @@ export default class Account {
 
   // TODO: Support multiple tokens
   public async getTokenBalance(): Promise<string> {
-    return await this.client.getTokenBalance(TOKEN_ADDRESS);
+    const balance = await this.client.getTokenBalance(TOKEN_ADDRESS);
+    return await this.client.fromBaseUnit(balance, TOKEN_ADDRESS);
   }
 
   public async mint(amount: string): Promise<void> {
-    await this.client.mint(TOKEN_ADDRESS, amount);
+    const amt = await this.client.toBaseUnit(amount, TOKEN_ADDRESS);
+    await this.client.mint(TOKEN_ADDRESS, amt);
+
+    if (NETWORK == 'near') {
+      const res = await fetch(`${ZP_FAUCET_URL}/near/${TOKEN_ADDRESS}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: amt,
+          to: await this.client.getAddress(),
+        }),
+      });
+
+      if (!res.ok) {
+        const body = await res.json();
+        throw new Error(`Failed to mint: ${body.error}`);
+      }
+    }
   }
 
   public async transfer(to: string, amount: string): Promise<void> {
-    await this.client.transfer(to, amount);
+    const amt = await this.client.toBaseUnit(amount, TOKEN_ADDRESS);
+    await this.client.transfer(to, amt);
   }
 
   public getTransactionUrl(txHash: string): string {
@@ -177,35 +200,40 @@ export default class Account {
   }
 
   public async transferShielded(to: string, amount: string): Promise<void> {
+    const amt = await this.client.toBaseUnit(amount, TOKEN_ADDRESS);
     console.log('Making transfer...');
-    const jobId = await this.zpClient.transfer(TOKEN_ADDRESS, [{ to, amount }]);
-
-    this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId).then(() => {
-      console.log('Job %s completed', jobId);
-    });;
-  }
-
-  public async depositShielded(amount: string): Promise<void> {
-    let fromAddress = null;
-    if (isSubstrateBased(NETWORK)) {
-      fromAddress = await this.client.getPublicKey();
-    }
-
-    let depositId: number | undefined;
-    if (isEvmBased(NETWORK) || NETWORK === 'near') {
-      console.log('Approving allowance the Pool (%s) to spend our tokens (%s)', CONTRACT_ADDRESS, amount);
-      depositId = await this.client.approve(TOKEN_ADDRESS, CONTRACT_ADDRESS, amount);
-    }
-
-    console.log('Making deposit...');
-    const jobId = await this.zpClient.deposit(TOKEN_ADDRESS, BigInt(amount), (data) => this.client.sign(data), fromAddress, BigInt(0), [], depositId);
+    const jobId = await this.zpClient.transfer(TOKEN_ADDRESS, [{ to, amount: amt }]);
 
     this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId).then(() => {
       console.log('Job %s completed', jobId);
     });
   }
 
+  public async depositShielded(amount: string): Promise<void> {
+    const amt = await this.client.toBaseUnit(amount, TOKEN_ADDRESS);
+    let fromAddress = null;
+    if (isSubstrateBased(NETWORK)) {
+      fromAddress = await this.client.getPublicKey();
+    } else if (NETWORK === 'near') {
+      fromAddress = await this.client.getAddress();
+    }
+
+    let depositId: number | undefined;
+    if (isEvmBased(NETWORK) || NETWORK === 'near') {
+      console.log('Approving allowance the Pool (%s) to spend our tokens (%s)', CONTRACT_ADDRESS, amt);
+      depositId = await this.client.approve(TOKEN_ADDRESS, CONTRACT_ADDRESS, amt);
+    }
+
+    console.log('Making deposit...');
+    const jobId = await this.zpClient.deposit(TOKEN_ADDRESS, BigInt(amt), (data) => this.client.sign(data), fromAddress, BigInt(0), [], depositId);
+
+    await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId).then(() => {
+      console.log('Job %s completed', jobId);
+    });
+  }
+
   public async withdrawShielded(amount: string): Promise<void> {
+    const amt = await this.client.toBaseUnit(amount, TOKEN_ADDRESS);
     let address = null;
 
     if (isSubstrateBased(NETWORK)) {
@@ -216,11 +244,15 @@ export default class Account {
     }
 
     console.log('Making withdraw...');
-    const jobId = await this.zpClient.withdraw(TOKEN_ADDRESS, address, BigInt(amount));
+    const jobId = await this.zpClient.withdraw(TOKEN_ADDRESS, address, BigInt(amt));
 
-    this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId).then(() => {
+    await this.zpClient.waitJobCompleted(TOKEN_ADDRESS, jobId).then(() => {
       console.log('Job %s completed', jobId);
-    });;
+    });
+  }
+
+  public free(): void {
+    this.zpClient.free();
   }
 
   private decryptSeed(password: string): string {

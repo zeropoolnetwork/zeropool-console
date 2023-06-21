@@ -17,6 +17,6 @@ module.exports = {
   mode: 'production',
   plugins: [
     new CleanWebpackPlugin(),
-    new WebpackManifestPlugin()
+    new WebpackManifestPlugin(),
   ]
 };

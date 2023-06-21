@@ -40,10 +40,11 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   'withdraw-shielded': [c.withdrawShielded, '<account> <amount>', ''],
   'internal-state': [c.getInternalState, '', ''],
   'clear': [c.clear, '', 'clear terminal'],
-  'reset': [c.reset, '', 'reset console state'],
+  'reset-state': [c.resetState, '', 'clear indexedDB state'],
+  'reset': [c.resetConsole, '', 'reset console'],
   'version': [
     function () {
-      this.echo(`zkBob console version ${pjson.version}`);
+      this.echo(`ZeroPool console version ${pjson.version}`);
     },
     '',
     'get console version'
@@ -104,19 +105,18 @@ const COMMANDS: { [key: string]: [(...args) => void, string, string] } = {
   <div class="comment">// If you don't have any native tokens you have two choices:</div>
   <div class="comment">//   1. Use the current network's faucet to get some.</div>
   <div class="comment">//   2. Transfer from a different account.</div>
-  <div class="comment">// If you want to transfer from a different account you'll need to know.</div>
-  <div class="comment">// one of the addresses for your current account:</div>
+  <div class="comment">// Get the address of the current account:</div>
   <div class="command-example">get-address</div>
-  <div class="comment">// Mint 5 * 10^18 tokens for the account with index 0.</div>
-  <div class="command-example">testnet-mint 5000000000000000000</div>
-  <div class="comment">// Deposit 2 * 10^18 of those tokens to the pool.</div>
-  <div class="command-example">deposit-shielded 2000000000000000000</div>
-  <div class="comment">// Generate a new shielded address.</div>
+  <div class="comment">// Mint 5 tokens:</div>
+  <div class="command-example">testnet-mint 5</div>
+  <div class="comment">// Deposit 2 of those tokens to the pool:</div>
+  <div class="command-example">deposit-shielded 2</div>
+  <div class="comment">// Generate a new shielded address:</div>
   <div class="command-example">gen-shielded-address</div>
-  <div class="comment">// Transfer 1 * 10^18 of deposited tokens the specified address.</div>
-  <div class="command-example">transfer-shielded "shielded address here" 1000000000000000000</div>
-  <div class="comment">// Withdraw the remaining 2 * 10^18 from the pool.</div>
-  <div class="command-example">withdraw-shielded 2000000000000000000</div>
+  <div class="comment">// Transfer 1 of deposited tokens the specified address:</div>
+  <div class="command-example">transfer-shielded "shielded address here" 1</div>
+  <div class="comment">// Withdraw the remaining 2 from the pool:</div>
+  <div class="command-example">withdraw-shielded 2</div>
   <div class="comment">// If you want to check your shielded balance between '*-shielded' commands:</div>
   <div class="command-example">get-shielded-balance</div>
 </p>
@@ -186,6 +186,14 @@ jQuery(async function ($) {
             await this.account.unlockAccount(password);
             this.resume();
           } else {
+            let address = undefined;
+            if (NETWORK == 'near') {
+              const account = await this.read('Enter account ID (optional): ');
+              if (account.trim().length !== 0) {
+                address = account;
+              }
+            }
+
             let seed = await this.read(`Enter seed phrase or leave empty to generate a new one: `);
 
             if (seed.trim().length == 0) {
@@ -205,7 +213,7 @@ jQuery(async function ($) {
             }
 
             this.pause();
-            await this.account.init(seed, password);
+            await this.account.init(seed, password, address);
             this.resume();
           }
         } catch (e) {
